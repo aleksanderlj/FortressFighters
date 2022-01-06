@@ -52,7 +52,7 @@ public class Main {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
-			
+			g2D.drawString("Press 1 to host and play or 2 to join", 150, 50);
 		}
 		
 		@Override
