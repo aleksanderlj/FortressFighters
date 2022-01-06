@@ -13,7 +13,7 @@ import org.jspace.SequentialSpace;
 import org.jspace.Space;
 import org.jspace.SpaceRepository;
 
-public class GraphicsTest {
+public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private static List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();

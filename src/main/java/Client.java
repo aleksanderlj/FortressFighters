@@ -17,7 +17,7 @@ import org.jspace.Space;
 
 import com.google.gson.internal.LinkedTreeMap;
 
-public class TestClient {
+public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private static TestFrame frame;
