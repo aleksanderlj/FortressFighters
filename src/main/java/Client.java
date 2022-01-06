@@ -51,6 +51,7 @@ public class Client {
 
 	public void update() {
 		try {
+			// Get the updated status of each object from the server
 			updatePlayers();
 			updateCannons();
 			updateBullets();
@@ -97,6 +98,7 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
+			// Render each object on the screen
 			paintPlayers();
 			paintCannons();
 			paintBullets();

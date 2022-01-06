@@ -57,8 +57,8 @@ public class Server {
 	}
 
 	public void update() {
-		//Move players that want to move.
 		try {
+			// Handle game logic for each object
 			updatePlayers();
 			updateCannons();
 			updateBullets();
