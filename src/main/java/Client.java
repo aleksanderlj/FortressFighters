@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -20,8 +19,12 @@ public class Client {
 	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Space centralSpace;
-	private Space objectPositionsSpace;
+	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
+	private Space cannonSpace;
+	private Space bulletSpace;
+	private Space fortressSpace;
+	private Space resourceSpace;
 	private int id;
 	private int playerSize = 100;
 	private GamePanel panel;
@@ -34,8 +37,12 @@ public class Client {
 		frame.setVisible(true);
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
-			objectPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/objectpositions?keep");
+			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
 			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
+			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
+			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
+			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
+			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
 		} catch (IOException | InterruptedException e) {}
@@ -44,14 +51,38 @@ public class Client {
 
 	public void update() {
 		try {
-			List<Object[]> playersTuples = objectPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
-			players = new Player[playersTuples.size()];
-			for (int i = 0; i < playersTuples.size(); i++) {
-				Object[] tuple = playersTuples.get(i);
-				players[i] = new Player((double)tuple[0], (double)tuple[1], playerSize, playerSize, (int)tuple[2], (boolean)tuple[3]);
-			}
+			updatePlayers();
+			updateCannons();
+			updateBullets();
+			updateFortresses();
+			updateResources();
 		} catch (InterruptedException e) {}
 		panel.updatePanel();
+	}
+
+	public void updatePlayers() throws InterruptedException {
+		List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		players = new Player[playersTuples.size()];
+		for (int i = 0; i < playersTuples.size(); i++) {
+			Object[] tuple = playersTuples.get(i);
+			players[i] = new Player((double)tuple[0], (double)tuple[1], playerSize, playerSize, (int)tuple[2], (boolean)tuple[3]);
+		}
+	}
+
+	public void updateCannons(){
+
+	}
+
+	public void updateBullets(){
+
+	}
+
+	public void updateFortresses(){
+
+	}
+
+	public void updateResources(){
+
 	}
 
 	private class GamePanel extends JPanel implements KeyListener {
@@ -66,10 +97,34 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
+			paintPlayers();
+			paintCannons();
+			paintBullets();
+			paintFortresses();
+			paintResources();
+		}
+
+		public void paintPlayers(){
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
 				g2D.drawRect((int)p.x, (int)p.y, (int)p.width, (int)p.height);
 			}
+		}
+
+		public void paintCannons(){
+
+		}
+
+		public void paintBullets(){
+
+		}
+
+		public void paintFortresses(){
+
+		}
+
+		public void paintResources(){
+
 		}
 
 		public void updatePanel() {
