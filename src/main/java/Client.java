@@ -12,20 +12,20 @@ import org.jspace.FormalField;
 import org.jspace.RemoteSpace;
 import org.jspace.Space;
 
-import com.google.gson.internal.LinkedTreeMap;
-
 import model.*;
 
 public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
-	private TestFrame frame;
+	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Space centralSpace;
 	private Space objectPositionsSpace;
 	private Space playerMovementSpace;
 	private int id;
 	private int playerSize = 100;
+	private int windowWidth = 500;
+	private int windowHeight = 500;
 
 	public Client(String address) {
 		try {
@@ -35,7 +35,7 @@ public class Client {
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
 		} catch (IOException | InterruptedException e) {}
-		frame = new TestFrame();
+		frame = new GameFrame();
 		new Thread(new Timer()).start();
 	}
 
@@ -51,12 +51,12 @@ public class Client {
 		frame.updateFrame();
 	}
 
-	private class TestFrame extends JFrame implements KeyListener {
-		public TestPanel panel;
+	private class GameFrame extends JFrame implements KeyListener {
+		public GamePanel panel;
 
-		public TestFrame() {
+		public GameFrame() {
 			addKeyListener(this);
-			panel = new TestPanel();
+			panel = new GamePanel();
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			this.add(panel);
 			this.pack();
@@ -114,11 +114,11 @@ public class Client {
 		}
 	}
 
-	private class TestPanel extends JPanel {
+	private class GamePanel extends JPanel {
 		public Graphics2D g2D;
 
-		public TestPanel() {
-			setPreferredSize(new Dimension(500, 500));
+		public GamePanel() {
+			setPreferredSize(new Dimension(windowWidth, windowHeight));
 		}
 
 		public void paint(Graphics g) {
