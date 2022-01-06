@@ -15,6 +15,7 @@ public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private List<Player> players = new ArrayList<Player>();
+	private List<Cannon> cannons = new ArrayList<>();
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -93,6 +94,16 @@ public class Server {
 	}
 
 	public void updateCannons() throws InterruptedException {
+		List<Object[]> cannonCommands = cannonSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
+		Cannon newCannon;
+		for (Object[] command : cannonCommands) {
+			System.out.println(command);
+			int id = (int) command[0];
+			Player player = players.get(id);
+			newCannon = new Cannon(player.x, player.y, player.team);
+			cannons.add(newCannon);
+			cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 4, newCannon.getTeam());
+		}
 
 	}
 

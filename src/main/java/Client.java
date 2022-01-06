@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ public class Client {
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private GameFrame frame;
 	private Player[] players = new Player[0];
+	private Cannon[] cannons = new Cannon[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -30,6 +32,7 @@ public class Client {
 	private GamePanel panel;
 	private int windowWidth = 500;
 	private int windowHeight = 500;
+	private boolean createCannonKeyDown = false;
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
@@ -71,6 +74,12 @@ public class Client {
 	}
 
 	public void updateCannons() throws InterruptedException {
+		List<Object[]> cannonTuples = cannonSpace.queryAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		cannons = new Cannon[cannonTuples.size()];
+		for (int i = 0; i < cannonTuples.size(); i++) {
+			Object[] tuple = cannonTuples.get(i);
+			cannons[i] = new Cannon((double)tuple[1], (double)tuple[2], (boolean)tuple[3]);
+		}
 	}
 
 	public void updateBullets() throws InterruptedException {
@@ -113,7 +122,10 @@ public class Client {
 		}
 
 		public void paintCannons(){
-
+			for (int i = 0; i < cannons.length; i++) {
+				Cannon c = cannons[i];
+				g2D.drawRect((int)c.x, (int)c.y, (int)c.width, (int)c.height);
+			}
 		}
 
 		public void paintBullets(){
@@ -136,45 +148,75 @@ public class Client {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-			String direction = getInput(e.getKeyCode());
+			String input = getInput(e.getKeyCode());
 			try {
-				if (!direction.equals("") && playerMovementSpace.queryp(new ActualField(id), new ActualField(direction)) == null) {
-					playerMovementSpace.put(id, direction);
+				switch (input){
+					case "left":
+					case "right":
+					case "down":
+					case "up":
+						if (playerMovementSpace.queryp(new ActualField(id), new ActualField(input)) == null) {
+							playerMovementSpace.put(id, input);
+						}
+						break;
+					case "createcannon":
+						if(!createCannonKeyDown && cannonSpace.queryp(new ActualField(id), new ActualField(input)) == null){
+							cannonSpace.put(id, input);
+						}
+						createCannonKeyDown = true;
+						break;
+					default:
+						break;
 				}
 			} catch (InterruptedException e1) {}
 		}
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			String direction = getInput(e.getKeyCode());
+			String input = getInput(e.getKeyCode());
 			try {
-				playerMovementSpace.getp(new ActualField(id), new ActualField(direction));
+				switch (input){
+					case "left":
+					case "right":
+					case "down":
+					case "up":
+						playerMovementSpace.getp(new ActualField(id), new ActualField(input));
+						break;
+					case "createcannon":
+						createCannonKeyDown = false;
+						break;
+					default:
+						break;
+				}
 			} catch (InterruptedException e1) {}
 		}
 
 		private String getInput(int keyCode){
-			String direction = "";
+			String input = "";
 			switch (keyCode) {
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
-					direction = "left";
+					input = "left";
 					break;
 				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
-					direction = "right";
+					input = "right";
 					break;
 				case KeyEvent.VK_DOWN:
 				case KeyEvent.VK_S:
-					direction = "down";
+					input = "down";
 					break;
 				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
-					direction = "up";
+					input = "up";
+					break;
+				case KeyEvent.VK_Q:
+					input = "createcannon";
 					break;
 				default:
 					break;
 			}
-			return direction;
+			return input;
 		}
 	}
 
