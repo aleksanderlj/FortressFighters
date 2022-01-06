@@ -31,6 +31,7 @@ public class Client {
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
 		frame.setPanel(panel);
+		frame.setVisible(true);
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
 			objectPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/objectpositions?keep");

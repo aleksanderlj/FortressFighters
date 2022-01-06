@@ -15,15 +15,20 @@ public class Main {
 	private static int windowWidth = 500;
 	private static int windowHeight = 500;
 	private static GameFrame frame;
+	private static MainPanel mainPanel;
 	
     public static void main(String[] args) {
         frame = new GameFrame();
-        frame.setPanel(new MainPanel());
+		mainPanel = new MainPanel();
+        frame.setPanel(mainPanel);
     }
     
     private static void start(int type) {
-        Client client;
+		frame.setVisible(false);
+        frame.remove(mainPanel);
+		Client client;
         Server server;
+
     	if (type == 1) {
             server = new Server();
             System.out.println(server.getAddress());
