@@ -1,9 +1,6 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +14,18 @@ import org.jspace.Space;
 
 import com.google.gson.internal.LinkedTreeMap;
 
+import model.*;
+
 public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private TestFrame frame;
-	private List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
+	private Player[] players = new Player[0];
 	private Space centralSpace;
 	private Space objectPositionsSpace;
 	private Space playerMovementSpace;
 	private int id;
+	private int playerSize = 100;
 
 	public Client(String address) {
 		try {
@@ -41,7 +41,12 @@ public class Client {
 
 	public void update() {
 		try {
-			players = (List<Rectangle.Double>) objectPositionsSpace.query(new FormalField(List.class))[0];
+			List<Object[]> playersTuples = objectPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+			players = new Player[playersTuples.size()];
+			for (int i = 0; i < playersTuples.size(); i++) {
+				Object[] tuple = playersTuples.get(i);
+				players[i] = new Player((double)tuple[0], (double)tuple[1], playerSize, playerSize, (int)tuple[2], (boolean)tuple[3]);
+			}
 		} catch (InterruptedException e) {}
 		frame.updateFrame();
 	}
@@ -119,9 +124,9 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
-			for (int i = 0; i < players.size(); i++) {
-				LinkedTreeMap t = (LinkedTreeMap)((Object)players.get(i));
-				g2D.drawRect((int)((double)t.get("x")), (int)((double)t.get("y")), (int)((double)t.get("width")), (int)((double)t.get("height")));
+			for (int i = 0; i < players.length; i++) {
+				Player p = players[i];
+				g2D.drawRect((int)p.x, (int)p.y, (int)p.width, (int)p.height);
 			}
 		}
 

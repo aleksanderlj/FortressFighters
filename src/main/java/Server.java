@@ -15,16 +15,19 @@ import org.jspace.SequentialSpace;
 import org.jspace.Space;
 import org.jspace.SpaceRepository;
 
+import model.*;
+
 public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private String address;
-	private List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
+	private List<Player> players = new ArrayList<Player>();
 	private Space centralSpace;
 	private Space objectPositionsSpace;
 	private Space playerMovementSpace;
 	private int numPlayers = 0;
 	private int playerSpeed = 200;
+	private int playerSize = 100;
 
 	public Server() {
 		SpaceRepository repository = new SpaceRepository();
@@ -50,10 +53,13 @@ public class Server {
 	public void update() {
 		//Move players that want to move.
 		try {
+			for (Player p : players) {
+				objectPositionsSpace.getp(new ActualField(p.x), new ActualField(p.y), new ActualField(p.id), new ActualField(p.team));
+			}
 			List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
 			for (Object[] movementTuple : movementTuples) {
 				int playerID = (Integer) movementTuple[0];
-				Rectangle.Double player = players.get(playerID);
+				Player player = players.get(playerID);
 				String direction = (String) movementTuple[1];
 				switch (direction) {
 					case "left":
@@ -71,10 +77,10 @@ public class Server {
 					default:
 						break;
 				}
-				//movementTuple = playerMovementSpace.getp(new FormalField(Integer.class), new FormalField(String.class));
 			}
-			objectPositionsSpace.get(new FormalField(List.class));
-			objectPositionsSpace.put(players);
+			for (Player p : players) {
+				objectPositionsSpace.put(p.x, p.y, p.id, p.team);
+			}
 		} catch (InterruptedException e) {}
 	}
 
@@ -98,7 +104,7 @@ public class Server {
 				while (true) {
 					centralSpace.get(new ActualField("joined"));
 					centralSpace.put(numPlayers);
-					players.add(new Rectangle.Double(400, 400, 100, 100));
+					players.add(new Player(400, 400, playerSize, playerSize, 0, true));
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
