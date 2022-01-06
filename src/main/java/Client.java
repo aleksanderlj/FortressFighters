@@ -80,7 +80,6 @@ public class Client {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-			System.out.println("Key pressed.");
 			String direction = getInput(e.getKeyCode());
 			try {
 				if (!direction.equals("") && playerMovementSpace.queryp(new ActualField(id), new ActualField(direction)) == null) {

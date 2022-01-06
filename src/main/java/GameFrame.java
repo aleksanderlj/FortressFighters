@@ -10,11 +10,9 @@ public class GameFrame extends JFrame {
 		
 		public void setPanel(JPanel panel) {
 			if (this.panel != null) {
-				System.out.println(panel);
 				remove(panel);
 			}
 			this.panel = panel;
-			System.out.println(panel);
 			add(panel);
 			pack();
 			setLocationRelativeTo(null);
