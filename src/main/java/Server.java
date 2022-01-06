@@ -92,19 +92,19 @@ public class Server {
 		}
 	}
 
-	public void updateCannons(){
+	public void updateCannons() throws InterruptedException {
 
 	}
 
-	public void updateBullets(){
+	public void updateBullets() throws InterruptedException{
 
 	}
 
-	public void updateFortresses(){
+	public void updateFortresses() throws InterruptedException{
 
 	}
 
-	public void updateResources(){
+	public void updateResources() throws InterruptedException{
 
 	}
 
