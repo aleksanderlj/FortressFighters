@@ -24,10 +24,13 @@ public class Client {
 	private Space playerMovementSpace;
 	private int id;
 	private int playerSize = 100;
+	private GamePanel panel;
 	private int windowWidth = 500;
 	private int windowHeight = 500;
 
-	public Client(String address) {
+	public Client(String address, GameFrame frame) {
+		panel = new GamePanel();
+		frame.setPanel(panel);
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
 			objectPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/objectpositions?keep");
@@ -35,7 +38,6 @@ public class Client {
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
 		} catch (IOException | InterruptedException e) {}
-		frame = new GameFrame();
 		new Thread(new Timer()).start();
 	}
 
@@ -48,30 +50,36 @@ public class Client {
 				players[i] = new Player((double)tuple[0], (double)tuple[1], playerSize, playerSize, (int)tuple[2], (boolean)tuple[3]);
 			}
 		} catch (InterruptedException e) {}
-		frame.updateFrame();
+		panel.updatePanel();
 	}
 
-	private class GameFrame extends JFrame implements KeyListener {
-		public GamePanel panel;
+	private class GamePanel extends JPanel implements KeyListener {
+		public Graphics2D g2D;
 
-		public GameFrame() {
+		public GamePanel() {
+			setPreferredSize(new Dimension(windowWidth, windowHeight));
 			addKeyListener(this);
-			panel = new GamePanel();
-			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			this.add(panel);
-			this.pack();
-			setLocationRelativeTo(null);
-			setVisible(true);
+	        setFocusable(true);
 		}
 
-		public void updateFrame() {
-			panel.updatePanel();
+		public void paint(Graphics g) {
+			super.paint(g);
+			g2D = (Graphics2D) g;
+			for (int i = 0; i < players.length; i++) {
+				Player p = players[i];
+				g2D.drawRect((int)p.x, (int)p.y, (int)p.width, (int)p.height);
+			}
 		}
 
+		public void updatePanel() {
+			repaint();
+		}
+		
 		@Override
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
+			System.out.println("Key pressed.");
 			String direction = getInput(e.getKeyCode());
 			try {
 				if (!direction.equals("") && playerMovementSpace.queryp(new ActualField(id), new ActualField(direction)) == null) {
@@ -111,27 +119,6 @@ public class Client {
 					break;
 			}
 			return direction;
-		}
-	}
-
-	private class GamePanel extends JPanel {
-		public Graphics2D g2D;
-
-		public GamePanel() {
-			setPreferredSize(new Dimension(windowWidth, windowHeight));
-		}
-
-		public void paint(Graphics g) {
-			super.paint(g);
-			g2D = (Graphics2D) g;
-			for (int i = 0; i < players.length; i++) {
-				Player p = players[i];
-				g2D.drawRect((int)p.x, (int)p.y, (int)p.width, (int)p.height);
-			}
-		}
-
-		public void updatePanel() {
-			repaint();
 		}
 	}
 
