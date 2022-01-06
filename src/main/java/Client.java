@@ -70,19 +70,18 @@ public class Client {
 		}
 	}
 
-	public void updateCannons(){
+	public void updateCannons() throws InterruptedException {
+	}
+
+	public void updateBullets() throws InterruptedException {
 
 	}
 
-	public void updateBullets(){
+	public void updateFortresses() throws InterruptedException {
 
 	}
 
-	public void updateFortresses(){
-
-	}
-
-	public void updateResources(){
+	public void updateResources() throws InterruptedException {
 
 	}
 
