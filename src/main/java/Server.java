@@ -39,10 +39,10 @@ public class Server {
 		repository.add("central", centralSpace);
 		repository.add("playerpositions", playerPositionsSpace);
 		repository.add("playermovement", playerMovementSpace);
-		repository.add("cannon", playerMovementSpace);
-		repository.add("bullet", playerMovementSpace);
-		repository.add("fortress", playerMovementSpace);
-		repository.add("resource", playerMovementSpace);
+		repository.add("cannon", cannonSpace);
+		repository.add("bullet", bulletSpace);
+		repository.add("fortress", fortressSpace);
+		repository.add("resource", resourceSpace);
 		try {
 			playerPositionsSpace.put(players);
 		} catch (InterruptedException e) {}
