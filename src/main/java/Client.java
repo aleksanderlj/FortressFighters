@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
@@ -28,10 +27,7 @@ public class Client {
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int id;
-	private int playerSize = 100;
 	private GamePanel panel;
-	private int windowWidth = 500;
-	private int windowHeight = 500;
 	private boolean createCannonKeyDown = false;
 
 	public Client(String address, GameFrame frame) {
@@ -69,7 +65,7 @@ public class Client {
 		players = new Player[playersTuples.size()];
 		for (int i = 0; i < playersTuples.size(); i++) {
 			Object[] tuple = playersTuples.get(i);
-			players[i] = new Player((double)tuple[0], (double)tuple[1], playerSize, playerSize, (int)tuple[2], (boolean)tuple[3]);
+			players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3]);
 		}
 	}
 
@@ -98,7 +94,7 @@ public class Client {
 		public Graphics2D g2D;
 
 		public GamePanel() {
-			setPreferredSize(new Dimension(windowWidth, windowHeight));
+			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
 			addKeyListener(this);
 	        setFocusable(true);
 		}

@@ -14,6 +14,8 @@ import model.*;
 public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
+	public static final int SCREEN_WIDTH = 1280;
+	public static final int SCREEN_HEIGHT = 720;
 	private List<Player> players = new ArrayList<Player>();
 	private List<Cannon> cannons = new ArrayList<>();
 	private Space centralSpace;
@@ -24,8 +26,6 @@ public class Server {
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int numPlayers = 0;
-	private int playerSpeed = 200;
-	private int playerSize = 100;
 
 	public Server() {
 		SpaceRepository repository = new SpaceRepository();
@@ -73,16 +73,16 @@ public class Server {
 			String direction = (String) movementTuple[1];
 			switch (direction) {
 				case "left":
-					player.x -= playerSpeed*S_BETWEEN_UPDATES;
+					player.x -= Player.SPEED * S_BETWEEN_UPDATES;
 					break;
 				case "right":
-					player.x += playerSpeed*S_BETWEEN_UPDATES;
+					player.x += Player.SPEED * S_BETWEEN_UPDATES;
 					break;
 				case "down":
-					player.y += playerSpeed*S_BETWEEN_UPDATES;
+					player.y += Player.SPEED * S_BETWEEN_UPDATES;
 					break;
 				case "up":
-					player.y -= playerSpeed*S_BETWEEN_UPDATES;
+					player.y -= Player.SPEED * S_BETWEEN_UPDATES;
 					break;
 				default:
 					break;
@@ -139,7 +139,7 @@ public class Server {
 				while (true) {
 					centralSpace.get(new ActualField("joined"));
 					centralSpace.put(numPlayers);
-					players.add(new Player(400, 400, playerSize, playerSize, 0, true));
+					players.add(new Player(400, 400, 0, true));
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
