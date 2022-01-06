@@ -16,14 +16,14 @@ import org.jspace.SpaceRepository;
 public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
-	private static List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
-	private static Space centralSpace;
-	private static Space objectPositionsSpace;
-	private static Space playerMovementSpace;
-	private static int numPlayers = 0;
-	private static int playerSpeed = 200;
+	private List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
+	private Space centralSpace;
+	private Space objectPositionsSpace;
+	private Space playerMovementSpace;
+	private int numPlayers = 0;
+	private int playerSpeed = 200;
 
-	public static void main(String[] args) {
+	public Server() {
 		SpaceRepository repository = new SpaceRepository();
 		repository.addGate("tcp://localhost:9001/?keep");
 		centralSpace = new SequentialSpace();
@@ -39,7 +39,7 @@ public class Server {
 		new Thread(new Timer()).start();
 	}
 
-	public static void update() {
+	public void update() {
 		//Move players that want to move.
 		try {
 			List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
@@ -70,7 +70,7 @@ public class Server {
 		} catch (InterruptedException e) {}
 	}
 
-	private static class Timer implements Runnable {
+	private class Timer implements Runnable {
 		public void run() {
 			try {
 				while (true) {
@@ -83,7 +83,7 @@ public class Server {
 		}
 	}
 
-	private static class JoinedReader implements Runnable {
+	private class JoinedReader implements Runnable {
 		public void run() {
 			//Looks for players joining.
 			try {
