@@ -1,5 +1,3 @@
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +44,7 @@ public class Server {
 		repository.add("resource", resourceSpace);
 		try {
 			playerPositionsSpace.put(players);
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {e.printStackTrace();}
 		new Thread(new JoinedReader()).start();
 		new Thread(new Timer()).start();
 	}
@@ -59,7 +57,7 @@ public class Server {
 			updateBullets();
 			updateFortresses();
 			updateResources();
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
 	public void updatePlayers() throws InterruptedException {
@@ -97,7 +95,6 @@ public class Server {
 		List<Object[]> cannonCommands = cannonSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
 		Cannon newCannon;
 		for (Object[] command : cannonCommands) {
-			System.out.println(command);
 			int id = (int) command[0];
 			Player player = players.get(id);
 			newCannon = new Cannon(player.x, player.y, player.team);
@@ -143,7 +140,7 @@ public class Server {
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {e.printStackTrace();}
 		}
 	}
 }

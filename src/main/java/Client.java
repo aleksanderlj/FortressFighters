@@ -44,7 +44,7 @@ public class Client {
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
-		} catch (IOException | InterruptedException e) {}
+		} catch (IOException | InterruptedException e) {e.printStackTrace();}
 		new Thread(new Timer()).start();
 	}
 
@@ -56,7 +56,7 @@ public class Client {
 			updateBullets();
 			updateFortresses();
 			updateResources();
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {e.printStackTrace();}
 		panel.updatePanel();
 	}
 
@@ -118,9 +118,8 @@ public class Client {
 		}
 
 		public void paintCannons(){
-			for (int i = 0; i < cannons.length; i++) {
-				Cannon c = cannons[i];
-				g2D.drawRect((int)c.x, (int)c.y, (int)c.width, (int)c.height);
+			for (Cannon c : cannons) {
+				g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
 			}
 		}
 
@@ -164,7 +163,7 @@ public class Client {
 					default:
 						break;
 				}
-			} catch (InterruptedException e1) {}
+			} catch (InterruptedException e1) {e1.printStackTrace();}
 		}
 
 		@Override
@@ -184,7 +183,7 @@ public class Client {
 					default:
 						break;
 				}
-			} catch (InterruptedException e1) {}
+			} catch (InterruptedException e1) {e1.printStackTrace();}
 		}
 
 		private String getInput(int keyCode){
