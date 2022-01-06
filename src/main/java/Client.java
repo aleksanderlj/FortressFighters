@@ -20,14 +20,14 @@ import com.google.gson.internal.LinkedTreeMap;
 public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
-	private static TestFrame frame;
-	private static List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
-	private static Space centralSpace;
-	private static Space objectPositionsSpace;
-	private static Space playerMovementSpace;
-	private static int id;
+	private TestFrame frame;
+	private List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
+	private Space centralSpace;
+	private Space objectPositionsSpace;
+	private Space playerMovementSpace;
+	private int id;
 
-	public static void main(String[] args) {
+	public Client() {
 		try {
 			centralSpace = new RemoteSpace("tcp://localhost:9001/central?keep");
 			objectPositionsSpace = new RemoteSpace("tcp://localhost:9001/objectpositions?keep");
@@ -39,14 +39,14 @@ public class Client {
 		new Thread(new Timer()).start();
 	}
 
-	public static void update() {
+	public void update() {
 		try {
 			players = (List<Rectangle.Double>) objectPositionsSpace.query(new FormalField(List.class))[0];
 		} catch (InterruptedException e) {}
 		frame.updateFrame();
 	}
 
-	private static class TestFrame extends JFrame implements KeyListener {
+	private class TestFrame extends JFrame implements KeyListener {
 		public TestPanel panel;
 
 		public TestFrame() {
@@ -109,7 +109,7 @@ public class Client {
 		}
 	}
 
-	private static class TestPanel extends JPanel {
+	private class TestPanel extends JPanel {
 		public Graphics2D g2D;
 
 		public TestPanel() {
@@ -130,7 +130,7 @@ public class Client {
 		}
 	}
 
-	private static class Timer implements Runnable {
+	private class Timer implements Runnable {
 		public void run() {
 			try {
 				while (true) {
