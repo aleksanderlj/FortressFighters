@@ -31,11 +31,9 @@ public class Main {
 
     	if (type == 1) {
             server = new Server();
-            System.out.println(server.getAddress());
             client = new Client("localhost", frame);
     	}
     	else {
-            System.out.println("Connect to address:");
             client = new Client("localhost", frame);
     	}
     }

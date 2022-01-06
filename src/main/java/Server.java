@@ -14,7 +14,6 @@ import model.*;
 public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
-	private String address;
 	private List<Player> players = new ArrayList<Player>();
 	private Space centralSpace;
 	private Space playerPositionsSpace;
@@ -30,11 +29,6 @@ public class Server {
 	public Server() {
 		SpaceRepository repository = new SpaceRepository();
 		repository.addGate("tcp://localhost:9001/?keep");
-		try {
-			address = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
 		centralSpace = new SequentialSpace();
 		playerPositionsSpace = new SequentialSpace();
 		playerMovementSpace = new SequentialSpace();
@@ -140,9 +134,5 @@ public class Server {
 				}
 			} catch (InterruptedException e) {}
 		}
-	}
-
-	public String getAddress() {
-		return address;
 	}
 }
