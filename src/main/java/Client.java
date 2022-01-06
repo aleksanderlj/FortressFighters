@@ -67,23 +67,7 @@ public class Client {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
-			String direction = "";
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_A:
-					direction = "left";
-					break;
-				case KeyEvent.VK_D:
-					direction = "right";
-					break;
-				case KeyEvent.VK_S:
-					direction = "down";
-					break;
-				case KeyEvent.VK_W:
-					direction = "up";
-					break;
-				default:
-					break;
-			}
+			String direction = getInput(e.getKeyCode());
 			try {
 				if (!direction.equals("") && playerMovementSpace.queryp(new ActualField(id), new ActualField(direction)) == null) {
 					playerMovementSpace.put(id, direction);
@@ -93,8 +77,15 @@ public class Client {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
+			String direction = getInput(e.getKeyCode());
+			try {
+				playerMovementSpace.getp(new ActualField(id), new ActualField(direction));
+			} catch (InterruptedException e1) {}
+		}
+
+		private String getInput(int keyCode){
 			String direction = "";
-			switch (e.getKeyCode()) {
+			switch (keyCode) {
 				case KeyEvent.VK_A:
 					direction = "left";
 					break;
@@ -110,12 +101,8 @@ public class Client {
 				default:
 					break;
 			}
-			try {
-				playerMovementSpace.getp(new ActualField(id), new ActualField(direction));
-			} catch (InterruptedException e1) {}
+			return direction;
 		}
-
-
 	}
 
 	private static class TestPanel extends JPanel {
