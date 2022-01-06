@@ -86,15 +86,19 @@ public class Client {
 		private String getInput(int keyCode){
 			String direction = "";
 			switch (keyCode) {
+				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
 					direction = "left";
 					break;
+				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
 					direction = "right";
 					break;
+				case KeyEvent.VK_DOWN:
 				case KeyEvent.VK_S:
 					direction = "down";
 					break;
+				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
 					direction = "up";
 					break;
