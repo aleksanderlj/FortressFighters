@@ -27,11 +27,11 @@ public class Client {
 	private Space playerMovementSpace;
 	private int id;
 
-	public Client() {
+	public Client(String address) {
 		try {
-			centralSpace = new RemoteSpace("tcp://localhost:9001/central?keep");
-			objectPositionsSpace = new RemoteSpace("tcp://localhost:9001/objectpositions?keep");
-			playerMovementSpace = new RemoteSpace("tcp://localhost:9001/playermovement?keep");
+			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
+			objectPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/objectpositions?keep");
+			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
 		} catch (IOException | InterruptedException e) {}

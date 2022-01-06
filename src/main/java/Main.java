@@ -11,10 +11,12 @@ public class Main {
         switch (sc.nextInt()){
             case 1:
                 server = new Server();
-                client = new Client();
+                System.out.println(server.getAddress());
+                client = new Client("localhost");
                 break;
             case 2:
-                client = new Client();
+                System.out.println("Connect to address:");
+                client = new Client("localhost");
         }
     }
 }

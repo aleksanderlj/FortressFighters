@@ -2,6 +2,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,7 @@ import org.jspace.SpaceRepository;
 public class Server {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
+	private String address;
 	private List<Rectangle.Double> players = new ArrayList<Rectangle.Double>();
 	private Space centralSpace;
 	private Space objectPositionsSpace;
@@ -26,6 +29,11 @@ public class Server {
 	public Server() {
 		SpaceRepository repository = new SpaceRepository();
 		repository.addGate("tcp://localhost:9001/?keep");
+		try {
+			address = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 		centralSpace = new SequentialSpace();
 		objectPositionsSpace = new SequentialSpace();
 		playerMovementSpace = new SequentialSpace();
@@ -98,4 +106,7 @@ public class Server {
 		}
 	}
 
+	public String getAddress() {
+		return address;
+	}
 }
