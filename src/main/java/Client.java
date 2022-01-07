@@ -21,6 +21,7 @@ public class Client {
 	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
+	private Bullet[] bullets = new Bullet[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -110,7 +111,12 @@ public class Client {
 	}
 
 	public void updateBullets() throws InterruptedException {
-
+		List<Object[]> bulletTuples = bulletSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		bullets = new Bullet[bulletTuples.size()];
+		for (int i = 0; i < bulletTuples.size(); i++) {
+			Object[] tuple = bulletTuples.get(i);
+			bullets[i] = new Bullet((double)tuple[0], (double)tuple[1], (boolean)tuple[2]);
+		}
 	}
 
 	public void updateWalls() throws InterruptedException {
@@ -176,7 +182,16 @@ public class Client {
 		}
 
 		public void paintBullets(){
-
+			for (Bullet b : bullets) {
+				/*
+				if(b.getTeam()){
+					g2D.drawImage(cannonred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+				} else {
+					g2D.drawImage(cannonblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+				}
+				 */
+				g2D.drawRect((int) b.x, (int) b.y, (int) b.width, (int) b.height);
+			}
 		}
 
 		public void paintWalls(){

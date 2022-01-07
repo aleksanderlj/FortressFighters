@@ -21,6 +21,7 @@ public class Server {
 	private List<Space> clientServerChannels = new ArrayList<Space>();
 	private List<Player> players = new ArrayList<Player>();
 	private List<Cannon> cannons = new ArrayList<>();
+	private List<Bullet> bullets = new ArrayList<>();
 	private SpaceRepository repository;
 	private Space centralSpace;
 	private Space playerPositionsSpace;
@@ -150,9 +151,10 @@ public class Server {
 
 			// Only build cannon if it's not colliding with another cannon
 			if(cannons.stream().noneMatch(newCannon::intersects)){
-				// TODO Spend resources on canon
+				// TODO Spend resources on cannon
 				cannons.add(newCannon);
 				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
+				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
 			}
 		}
 
@@ -213,6 +215,34 @@ public class Server {
 					System.out.println("Player joined.");
 				}
 			} catch (InterruptedException e) {e.printStackTrace();}
+		}
+	}
+
+	public class CannonShooter implements Runnable {
+		Cannon cannon;
+
+		public CannonShooter(Cannon cannon){
+			this.cannon = cannon;
+		}
+
+		public void run() {
+			try {
+				while(true){ // TODO stop while loop when cannon is destroyed?
+					if(cannon.isActive()){
+						Thread.sleep(3000);
+						Bullet bullet;
+						if(cannon.getTeam()){
+							bullet = new Bullet(cannon.x + 10 + Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 6, cannon.getTeam());
+						} else {
+							bullet = new Bullet(cannon.x + Cannon.WIDTH + 21 - Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 7, cannon.getTeam());
+						}
+						bullets.add(bullet);
+						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
+					}
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
