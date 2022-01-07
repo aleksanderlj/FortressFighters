@@ -164,9 +164,10 @@ public class Server {
 		for (Object[] command : cannonCommands) {
 			int id = (int) command[0];
 			Player player = players.get(id);
-			newCannon = new Cannon(player.x, player.y, player.team);
+			newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
 
 			// Only build cannon if it's not colliding with another cannon
+			// TODO collision with: Wall, Fortress, Resource
 			if(cannons.stream().noneMatch(newCannon::intersects)){
 				// Spend resources from fortress when building a cannon
 				if (!newCannon.getTeam() && fortress1.getIron() >= Cannon.IRON_COST) {
@@ -180,7 +181,7 @@ public class Server {
 				}
 				
 				cannons.add(newCannon);
-				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
+				cannonSpace.put("cannon", newCannon.x, newCannon.y, newCannon.getTeam());
 				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
 			}
 		}
@@ -331,9 +332,9 @@ public class Server {
 						Thread.sleep(3000);
 						Bullet bullet;
 						if(cannon.getTeam()){
-							bullet = new Bullet(cannon.x + 10 + Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 6, cannon.getTeam());
+							bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
 						} else {
-							bullet = new Bullet(cannon.x + Cannon.WIDTH + 21 - Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 7, cannon.getTeam());
+							bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
 						}
 						mutexSpace.get(new ActualField("bulletsLock"));
 						bullets.add(bullet);
