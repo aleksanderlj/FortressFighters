@@ -11,7 +11,6 @@ public class Player extends Rectangle.Double {
 	public boolean disconnected = false;
 	public int wood = 10;
 	public int iron = 20;
-
 	public Player() {}
 	public Player(double x, double y, int id, boolean team) {
 		super(x, y, WIDTH, HEIGHT);
