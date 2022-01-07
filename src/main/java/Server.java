@@ -98,8 +98,12 @@ public class Server {
 			int id = (int) command[0];
 			Player player = players.get(id);
 			newCannon = new Cannon(player.x, player.y, player.team);
-			cannons.add(newCannon);
-			cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
+
+			// Only build cannon if it's not colliding with another cannon
+			if(cannons.stream().noneMatch(newCannon::intersects)){
+				cannons.add(newCannon);
+				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
+			}
 		}
 
 	}
