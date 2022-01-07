@@ -195,12 +195,13 @@ public class Server {
 			Player player = players.get(id);
 			newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
 
-			// Only build cannon if it's not colliding with another cannon
-			// TODO collision with: Wall, Fortress, Resource
-			if(cannons.stream().noneMatch(newCannon::intersects)){
-				// Can't place cannon on top of fortress
-				if (newCannon.intersects(fortress1) || newCannon.intersects(fortress2)) { return; }
-				
+			// Only build cannon if it's not colliding with another cannon, wall, fortress
+			if(
+					cannons.stream().noneMatch(newCannon::intersects) &&
+					walls.stream().noneMatch(newCannon::intersects) &&
+					!newCannon.intersects(fortress1) &&
+					!newCannon.intersects(fortress2)
+			){
 				// Spend resources from fortress when building a cannon
 				if (!newCannon.getTeam() && fortress1.getIron() >= Cannon.IRON_COST) {
 					fortress1.setIron(fortress1.getIron() - Cannon.IRON_COST);
@@ -243,9 +244,13 @@ public class Server {
 			double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
 			newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
 
-			// Only build wall if it's not colliding with another wall
-			// TODO collision with: Cannon, Fortress, Resource
-			if(walls.stream().noneMatch(newWall::intersects)){
+			// Only build wall if it's not colliding with another cannon, wall, fortress
+			if(
+					cannons.stream().noneMatch(newWall::intersects) &&
+					walls.stream().noneMatch(newWall::intersects) &&
+					!newWall.intersects(fortress1) &&
+					!newWall.intersects(fortress2)
+			){
 				// Spend resources from fortress when building a wall
 				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
 					fortress1.setWood(fortress1.getWood() - Wall.WOOD_COST);
