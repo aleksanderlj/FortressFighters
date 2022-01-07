@@ -231,8 +231,8 @@ public class Server {
 				p.iron = 0;
 				changed = true;
 			} else if (!p.team && p.intersects(fortress1)) {
-				fortress1.setWood(fortress2.getWood() + p.wood);
-				fortress1.setIron(fortress2.getIron() + p.iron);
+				fortress1.setWood(fortress1.getWood() + p.wood);
+				fortress1.setIron(fortress1.getIron() + p.iron);
 				p.wood = 0;
 				p.iron = 0;
 				changed = true;
