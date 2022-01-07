@@ -85,6 +85,7 @@ public class Server {
 			players.get(i).disconnected = disconnected[i];
 		}
 		Collections.shuffle(players);
+		cannons.forEach(c -> c.setAlive(false));
 		cannons = new ArrayList<Cannon>();
 		walls = new ArrayList<Wall>();
 		try {
@@ -92,6 +93,10 @@ public class Server {
 			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
 			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+			mutexSpace.get(new ActualField("bulletsLock"));
+			bullets = new ArrayList<Bullet>();
+			mutexSpace.put("bulletsLock");
+			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -304,22 +309,23 @@ public class Server {
 		for (Bullet b : bullets) {
 			if (b.getTeam() && b.intersects(fortress1)) {
 				fortress1.setHP(fortress1.getHP() - 5);
-				if (fortress1.getHP() <= 0) {
-					gameOver(false);
-				}
 				changed = true;
 			} else if (!b.getTeam() && b.intersects(fortress2)) {
 				fortress2.setHP(fortress2.getHP() - 5);
-				if (fortress2.getHP() <= 0) {
-					gameOver(true);
-				}
 				changed = true;
 			}
 		}
 		// Remove bullets that hit fortress
 		bullets.removeIf(b -> (b.intersects(fortress1) && b.getTeam()) || (b.intersects(fortress2) && !b.getTeam()));
 		mutexSpace.put("bulletsLock");
-		
+
+		// Look for a winner
+		if (fortress1.getHP() <= 0) {
+			gameOver(false);
+		} else if (fortress2.getHP() <= 0) {
+			gameOver(true);
+		}
+
 		if (changed) { changeFortress(); }
 	}
 	
@@ -457,6 +463,7 @@ public class Server {
 	}
 
 	public class CannonShooter implements Runnable {
+		public static final int COOLDOWN = 3000;
 		Cannon cannon;
 
 		public CannonShooter(Cannon cannon){
@@ -465,9 +472,9 @@ public class Server {
 
 		public void run() {
 			try {
-				while(true){ // TODO stop while loop when cannon is destroyed?
+				Thread.sleep(COOLDOWN);
+				while(!gameOver && cannon.isAlive()){
 					if(cannon.isActive()){
-						Thread.sleep(3000);
 						Bullet bullet;
 						if(cannon.getTeam()){
 							bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
@@ -478,6 +485,7 @@ public class Server {
 						bullets.add(bullet);
 						mutexSpace.put("bulletsLock");
 						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
+						Thread.sleep(COOLDOWN);
 					}
 				}
 			} catch (InterruptedException e) {
