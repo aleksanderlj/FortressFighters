@@ -172,12 +172,14 @@ public class Server {
 					break;
 			}
 		}
+		playerPositionsSpace.getp(new ActualField("players"));
 		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
 				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron);
 			}
 		}
+		playerPositionsSpace.put("players");
 	}
 
 	public void updateCannons() throws InterruptedException {
