@@ -24,6 +24,7 @@ public class Client {
 	private Cannon[] cannons = new Cannon[0];
 	private Bullet[] bullets = new Bullet[0];
 	private Fortress[] fortresses = new Fortress[0];
+    private Resource[] resources = new Resource[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -138,7 +139,12 @@ public class Client {
 	}
 
 	public void updateResources() throws InterruptedException {
-
+        List<Object[]> tuples = resourceSpace.queryAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
+        resources = new Resource[tuples.size()];
+        for (int i = 0; i < tuples.size(); i++) {
+            Object[] tuple = tuples.get(i);
+            resources[i] = new Resource((int) tuple[0], (int) tuple[1], (int) tuple[2]);
+        }
 	}
 
 	private class GamePanel extends JPanel implements KeyListener {
@@ -225,7 +231,16 @@ public class Client {
 		}
 
 		public void paintResources(){
-
+            for (Resource r : resources) {
+                if (r.getType() == 0) {
+                    g2D.setColor(Color.ORANGE);
+                }
+                else {
+                    g2D.setColor(Color.GRAY);
+                }
+                g2D.drawRect((int) r.x, (int) r.y, (int) r.width, (int) r.height);
+                g2D.setColor(Color.BLACK);
+            }
 		}
 
 		public void updatePanel() {
