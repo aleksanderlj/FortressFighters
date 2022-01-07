@@ -33,6 +33,7 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private BufferedImage manblue, manred, cannonblue, cannonred;
+	private boolean gameStarted = false;
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
@@ -49,28 +50,40 @@ public class Client {
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
-
 			// Load image resources
 			manblue = ImageIO.read(getClass().getResource("manblue.png"));
 			manred = ImageIO.read(getClass().getResource("manred.png"));
 			cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
 			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
+			checkGameStarted();
+			new Thread(new Timer()).start();
 		} catch (IOException | InterruptedException e) {e.printStackTrace();}
-
-		new Thread(new Timer()).start();
 	}
 
 	public void update() {
 		try {
-			// Get the updated status of each object from the server
-			updatePlayers();
-			updateCannons();
-			updateBullets();
-			updateWalls();
-			updateFortresses();
-			updateResources();
+			if (gameStarted) {
+				// Get the updated status of each object from the server
+				updatePlayers();
+				updateCannons();
+				updateBullets();
+				updateWalls();
+				updateFortresses();
+				updateResources();
+			}
+			else {
+				checkGameStarted();
+			}
 		} catch (InterruptedException e) {e.printStackTrace();}
 		panel.updatePanel();
+	}
+	
+	private void checkGameStarted() {
+		try {
+			if (centralSpace.queryp(new ActualField("started")) != null) {
+				gameStarted = true;
+			}
+		} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
 	public void updatePlayers() throws InterruptedException {
@@ -119,13 +132,19 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
-			// Render each object on the screen
-			paintPlayers();
-			paintCannons();
-			paintBullets();
-			paintWalls();
-			paintFortresses();
-			paintResources();
+			if (gameStarted) {
+				// Render each object on the screen
+				paintPlayers();
+				paintCannons();
+				paintBullets();
+				paintWalls();
+				paintFortresses();
+				paintResources();
+			}
+			else {
+				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
+				g2D.drawString("Waiting for one more player to join...", 500, 300);
+			}
 		}
 
 		public void paintPlayers(){

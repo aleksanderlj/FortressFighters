@@ -25,6 +25,7 @@ public class Server {
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int numPlayers = 0;
+	private boolean gameStarted = false;
 
 	public Server() {
 		SpaceRepository repository = new SpaceRepository();
@@ -53,13 +54,21 @@ public class Server {
 
 	public void update() {
 		try {
-			// Handle game logic for each object
-			updatePlayers();
-			updateCannons();
-			updateBullets();
-			updateWalls();
-			updateFortresses();
-			updateResources();
+			if (gameStarted) {
+				// Handle game logic for each object
+				updatePlayers();
+				updateCannons();
+				updateBullets();
+				updateWalls();
+				updateFortresses();
+				updateResources();	
+			}
+			else {
+				if (numPlayers >= 2) {
+					centralSpace.put("started");
+					gameStarted = true;
+				}
+			}
 		} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
