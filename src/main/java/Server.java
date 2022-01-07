@@ -99,7 +99,7 @@ public class Server {
 			Player player = players.get(id);
 			newCannon = new Cannon(player.x, player.y, player.team);
 			cannons.add(newCannon);
-			cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 4, newCannon.getTeam());
+			cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
 		}
 
 	}
