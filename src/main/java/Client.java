@@ -26,6 +26,7 @@ public class Client {
 	private Space playerMovementSpace;
 	private Space cannonSpace;
 	private Space bulletSpace;
+	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int id;
@@ -43,6 +44,7 @@ public class Client {
 			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
 			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
 			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
+			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
@@ -64,6 +66,7 @@ public class Client {
 			updatePlayers();
 			updateCannons();
 			updateBullets();
+			updateWalls();
 			updateFortresses();
 			updateResources();
 		} catch (InterruptedException e) {e.printStackTrace();}
@@ -92,6 +95,10 @@ public class Client {
 
 	}
 
+	public void updateWalls() throws InterruptedException {
+
+	}
+
 	public void updateFortresses() throws InterruptedException {
 
 	}
@@ -116,6 +123,7 @@ public class Client {
 			paintPlayers();
 			paintCannons();
 			paintBullets();
+			paintWalls();
 			paintFortresses();
 			paintResources();
 		}
@@ -144,6 +152,10 @@ public class Client {
 		}
 
 		public void paintBullets(){
+
+		}
+
+		public void paintWalls(){
 
 		}
 

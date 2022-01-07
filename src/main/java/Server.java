@@ -21,6 +21,7 @@ public class Server {
 	private Space playerMovementSpace;
 	private Space cannonSpace;
 	private Space bulletSpace;
+	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int numPlayers = 0;
@@ -40,6 +41,7 @@ public class Server {
 		repository.add("playermovement", playerMovementSpace);
 		repository.add("cannon", cannonSpace);
 		repository.add("bullet", bulletSpace);
+		repository.add("wall", wallSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
 		try {
@@ -55,6 +57,7 @@ public class Server {
 			updatePlayers();
 			updateCannons();
 			updateBullets();
+			updateWalls();
 			updateFortresses();
 			updateResources();
 		} catch (InterruptedException e) {e.printStackTrace();}
@@ -110,6 +113,10 @@ public class Server {
 	}
 
 	public void updateBullets() throws InterruptedException{
+
+	}
+
+	public void updateWalls() throws InterruptedException{
 
 	}
 
