@@ -23,6 +23,7 @@ public class Server {
 	private List<Player> players = new ArrayList<>();
 	private List<Cannon> cannons = new ArrayList<>();
     private List<Resource> resources = new ArrayList<>();
+	private List<Wall> walls = new ArrayList<>();
 	private Fortress fortress1;
 	private Fortress fortress2;
 	private List<Bullet> bullets = new ArrayList<>();
@@ -50,6 +51,7 @@ public class Server {
 		playerMovementSpace = new SequentialSpace();
 		cannonSpace = new SequentialSpace();
 		bulletSpace = new SequentialSpace();
+		wallSpace = new SequentialSpace();
 		fortressSpace = new SequentialSpace();
 		resourceSpace = new SequentialSpace();
 		mutexSpace = new SequentialSpace();
@@ -171,9 +173,10 @@ public class Server {
 		for (Object[] command : cannonCommands) {
 			int id = (int) command[0];
 			Player player = players.get(id);
-			newCannon = new Cannon(player.x, player.y, player.team);
+			newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
 
 			// Only build cannon if it's not colliding with another cannon
+			// TODO collision with: Wall, Fortress, Resource
 			if(cannons.stream().noneMatch(newCannon::intersects)){
 				// Can't place cannon on top of fortress
 				if (newCannon.intersects(fortress1) || newCannon.intersects(fortress2)) { return; }
@@ -190,7 +193,7 @@ public class Server {
 				}
 				
 				cannons.add(newCannon);
-				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
+				cannonSpace.put("cannon", newCannon.x, newCannon.y, newCannon.getTeam());
 				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
 			}
 		}
@@ -212,7 +215,49 @@ public class Server {
 	}
 
 	public void updateWalls() throws InterruptedException{
+		List<Object[]> wallCommands = wallSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
+		Wall newWall;
+		for (Object[] command : wallCommands) {
+			int id = (int) command[0];
+			Player player = players.get(id);
+			double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
+			newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
 
+			// Only build wall if it's not colliding with another wall
+			// TODO collision with: Cannon, Fortress, Resource
+			if(walls.stream().noneMatch(newWall::intersects)){
+				// Spend resources from fortress when building a wall
+				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
+					fortress1.setWood(fortress1.getWood() - Wall.WOOD_COST);
+					changeFortress();
+				} else if (newWall.getTeam() && fortress2.getWood() >= Wall.WOOD_COST) {
+					fortress2.setWood(fortress2.getWood() - Wall.WOOD_COST);
+					changeFortress();
+				} else {
+					return;
+				}
+				walls.add(newWall);
+				wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
+			}
+		}
+
+		// Reduce HP of wall if bullet or cannon collides with it
+		mutexSpace.get(new ActualField("bulletsLock"));
+		for (Bullet b : bullets) {
+			for (Wall w : walls) {
+				if(b.intersects(w) && b.getTeam() != w.getTeam()){
+					wallSpace.getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+					w.setHealth(w.getHealth() - 1);
+					if(w.getHealth() > 0) {
+						wallSpace.put("wall", w.getId(), w.x, w.y, w.getTeam());
+					}
+				}
+			}
+		}
+		// Remove bullets that hit wall
+		bullets.removeIf(b -> walls.stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
+		walls.removeIf(w -> w.getHealth() <= 0);
+		mutexSpace.put("bulletsLock");
 	}
 
 	public void updateFortresses() throws InterruptedException{
@@ -388,9 +433,9 @@ public class Server {
 						Thread.sleep(3000);
 						Bullet bullet;
 						if(cannon.getTeam()){
-							bullet = new Bullet(cannon.x + 10 + Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 6, cannon.getTeam());
+							bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
 						} else {
-							bullet = new Bullet(cannon.x + Cannon.WIDTH + 21 - Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 7, cannon.getTeam());
+							bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
 						}
 						mutexSpace.get(new ActualField("bulletsLock"));
 						bullets.add(bullet);

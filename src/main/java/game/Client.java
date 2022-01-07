@@ -22,6 +22,7 @@ public class Client {
 	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
+	private Wall[] walls = new Wall[0];
 	private Bullet[] bullets = new Bullet[0];
 	private Fortress[] fortresses = new Fortress[0];
     private Resource[] resources = new Resource[0];
@@ -38,6 +39,7 @@ public class Client {
 	private int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
+	private boolean createWallKeyDown = false;
 	private BufferedImage manblue, manred, cannonblue, cannonred;
 	private boolean gameStarted = false;
 
@@ -126,7 +128,12 @@ public class Client {
 	}
 
 	public void updateWalls() throws InterruptedException {
-
+		List<Object[]> wallTuples = wallSpace.queryAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		walls = new Wall[wallTuples.size()];
+		for (int i = 0; i < wallTuples.size(); i++) {
+			Object[] tuple = wallTuples.get(i);
+			walls[i] = new Wall((int) tuple[1], (double)tuple[2], (double)tuple[3], (boolean)tuple[4]);
+		}
 	}
 
 	public void updateFortresses() throws InterruptedException {
@@ -213,7 +220,16 @@ public class Client {
 		}
 
 		public void paintWalls(){
-
+			for (Wall w : walls) {
+				/*
+				if(w.getTeam()){
+					g2D.drawImage(wallred, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+				} else {
+					g2D.drawImage(wallblue, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+				}
+				 */
+				g2D.drawRect((int) w.x, (int) w.y, (int) w.width, (int) w.height);
+			}
 		}
 
 		public void paintFortresses(){
@@ -268,6 +284,12 @@ public class Client {
 						}
 						createCannonKeyDown = true;
 						break;
+					case "createwall":
+						if(!createWallKeyDown && wallSpace.queryp(new ActualField(id), new ActualField(input)) == null){
+							wallSpace.put(id, input);
+						}
+						createWallKeyDown = true;
+						break;
 					default:
 						break;
 				}
@@ -287,6 +309,9 @@ public class Client {
 						break;
 					case "createcannon":
 						createCannonKeyDown = false;
+						break;
+					case "createwall":
+						createWallKeyDown = false;
 						break;
 					default:
 						break;
@@ -315,6 +340,9 @@ public class Client {
 					break;
 				case KeyEvent.VK_Q:
 					input = "createcannon";
+					break;
+				case KeyEvent.VK_E:
+					input = "createwall";
 					break;
 				default:
 					break;
