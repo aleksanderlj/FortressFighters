@@ -179,6 +179,7 @@ public class Server {
 	public void updateBullets() throws InterruptedException{
 		bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 		mutexSpace.get(new ActualField("bulletsLock"));
+		bullets.removeIf(b -> b.x < 0 || b.x > SCREEN_WIDTH); // Remove bullets that are out of bounds
 		for (Bullet b : bullets) {
 			if(b.getTeam()){
 				b.x -= Bullet.SPEED * S_BETWEEN_UPDATES;
@@ -222,19 +223,20 @@ public class Server {
 			changeFortress();
 		}
 		
-//		// TODO: Reduce HP of fortress if it collides with bullet or cannon
-//		for (Bullet b : bullets) {
-//			if (b.getTeam() && b.intersects(fortress1)) {
-//				fortress1.setHP(fortress1.getHP() - 5);
-//				// TODO: Remove bullet that hit fortress
-//				changed = true;
-//			} else if (b.getTeam() && b.intersects(fortress2)) {
-//				fortress2.setHP(fortress2.getHP() - 5);
-//				// TODO: Remove bullet that hit fortress
-//				changed = true;
-//			}
-//		}
-		
+		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+		mutexSpace.get(new ActualField("bulletsLock"));
+		for (Bullet b : bullets) {
+			if (b.getTeam() && b.intersects(fortress1)) {
+				fortress1.setHP(fortress1.getHP() - 5);
+				changed = true;
+			} else if (!b.getTeam() && b.intersects(fortress2)) {
+				fortress2.setHP(fortress2.getHP() - 5);
+				changed = true;
+			}
+		}
+		// Remove bullets that hit fortress
+		bullets.removeIf(b -> (b.intersects(fortress1) && b.getTeam()) || (b.intersects(fortress2) && !b.getTeam()));
+		mutexSpace.put("bulletsLock");
 		// TODO: Remove cannon/bullet with collision
 	}
 	
