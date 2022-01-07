@@ -199,7 +199,7 @@ public class Server {
 		
 		boolean changed = false;
 		
-		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+		// Increase resources if player collides with fortress when holding resources
 		for (Player p : players) {
 			if (p.wood == 0 && p.iron == 0) { continue; }
 			
@@ -218,12 +218,22 @@ public class Server {
 			}
 		}
 		
+		// Reduce HP of fortress if it collides with bullet or cannon
+		for (Bullet b : bullets) {
+			if (b.getTeam() && b.intersects(fortress1)) {
+				fortress1.setHP(fortress1.getHP() - 5);
+				changed = true;
+			} else if (!b.getTeam() && b.intersects(fortress2)) {
+				fortress2.setHP(fortress2.getHP() - 5);
+				changed = true;
+			}
+		}
+		
 		if (changed) {
 			changeFortress();
 		}
 		
 		// TODO: Remove cannon/bullet with collision
-		// TODO: Increase resources if player collides with fortress when holding resources
 	}
 	
 	public void changeFortress() {
