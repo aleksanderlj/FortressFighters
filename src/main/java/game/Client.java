@@ -59,10 +59,10 @@ public class Client {
 			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
 			channelToServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[2])+"?keep");
 			// Load image resources
-			//manblue = ImageIO.read(getClass().getResource("manblue.png"));
-			//manred = ImageIO.read(getClass().getResource("manred.png"));
-			//cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
-			//cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
+			manblue = ImageIO.read(getClass().getClassLoader().getResource("manblue.png"));
+			manred = ImageIO.read(getClass().getClassLoader().getResource("manred.png"));
+			cannonblue = ImageIO.read(getClass().getClassLoader().getResource("cannonblue.png"));
+			cannonred = ImageIO.read(getClass().getClassLoader().getResource("cannonred.png"));
 			checkGameStarted();
 			new Thread(new Timer()).start();
 			new Thread(new ServerCheckReader()).start();
@@ -170,22 +170,22 @@ public class Client {
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
 				if(p.team){
-//					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				} else {
-//					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				}
-				g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
+				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
 			}
 		}
 
 		public void paintCannons(){
 			for (Cannon c : cannons) {
 				if(c.getTeam()){
-//					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				} else {
-//					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				}
-				g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
+				//g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
 			}
 		}
 
@@ -193,9 +193,9 @@ public class Client {
 			for (Bullet b : bullets) {
 				/*
 				if(b.getTeam()){
-					g2D.drawImage(cannonred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+					g2D.drawImage(bulletred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
 				} else {
-					g2D.drawImage(cannonblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+					g2D.drawImage(bulletblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
 				}
 				 */
 				g2D.drawRect((int) b.x, (int) b.y, (int) b.width, (int) b.height);
