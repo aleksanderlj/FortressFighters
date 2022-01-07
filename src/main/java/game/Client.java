@@ -214,6 +214,9 @@ public class Client {
 					// draw blue fortress image
 				}
 				g2D.drawRect((int) f.x, (int) f.y, (int) f.width, (int) f.height);
+				g2D.drawString("HP: " + f.getHP(), (int) f.x + 120, (int) f.y + 100);
+				g2D.drawString("Wood: " + f.getWood(), (int) f.x + 120, (int) f.y + 200);
+				g2D.drawString("Iron: " + f.getIron(), (int) f.x + 120, (int) f.y + 220);
 			}
 		}
 
