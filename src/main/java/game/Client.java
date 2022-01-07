@@ -161,12 +161,12 @@ public class Client {
 			g2D = (Graphics2D) g;
 			if (gameStarted) {
 				// Render each object on the screen
-				paintPlayers();
-				paintCannons();
-				paintBullets();
-				paintWalls();
 				paintFortresses();
 				paintResources();
+				paintCannons();
+				paintWalls();
+				paintPlayers();
+				paintBullets();
 			}
 			else {
 				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
