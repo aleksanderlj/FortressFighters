@@ -74,6 +74,7 @@ public class Server {
 		}
 		Collections.shuffle(players);
 		cannons = new ArrayList<Cannon>();
+		changeFortress();
 	}
 	
 	private void addPlayer(int id) {
@@ -178,21 +179,52 @@ public class Server {
 	}
 
 	public void updateFortresses() throws InterruptedException{
-		fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		if (fortress1 == null) { return; }
 		
-		// Update fortresses if they exist, otherwise build two new ones
-		if (fortress1 != null) {
+		boolean changed = false;
+		
+		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+		for (Player p : players) {
+			if (p.wood == 0 && p.iron == 0) { continue; }
 			
-			// TODO: Reduce HP of fortress if it collides with bullet or cannon
-			// TODO: Remove cannon/bullet with collision
-			// TODO: Increase resources if player collides with fortress when holding resources
-
-			fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
-			fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
-		} else {
-			fortressSpace.put(0, 0, 100, false);
-			fortressSpace.put(0, 0, 100, true);
+			if (p.team && p.intersects(fortress2)) {
+				fortress2.setWood(p.wood);
+				fortress2.setIron(p.iron);
+				p.wood = 0;
+				p.iron = 0;
+				changed = true;
+			} else if (!p.team && p.intersects(fortress1)) {
+				fortress1.setWood(p.wood);
+				fortress1.setIron(p.iron);
+				p.wood = 0;
+				p.iron = 0;
+				changed = true;
+			}
 		}
+		
+		if (changed) {
+			changeFortress();
+		}
+		
+		// TODO: Remove cannon/bullet with collision
+		// TODO: Increase resources if player collides with fortress when holding resources
+	}
+	
+	public void changeFortress() {
+		try {
+			fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+			
+			// Update fortresses if they exist, otherwise build two new ones
+			if (fortress1 != null) {
+				fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
+				fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
+			} else {
+				fortress1 = new Fortress(false);
+				fortress2 = new Fortress(true);
+				fortressSpace.put(0, 0, 100, false);
+				fortressSpace.put(0, 0, 100, true);
+			}
+		} catch (InterruptedException e) {}
 	}
 
 	public void updateResources() throws InterruptedException{
