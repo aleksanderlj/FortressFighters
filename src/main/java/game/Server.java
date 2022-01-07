@@ -22,6 +22,7 @@ public class Server {
 	private List<Space> clientServerChannels = new ArrayList<Space>();
 	private List<Player> players = new ArrayList<Player>();
 	private List<Cannon> cannons = new ArrayList<>();
+	private List<Wall> walls = new ArrayList<>();
 	private Fortress fortress1;
 	private Fortress fortress2;
 	private List<Bullet> bullets = new ArrayList<>();
@@ -48,6 +49,7 @@ public class Server {
 		playerMovementSpace = new SequentialSpace();
 		cannonSpace = new SequentialSpace();
 		bulletSpace = new SequentialSpace();
+		wallSpace = new SequentialSpace();
 		fortressSpace = new SequentialSpace();
 		resourceSpace = new SequentialSpace();
 		mutexSpace = new SequentialSpace();
@@ -203,7 +205,31 @@ public class Server {
 	}
 
 	public void updateWalls() throws InterruptedException{
+		List<Object[]> wallCommands = wallSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
+		Wall newWall;
+		for (Object[] command : wallCommands) {
+			int id = (int) command[0];
+			Player player = players.get(id);
+			double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
+			newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
 
+			// Only build wall if it's not colliding with another wall
+			// TODO collision with: Cannon, Fortress, Resource
+			if(walls.stream().noneMatch(newWall::intersects)){
+				// Spend resources from fortress when building a wall
+				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
+					fortress1.setWood(fortress1.getWood() - Wall.WOOD_COST);
+					changeFortress();
+				} else if (newWall.getTeam() && fortress2.getWood() >= Wall.WOOD_COST) {
+					fortress2.setWood(fortress2.getWood() - Wall.WOOD_COST);
+					changeFortress();
+				} else {
+					return;
+				}
+				walls.add(newWall);
+				wallSpace.put("wall", newWall.x, newWall.y, newWall.getTeam());
+			}
+		}
 	}
 
 	public void updateFortresses() throws InterruptedException{
