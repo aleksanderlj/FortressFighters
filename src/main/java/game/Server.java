@@ -227,9 +227,27 @@ public class Server {
 					return;
 				}
 				walls.add(newWall);
-				wallSpace.put("wall", newWall.x, newWall.y, newWall.getTeam());
+				wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
 			}
 		}
+
+		// Reduce HP of wall if bullet or cannon collides with it
+		mutexSpace.get(new ActualField("bulletsLock"));
+		for (Bullet b : bullets) {
+			for (Wall w : walls) {
+				if(b.intersects(w) && b.getTeam() != w.getTeam()){
+					wallSpace.getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+					w.setHealth(w.getHealth() - 1);
+					if(w.getHealth() > 0) {
+						wallSpace.put("wall", w.getId(), w.x, w.y, w.getTeam());
+					}
+				}
+			}
+		}
+		// Remove bullets that hit wall
+		bullets.removeIf(b -> walls.stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
+		walls.removeIf(w -> w.getHealth() <= 0);
+		mutexSpace.put("bulletsLock");
 	}
 
 	public void updateFortresses() throws InterruptedException{

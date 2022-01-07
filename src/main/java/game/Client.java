@@ -127,11 +127,11 @@ public class Client {
 	}
 
 	public void updateWalls() throws InterruptedException {
-		List<Object[]> wallTuples = wallSpace.queryAll(new ActualField("wall"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		List<Object[]> wallTuples = wallSpace.queryAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 		walls = new Wall[wallTuples.size()];
 		for (int i = 0; i < wallTuples.size(); i++) {
 			Object[] tuple = wallTuples.get(i);
-			walls[i] = new Wall((double)tuple[1], (double)tuple[2], (boolean)tuple[3]);
+			walls[i] = new Wall((int) tuple[1], (double)tuple[2], (double)tuple[3], (boolean)tuple[4]);
 		}
 	}
 
