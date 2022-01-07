@@ -22,6 +22,7 @@ public class Client {
 	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
+	private Bullet[] bullets = new Bullet[0];
 	private Fortress[] fortresses = new Fortress[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
@@ -31,10 +32,13 @@ public class Client {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
+	private Space channelFromServer;
+	private Space channelToServer;
 	private int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private BufferedImage manblue, manred, cannonblue, cannonred;
+	private boolean gameStarted = false;
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
@@ -50,29 +54,45 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
-			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
-
+			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
+			id = (Integer) tuple[0];
+			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
+			channelToServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[2])+"?keep");
 			// Load image resources
-//			manblue = ImageIO.read(getClass().getResource("manblue.png"));
-//			manred = ImageIO.read(getClass().getResource("manred.png"));
-//			cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
-//			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
+			//manblue = ImageIO.read(getClass().getResource("manblue.png"));
+			//manred = ImageIO.read(getClass().getResource("manred.png"));
+			//cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
+			//cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
+			checkGameStarted();
+			new Thread(new Timer()).start();
+			new Thread(new ServerCheckReader()).start();
 		} catch (IOException | InterruptedException e) {e.printStackTrace();}
-
-		new Thread(new Timer()).start();
 	}
 
 	public void update() {
 		try {
-			// Get the updated status of each object from the server
-			updatePlayers();
-			updateCannons();
-			updateBullets();
-			updateWalls();
-			updateFortresses();
-			updateResources();
+			if (gameStarted) {
+				// Get the updated status of each object from the server
+				updatePlayers();
+				updateCannons();
+				updateBullets();
+				updateWalls();
+				updateFortresses();
+				updateResources();
+			}
+			else {
+				checkGameStarted();
+			}
 		} catch (InterruptedException e) {e.printStackTrace();}
 		panel.updatePanel();
+	}
+	
+	private void checkGameStarted() {
+		try {
+			if (centralSpace.queryp(new ActualField("started")) != null) {
+				gameStarted = true;
+			}
+		} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
 	public void updatePlayers() throws InterruptedException {
@@ -94,7 +114,12 @@ public class Client {
 	}
 
 	public void updateBullets() throws InterruptedException {
-
+		List<Object[]> bulletTuples = bulletSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		bullets = new Bullet[bulletTuples.size()];
+		for (int i = 0; i < bulletTuples.size(); i++) {
+			Object[] tuple = bulletTuples.get(i);
+			bullets[i] = new Bullet((double)tuple[0], (double)tuple[1], (boolean)tuple[2]);
+		}
 	}
 
 	public void updateWalls() throws InterruptedException {
@@ -126,13 +151,19 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
-			// Render each object on the screen
-			paintPlayers();
-			paintCannons();
-			paintBullets();
-			paintWalls();
-			paintFortresses();
-			paintResources();
+			if (gameStarted) {
+				// Render each object on the screen
+				paintPlayers();
+				paintCannons();
+				paintBullets();
+				paintWalls();
+				paintFortresses();
+				paintResources();
+			}
+			else {
+				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
+				g2D.drawString("Waiting for one more player to join...", 500, 300);
+			}
 		}
 
 		public void paintPlayers(){
@@ -159,7 +190,16 @@ public class Client {
 		}
 
 		public void paintBullets(){
-
+			for (Bullet b : bullets) {
+				/*
+				if(b.getTeam()){
+					g2D.drawImage(cannonred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+				} else {
+					g2D.drawImage(cannonblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+				}
+				 */
+				g2D.drawRect((int) b.x, (int) b.y, (int) b.width, (int) b.height);
+			}
 		}
 
 		public void paintWalls(){
@@ -267,6 +307,19 @@ public class Client {
 				while (true) {
 					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
 					update();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class ServerCheckReader implements Runnable {
+		public void run() {
+			try {
+				while (true) {
+					channelFromServer.get(new ActualField("check"));
+					channelToServer.put("acknowledged");	
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
