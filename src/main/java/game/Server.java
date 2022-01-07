@@ -222,7 +222,19 @@ public class Server {
 			changeFortress();
 		}
 		
-		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+//		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+//		for (Bullet b : bullets) {
+//			if (b.getTeam() && b.intersects(fortress1)) {
+//				fortress1.setHP(fortress1.getHP() - 5);
+//				// TODO: Remove bullet that hit fortress
+//				changed = true;
+//			} else if (b.getTeam() && b.intersects(fortress2)) {
+//				fortress2.setHP(fortress2.getHP() - 5);
+//				// TODO: Remove bullet that hit fortress
+//				changed = true;
+//			}
+//		}
+		
 		// TODO: Remove cannon/bullet with collision
 	}
 	
