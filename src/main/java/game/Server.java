@@ -1,3 +1,4 @@
+package game;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,8 @@ public class Server {
 	public static final int SCREEN_HEIGHT = 720;
 	private List<Player> players = new ArrayList<Player>();
 	private List<Cannon> cannons = new ArrayList<>();
+	private Fortress fortress1;
+	private Fortress fortress2;
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -121,7 +124,21 @@ public class Server {
 	}
 
 	public void updateFortresses() throws InterruptedException{
+		fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		
+		// Update fortresses if they exist, otherwise build two new ones
+		if (fortress1 != null) {
+			
+			// TODO: Reduce HP of fortress if it collides with bullet or cannon
+			// TODO: Remove cannon/bullet with collision
+			// TODO: Increase resources if player collides with fortress when holding resources
 
+			fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
+			fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
+		} else {
+			fortressSpace.put(0, 0, 100, false);
+			fortressSpace.put(0, 0, 100, true);
+		}
 	}
 
 	public void updateResources() throws InterruptedException{

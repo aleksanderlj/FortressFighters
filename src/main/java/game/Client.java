@@ -1,3 +1,4 @@
+package game;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -21,6 +22,7 @@ public class Client {
 	private GameFrame frame;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
+	private Fortress[] fortresses = new Fortress[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -51,10 +53,10 @@ public class Client {
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
 
 			// Load image resources
-			manblue = ImageIO.read(getClass().getResource("manblue.png"));
-			manred = ImageIO.read(getClass().getResource("manred.png"));
-			cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
-			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
+//			manblue = ImageIO.read(getClass().getResource("manblue.png"));
+//			manred = ImageIO.read(getClass().getResource("manred.png"));
+//			cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
+//			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
 		} catch (IOException | InterruptedException e) {e.printStackTrace();}
 
 		new Thread(new Timer()).start();
@@ -100,7 +102,12 @@ public class Client {
 	}
 
 	public void updateFortresses() throws InterruptedException {
-
+		List<Object[]> fortressTuples = fortressSpace.queryAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		fortresses = new Fortress[fortressTuples.size()];
+		for (int i = 0; i < fortressTuples.size(); i++) {
+			Object[] tuple = fortressTuples.get(i);
+			fortresses[i] = new Fortress((int) tuple[0], (int) tuple[1], (int) tuple[2], (boolean) tuple[3]);
+		}
 	}
 
 	public void updateResources() throws InterruptedException {
@@ -132,22 +139,22 @@ public class Client {
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
 				if(p.team){
-					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+//					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				} else {
-					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+//					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				}
-				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
+				g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
 			}
 		}
 
 		public void paintCannons(){
 			for (Cannon c : cannons) {
 				if(c.getTeam()){
-					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+//					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				} else {
-					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+//					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				}
-				//g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
+				g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
 			}
 		}
 
@@ -160,7 +167,14 @@ public class Client {
 		}
 
 		public void paintFortresses(){
-
+			for (Fortress f : fortresses) {
+				if (f.getTeam()) {
+					// draw red fortress image
+				} else {
+					// draw blue fortress image
+				}
+				g2D.drawRect((int) f.x, (int) f.y, (int) f.width, (int) f.height);
+			}
 		}
 
 		public void paintResources(){
