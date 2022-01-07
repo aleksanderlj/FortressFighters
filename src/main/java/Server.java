@@ -101,6 +101,7 @@ public class Server {
 
 			// Only build cannon if it's not colliding with another cannon
 			if(cannons.stream().noneMatch(newCannon::intersects)){
+				// TODO Spend resources on canon
 				cannons.add(newCannon);
 				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
 			}
