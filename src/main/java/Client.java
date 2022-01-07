@@ -1,9 +1,11 @@
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import org.jspace.ActualField;
@@ -29,6 +31,7 @@ public class Client {
 	private int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
+	private BufferedImage manblue, manred, cannonblue, cannonred;
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
@@ -44,7 +47,14 @@ public class Client {
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
 			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
+
+			// Load image resources
+			manblue = ImageIO.read(getClass().getResource("manblue.png"));
+			manred = ImageIO.read(getClass().getResource("manred.png"));
+			cannonblue = ImageIO.read(getClass().getResource("cannonblue.png"));
+			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
 		} catch (IOException | InterruptedException e) {e.printStackTrace();}
+
 		new Thread(new Timer()).start();
 	}
 
@@ -113,13 +123,23 @@ public class Client {
 		public void paintPlayers(){
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
-				g2D.drawRect((int)p.x, (int)p.y, (int)p.width, (int)p.height);
+				if(p.team){
+					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+				} else {
+					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+				}
+				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
 			}
 		}
 
 		public void paintCannons(){
 			for (Cannon c : cannons) {
-				g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
+				if(c.getTeam()){
+					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+				} else {
+					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
+				}
+				//g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
 			}
 		}
 

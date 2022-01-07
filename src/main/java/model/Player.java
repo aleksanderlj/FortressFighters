@@ -3,8 +3,8 @@ package model;
 import java.awt.*;
 
 public class Player extends Rectangle.Double {
-	public static final double WIDTH = 100;
-	public static final double HEIGHT = 100;
+	public static final double WIDTH = 80;
+	public static final double HEIGHT = 80;
 	public static final int SPEED = 200;
 	public int id;
 	public boolean team;
