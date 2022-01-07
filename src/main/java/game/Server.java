@@ -59,9 +59,9 @@ public class Server {
 		repository.add("wall", wallSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
-		new Thread(new JoinedReader()).start();
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
+		new Thread(new JoinedReader()).start();
 		try {
 			mutexSpace.put("bulletsLock");
 		} catch (InterruptedException e) {
@@ -290,8 +290,8 @@ public class Server {
 	}
 
 	private class JoinedReader implements Runnable {
+		
 		public void run() {
-			//Looks for players joining.
 			try {
 				while (true) {
 					centralSpace.get(new ActualField("joined"));
@@ -300,7 +300,9 @@ public class Server {
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
-			} catch (InterruptedException e) {e.printStackTrace();}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
