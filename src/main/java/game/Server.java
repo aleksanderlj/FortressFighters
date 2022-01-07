@@ -120,9 +120,6 @@ public class Server {
 	}
 
 	public void updatePlayers() throws InterruptedException {
-		for (Player p : players) {
-			playerPositionsSpace.getp(new ActualField(p.x), new ActualField(p.y), new ActualField(p.id), new ActualField(p.team));
-		}
 		List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
 		for (Object[] movementTuple : movementTuples) {
 			int playerID = (Integer) movementTuple[0];
@@ -145,6 +142,7 @@ public class Server {
 					break;
 			}
 		}
+		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
 				playerPositionsSpace.put(p.x, p.y, p.id, p.team);
