@@ -38,6 +38,7 @@ public class Server {
 	private int numPlayersTeam1 = 0; //Excluding disconnected players.
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
+	private JoinedReader joinedReader;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -57,7 +58,7 @@ public class Server {
 		repository.add("wall", wallSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
-		new Thread(new JoinedReader()).start();
+		joinedReader = new JoinedReader();
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 	}
@@ -101,6 +102,7 @@ public class Server {
 
 	public void update() {
 		try {
+			joinedReader.updateJoinedReader();
 			if (gameStarted) {
 				// Handle game logic for each object
 				updatePlayers();
@@ -263,18 +265,19 @@ public class Server {
 		}
 	}
 
-	private class JoinedReader implements Runnable {
-		public void run() {
-			//Looks for players joining.
+	private class JoinedReader {
+		
+		public void updateJoinedReader() {
 			try {
-				while (true) {
-					centralSpace.get(new ActualField("joined"));
+				while (centralSpace.getp(new ActualField("joined")) != null) {
 					createNewChannel(numPlayers);
 					addPlayer(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
-			} catch (InterruptedException e) {e.printStackTrace();}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
