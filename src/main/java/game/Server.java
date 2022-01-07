@@ -143,10 +143,10 @@ public class Server {
 					break;
 			}
 		}
-		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
-				playerPositionsSpace.put(p.x, p.y, p.id, p.team);
+				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron);
 			}
 		}
 	}

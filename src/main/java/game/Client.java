@@ -96,11 +96,13 @@ public class Client {
 	}
 
 	public void updatePlayers() throws InterruptedException {
-		List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		players = new Player[playersTuples.size()];
 		for (int i = 0; i < playersTuples.size(); i++) {
 			Object[] tuple = playersTuples.get(i);
 			players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3]);
+			players[i].wood = (int)tuple[4];
+			players[i].iron = (int)tuple[5];
 		}
 	}
 
@@ -175,6 +177,8 @@ public class Client {
 //					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				}
 				g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
+				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
+				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
 			}
 		}
 
