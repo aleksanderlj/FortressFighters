@@ -86,6 +86,16 @@ public class Server {
 		}
 		Collections.shuffle(players);
 		cannons = new ArrayList<Cannon>();
+		walls = new ArrayList<Wall>();
+		try {
+			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
+			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
+			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		fortress1 = null;
 		fortress2 = null;
 		changeFortress();
