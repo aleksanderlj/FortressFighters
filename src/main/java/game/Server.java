@@ -42,6 +42,7 @@ public class Server {
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private int numberOfResources = 10;
+    boolean gameOver = false;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -85,6 +86,18 @@ public class Server {
 		}
 		Collections.shuffle(players);
 		cannons = new ArrayList<Cannon>();
+		walls = new ArrayList<Wall>();
+		try {
+			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
+			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
+			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		fortress1 = null;
+		fortress2 = null;
 		changeFortress();
         resources = new ArrayList<Resource>();
         for (int i = 0; i < numberOfResources; i++) {
@@ -260,7 +273,7 @@ public class Server {
 		mutexSpace.put("bulletsLock");
 	}
 
-	public void updateFortresses() throws InterruptedException{
+	public void updateFortresses() throws InterruptedException {
 		if (fortress1 == null) { return; }
 		
 		boolean changed = false;
@@ -289,9 +302,15 @@ public class Server {
 		for (Bullet b : bullets) {
 			if (b.getTeam() && b.intersects(fortress1)) {
 				fortress1.setHP(fortress1.getHP() - 5);
+				if (fortress1.getHP() <= 0) {
+					gameOver(false);
+				}
 				changed = true;
 			} else if (!b.getTeam() && b.intersects(fortress2)) {
 				fortress2.setHP(fortress2.getHP() - 5);
+				if (fortress2.getHP() <= 0) {
+					gameOver(true);
+				}
 				changed = true;
 			}
 		}
@@ -317,6 +336,20 @@ public class Server {
 				fortressSpace.put(0, 0, 100, true);
 			}
 		} catch (InterruptedException e) {}
+	}
+	
+	public void gameOver(boolean winningTeam) {
+		try {
+			centralSpace.put("game over", winningTeam ? "blue" : "red");
+			gameOver = true;
+			Thread.sleep(5000);
+			gameOver = false;
+			centralSpace.get(new ActualField("game over"), new FormalField(String.class));
+			startGame();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
     public void updateResources() {
@@ -393,8 +426,10 @@ public class Server {
 		public void run() {
 			try {
 				while (true) {
-					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
-					update();
+					if (!gameOver) {
+						Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
+						update();	
+					}
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
