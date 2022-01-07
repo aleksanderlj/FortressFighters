@@ -34,6 +34,7 @@ public class Server {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
+	private Space mutexSpace;
 	private int numPlayers = 0; //Including disconnected players.
 	private int numPlayersTeam1 = 0; //Excluding disconnected players.
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
@@ -49,6 +50,7 @@ public class Server {
 		bulletSpace = new SequentialSpace();
 		fortressSpace = new SequentialSpace();
 		resourceSpace = new SequentialSpace();
+		mutexSpace = new SequentialSpace();
 		repository.add("central", centralSpace);
 		repository.add("playerpositions", playerPositionsSpace);
 		repository.add("playermovement", playerMovementSpace);
@@ -60,6 +62,11 @@ public class Server {
 		new Thread(new JoinedReader()).start();
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
+		try {
+			mutexSpace.put("bulletsLock");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void startGame() {
@@ -167,11 +174,20 @@ public class Server {
 				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
 			}
 		}
-
 	}
 
 	public void updateBullets() throws InterruptedException{
-
+		bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		mutexSpace.get(new ActualField("bulletsLock"));
+		for (Bullet b : bullets) {
+			if(b.getTeam()){
+				b.x -= Bullet.SPEED * S_BETWEEN_UPDATES;
+			} else {
+				b.x += Bullet.SPEED * S_BETWEEN_UPDATES;
+			}
+			bulletSpace.put(b.x, b.y, b.getTeam());
+		}
+		mutexSpace.put("bulletsLock");
 	}
 
 	public void updateWalls() throws InterruptedException{
@@ -296,7 +312,9 @@ public class Server {
 						} else {
 							bullet = new Bullet(cannon.x + Cannon.WIDTH + 21 - Bullet.WIDTH, cannon.y + Cannon.HEIGHT + 7, cannon.getTeam());
 						}
+						mutexSpace.get(new ActualField("bulletsLock"));
 						bullets.add(bullet);
+						mutexSpace.put("bulletsLock");
 						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
 					}
 				}
