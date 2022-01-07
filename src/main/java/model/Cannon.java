@@ -5,6 +5,7 @@ import java.awt.*;
 public class Cannon extends Rectangle.Double {
     public static final double WIDTH = 60;
     public static final double HEIGHT = 45;
+    public static final int IRON_COST = 2;
     private boolean team;
     private boolean active;
 

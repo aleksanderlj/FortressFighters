@@ -168,7 +168,17 @@ public class Server {
 
 			// Only build cannon if it's not colliding with another cannon
 			if(cannons.stream().noneMatch(newCannon::intersects)){
-				// TODO Spend resources on cannon
+				// Spend resources from fortress when building a cannon
+				if (!newCannon.getTeam() && fortress1.getIron() >= Cannon.IRON_COST) {
+					fortress1.setIron(fortress1.getIron() - Cannon.IRON_COST);
+					changeFortress();
+				} else if (newCannon.getTeam() && fortress2.getIron() >= Cannon.IRON_COST) {
+					fortress2.setIron(fortress2.getIron() - Cannon.IRON_COST);
+					changeFortress();
+				} else {
+					return;
+				}
+				
 				cannons.add(newCannon);
 				cannonSpace.put("cannon", newCannon.x + player.width / 4, newCannon.y + player.height / 2, newCannon.getTeam());
 				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
@@ -219,11 +229,7 @@ public class Server {
 			}
 		}
 		
-		if (changed) {
-			changeFortress();
-		}
-		
-		// TODO: Reduce HP of fortress if it collides with bullet or cannon
+		// Reduce HP of fortress if bullet or cannon collides with it
 		mutexSpace.get(new ActualField("bulletsLock"));
 		for (Bullet b : bullets) {
 			if (b.getTeam() && b.intersects(fortress1)) {
@@ -237,7 +243,8 @@ public class Server {
 		// Remove bullets that hit fortress
 		bullets.removeIf(b -> (b.intersects(fortress1) && b.getTeam()) || (b.intersects(fortress2) && !b.getTeam()));
 		mutexSpace.put("bulletsLock");
-		// TODO: Remove cannon/bullet with collision
+		
+		if (changed) { changeFortress(); }
 	}
 	
 	public void changeFortress() {
