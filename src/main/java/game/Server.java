@@ -175,6 +175,9 @@ public class Server {
 
 			// Only build cannon if it's not colliding with another cannon
 			if(cannons.stream().noneMatch(newCannon::intersects)){
+				// Can't place cannon on top of fortress
+				if (newCannon.intersects(fortress1) || newCannon.intersects(fortress2)) { return; }
+				
 				// Spend resources from fortress when building a cannon
 				if (!newCannon.getTeam() && fortress1.getIron() >= Cannon.IRON_COST) {
 					fortress1.setIron(fortress1.getIron() - Cannon.IRON_COST);
@@ -222,14 +225,14 @@ public class Server {
 			if (p.wood == 0 && p.iron == 0) { continue; }
 			
 			if (p.team && p.intersects(fortress2)) {
-				fortress2.setWood(p.wood);
-				fortress2.setIron(p.iron);
+				fortress2.setWood(fortress2.getWood() + p.wood);
+				fortress2.setIron(fortress2.getIron() + p.iron);
 				p.wood = 0;
 				p.iron = 0;
 				changed = true;
 			} else if (!p.team && p.intersects(fortress1)) {
-				fortress1.setWood(p.wood);
-				fortress1.setIron(p.iron);
+				fortress1.setWood(fortress1.getWood() + p.wood);
+				fortress1.setIron(fortress1.getIron() + p.iron);
 				p.wood = 0;
 				p.iron = 0;
 				changed = true;
