@@ -63,6 +63,7 @@ public class Client {
 			cannonred = ImageIO.read(getClass().getResource("cannonred.png"));
 			checkGameStarted();
 			new Thread(new Timer()).start();
+			new Thread(new ServerCheckReader()).start();
 		} catch (IOException | InterruptedException e) {e.printStackTrace();}
 	}
 
@@ -292,6 +293,19 @@ public class Client {
 				while (true) {
 					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
 					update();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class ServerCheckReader implements Runnable {
+		public void run() {
+			try {
+				while (true) {
+					channelFromServer.get(new ActualField("check"));
+					channelToServer.put("acknowledged");	
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();

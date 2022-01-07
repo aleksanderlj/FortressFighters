@@ -8,6 +8,7 @@ public class Player extends Rectangle.Double {
 	public static final int SPEED = 200;
 	public int id;
 	public boolean team;
+	public boolean disconnected = false;
 
 	public Player() {}
 	public Player(double x, double y, int id, boolean team) {

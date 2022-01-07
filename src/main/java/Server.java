@@ -31,9 +31,9 @@ public class Server {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
-	private int numPlayers = 0;
-	private int numPlayersTeam1;
-	private int numPlayersTeam2;
+	private int numPlayers = 0; //Including disconnected players.
+	private int numPlayersTeam1 = 0; //Excluding disconnected players.
+	private int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
 
 	public Server() {
@@ -56,12 +56,18 @@ public class Server {
 		repository.add("resource", resourceSpace);
 		new Thread(new JoinedReader()).start();
 		new Thread(new Timer()).start();
+		new Thread(new DisconnectChecker()).start();
 	}
 	
 	public void startGame() {
+		boolean[] disconnected = new boolean[numPlayers];
+		for (int i = 0; i < numPlayers; i++) {
+			disconnected[i] = players.get(i).disconnected;
+		}
 		players = new ArrayList<Player>();
 		for (int i = 0; i < numPlayers; i++) {
 			addPlayer(i);
+			players.get(i).disconnected = disconnected[i];
 		}
 		Collections.shuffle(players);
 		cannons = new ArrayList<Cannon>();
@@ -137,7 +143,9 @@ public class Server {
 			}
 		}
 		for (Player p : players) {
-			playerPositionsSpace.put(p.x, p.y, p.id, p.team);
+			if (!p.disconnected) {
+				playerPositionsSpace.put(p.x, p.y, p.id, p.team);
+			}
 		}
 	}
 
@@ -190,6 +198,11 @@ public class Server {
 		}
 	}
 
+	private int getActualNumberOfPlayers() {
+		//Get number of players excluding disconnected players.
+		return numPlayersTeam1 + numPlayersTeam2;
+	}
+	
 	private class Timer implements Runnable {
 		public void run() {
 			try {
@@ -243,6 +256,36 @@ public class Server {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class DisconnectChecker implements Runnable {
+		public void run() {
+			//Protocol checking if players are still in the game.
+			try {
+				while (true) {
+					for (int i = 0; i < numPlayers; i++) {
+						if (!players.get(i).disconnected) {
+							serverClientChannels.get(i).put("check");
+						}
+					}
+					int numPlayersBefore = numPlayers;
+					Thread.sleep(2000);
+					for (int i = 0; i < numPlayersBefore; i++) {
+						if (!players.get(i).disconnected && clientServerChannels.get(i).getp(new ActualField("acknowledged")) == null) {
+							//Client took too long to respond.
+							players.get(i).disconnected = true;
+							if (players.get(i).team == true) {
+								numPlayersTeam1--;
+							}
+							else {
+								numPlayersTeam2--;
+							}
+							System.out.println("Player disconnected.");
+						}
+					}
+				}
+			} catch (InterruptedException e) {e.printStackTrace();}
 		}
 	}
 }
