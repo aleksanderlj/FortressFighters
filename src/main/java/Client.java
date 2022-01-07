@@ -29,6 +29,8 @@ public class Client {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
+	private Space channelFromServer;
+	private Space channelToServer;
 	private int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
@@ -49,7 +51,10 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			centralSpace.put("joined");
-			id = (Integer) centralSpace.get(new FormalField(Integer.class))[0];
+			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
+			id = (Integer) tuple[0];
+			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
+			channelToServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[2])+"?keep");
 			// Load image resources
 			manblue = ImageIO.read(getClass().getResource("manblue.png"));
 			manred = ImageIO.read(getClass().getResource("manred.png"));

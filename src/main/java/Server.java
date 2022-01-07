@@ -1,8 +1,11 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.QueueSpace;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
 import org.jspace.SpaceRepository;
@@ -14,8 +17,11 @@ public class Server {
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	public static final int SCREEN_WIDTH = 1280;
 	public static final int SCREEN_HEIGHT = 720;
+	private List<Space> serverClientChannels = new ArrayList<Space>();
+	private List<Space> clientServerChannels = new ArrayList<Space>();
 	private List<Player> players = new ArrayList<Player>();
 	private List<Cannon> cannons = new ArrayList<>();
+	private SpaceRepository repository;
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -25,10 +31,12 @@ public class Server {
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private int numPlayers = 0;
+	private int numPlayersTeam1;
+	private int numPlayersTeam2;
 	private boolean gameStarted = false;
 
 	public Server() {
-		SpaceRepository repository = new SpaceRepository();
+		repository = new SpaceRepository();
 		repository.addGate("tcp://localhost:9001/?keep");
 		centralSpace = new SequentialSpace();
 		playerPositionsSpace = new SequentialSpace();
@@ -45,11 +53,39 @@ public class Server {
 		repository.add("wall", wallSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
-		try {
-			playerPositionsSpace.put(players);
-		} catch (InterruptedException e) {e.printStackTrace();}
 		new Thread(new JoinedReader()).start();
 		new Thread(new Timer()).start();
+	}
+	
+	public void startGame() {
+		players = new ArrayList<Player>();
+		for (int i = 0; i < numPlayers; i++) {
+			addPlayer(i);
+		}
+		Collections.shuffle(players);
+		cannons = new ArrayList<Cannon>();
+	}
+	
+	private void addPlayer(int id) {
+		if (numPlayersTeam1 == numPlayersTeam2) {
+			int team = (new Random()).nextInt(2);
+			if (team == 0) {
+				players.add(new Player(400, 400, id, true));
+				numPlayersTeam1++;
+			}
+			else {
+				players.add(new Player(400, 400, id, false));
+				numPlayersTeam2++;
+			}
+		}
+		else if (numPlayersTeam1 > numPlayersTeam2) {
+			players.add(new Player(400, 400, id, false));
+			numPlayersTeam2++;
+		}
+		else {
+			players.add(new Player(400, 400, id, true));
+			numPlayersTeam1++;
+		}
 	}
 
 	public void update() {
@@ -66,6 +102,7 @@ public class Server {
 			else {
 				if (numPlayers >= 2) {
 					centralSpace.put("started");
+					startGame();
 					gameStarted = true;
 				}
 			}
@@ -136,6 +173,20 @@ public class Server {
 	public void updateResources() throws InterruptedException{
 
 	}
+	
+	private void createNewChannel(int id) {
+		Space serverClient = new QueueSpace();
+		Space clientServer = new QueueSpace();
+		repository.add("serverclient"+id, serverClient);
+		repository.add("client"+id+"server", clientServer);
+		serverClientChannels.add(serverClient);
+		clientServerChannels.add(clientServer);
+		try {
+			centralSpace.put(id, "serverclient"+id, "client"+id+"server");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private class Timer implements Runnable {
 		public void run() {
@@ -156,8 +207,8 @@ public class Server {
 			try {
 				while (true) {
 					centralSpace.get(new ActualField("joined"));
-					centralSpace.put(numPlayers);
-					players.add(new Player(400, 400, 0, true));
+					createNewChannel(numPlayers);
+					addPlayer(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");
 				}
