@@ -42,6 +42,8 @@ public class Client {
 	private boolean createWallKeyDown = false;
 	private BufferedImage manblue, manred, cannonblue, cannonred;
 	private boolean gameStarted = false;
+	private boolean gameOver = false;
+	private String winningTeam = "";
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
@@ -74,17 +76,25 @@ public class Client {
 
 	public void update() {
 		try {
-			if (gameStarted) {
-				// Get the updated status of each object from the server
-				updatePlayers();
-				updateCannons();
-				updateBullets();
-				updateWalls();
-				updateFortresses();
-				updateResources();
+			Object[] tuple = centralSpace.queryp(new ActualField("game over"), new FormalField(String.class));
+			if (tuple == null) {
+				gameOver = false;
+				if (gameStarted) {
+					// Get the updated status of each object from the server
+					updatePlayers();
+					updateCannons();
+					updateBullets();
+					updateWalls();
+					updateFortresses();
+					updateResources();
+				}
+				else {
+					checkGameStarted();
+				}
 			}
 			else {
-				checkGameStarted();
+				winningTeam = (String) tuple[1];
+				gameOver = true;
 			}
 		} catch (InterruptedException e) {e.printStackTrace();}
 		panel.updatePanel();
@@ -166,7 +176,12 @@ public class Client {
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
-			if (gameStarted) {
+			if (gameOver) {
+				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
+				g2D.drawString("Team "+winningTeam+" has won!", 500, 250);
+				g2D.drawString("Restarting...", 500, 300);
+			}
+			else if (gameStarted) {
 				// Render each object on the screen
 				paintFortresses();
 				paintResources();
