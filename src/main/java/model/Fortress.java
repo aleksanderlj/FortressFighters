@@ -4,15 +4,15 @@ import java.awt.*;
 import game.Server;
 
 public class Fortress extends Rectangle.Double {
-	public static final double WIDTH = 300;
-	public static final double HEIGHT = 360;
+	public static final double WIDTH = 150;
+	public static final double HEIGHT = 600;
     private int wood;
     private int iron;
 	private int hp;
 	private boolean team;
 	
 	public Fortress(boolean team) {
-		super(team ? Server.SCREEN_WIDTH-WIDTH-1 : 1, Server.SCREEN_HEIGHT/4, WIDTH, HEIGHT);
+		super(team ? Server.SCREEN_WIDTH-WIDTH-1 : 1, Server.SCREEN_HEIGHT/2 - HEIGHT/2, WIDTH, HEIGHT);
 		this.wood = 0;
 		this.iron = 0;
 		this.hp = 100;
@@ -20,7 +20,7 @@ public class Fortress extends Rectangle.Double {
 	}
 	
 	public Fortress(int wood, int iron, int hp, boolean team) {
-		super(team ? Server.SCREEN_WIDTH-WIDTH-1 : 1, Server.SCREEN_HEIGHT/4, WIDTH, HEIGHT);
+		super(team ? Server.SCREEN_WIDTH-WIDTH-1 : 1, Server.SCREEN_HEIGHT/2 - HEIGHT/2, WIDTH, HEIGHT);
 		this.wood = wood;
 		this.iron = iron;
 		this.hp = hp;
