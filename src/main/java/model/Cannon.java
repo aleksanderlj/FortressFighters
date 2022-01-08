@@ -8,11 +8,13 @@ public class Cannon extends Rectangle.Double {
     public static final int IRON_COST = 2;
     private boolean team;
     private boolean active;
+    private boolean alive;
 
     public Cannon(double x, double y, boolean team){
         super(x, y, WIDTH, HEIGHT);
         this.team = team;
         this.active = true;
+        this.alive = true;
     }
 
     public boolean getTeam() {
@@ -25,5 +27,13 @@ public class Cannon extends Rectangle.Double {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
     }
 }
