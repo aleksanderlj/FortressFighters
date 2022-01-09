@@ -112,23 +112,26 @@ public class Server {
 	}
 	
 	private void addPlayer(int id) {
+		double randomY = (new Random()).nextInt((int)(Fortress.HEIGHT - Player.HEIGHT)) + ((SCREEN_HEIGHT - Fortress.HEIGHT) / 2);
+		double xOffset = Fortress.WIDTH + 20;
+
 		if (numPlayersTeam1 == numPlayersTeam2) {
 			int team = (new Random()).nextInt(2);
 			if (team == 0) {
-				players.add(new Player(400, 400, id, true));
+				players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
 				numPlayersTeam1++;
 			}
 			else {
-				players.add(new Player(400, 400, id, false));
+				players.add(new Player(0 + xOffset, randomY, id, false));
 				numPlayersTeam2++;
 			}
 		}
 		else if (numPlayersTeam1 > numPlayersTeam2) {
-			players.add(new Player(400, 400, id, false));
+			players.add(new Player(0 + xOffset, randomY, id, false));
 			numPlayersTeam2++;
 		}
 		else {
-			players.add(new Player(400, 400, id, true));
+			players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
 			numPlayersTeam1++;
 		}
 	}
