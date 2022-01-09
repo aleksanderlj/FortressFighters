@@ -40,15 +40,18 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
-	private BufferedImage manblue, manred, cannonblue, cannonred;
+	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private String winningTeam = "";
+	private String defaultFont;
+	private Font fortressStatusFont;
 
 	public Client(String address, GameFrame frame) {
 		panel = new GamePanel();
 		frame.setPanel(panel);
 		frame.setVisible(true);
+		defaultFont = "Comic Sans";
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
 			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
@@ -68,10 +71,14 @@ public class Client {
 			manred = ImageIO.read(getClass().getClassLoader().getResource("manred.png"));
 			cannonblue = ImageIO.read(getClass().getClassLoader().getResource("cannonblue.png"));
 			cannonred = ImageIO.read(getClass().getClassLoader().getResource("cannonred.png"));
+			fortressblue = ImageIO.read(getClass().getClassLoader().getResource("fortressblue.png"));
+			fortressred = ImageIO.read(getClass().getClassLoader().getResource("fortressred.png"));
+			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
+			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
 			new Thread(new Timer()).start();
 			new Thread(new ServerCheckReader()).start();
-		} catch (IOException | InterruptedException e) {e.printStackTrace();}
+		} catch (IOException | InterruptedException | FontFormatException e) {e.printStackTrace();}
 	}
 
 	public void update() {
@@ -179,7 +186,7 @@ public class Client {
 			super.paint(g);
 			g2D = (Graphics2D) g;
 			if (gameOver) {
-				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
+				g2D.setFont(new Font(defaultFont, Font.PLAIN, 20));
 				g2D.drawString("Team "+winningTeam+" has won!", 500, 250);
 				g2D.drawString("Restarting...", 500, 300);
 			}
@@ -193,12 +200,13 @@ public class Client {
 				paintBullets();
 			}
 			else {
-				g2D.setFont(new Font("Comic Sans", Font.PLAIN, 20));
+				g2D.setFont(new Font(defaultFont, Font.PLAIN, 20));
 				g2D.drawString("Waiting for one more player to join...", 500, 300);
 			}
 		}
 
 		public void paintPlayers(){
+			g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
 				if(p.team){
@@ -250,16 +258,19 @@ public class Client {
 		}
 
 		public void paintFortresses(){
+			g2D.setFont(fortressStatusFont);
 			for (Fortress f : fortresses) {
 				if (f.getTeam()) {
-					// draw red fortress image
+					g2D.drawImage(fortressred, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
+					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 202);
+					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 302);
+					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 402);
 				} else {
-					// draw blue fortress image
+					g2D.drawImage(fortressblue, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
+					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 202);
+					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 302);
+					g2D.drawString("" + f.getIron(), (int) f.x + 80, (int) f.y + 402);
 				}
-				g2D.drawRect((int) f.x, (int) f.y, (int) f.width, (int) f.height);
-				g2D.drawString("HP: " + f.getHP(), (int) f.x + 120, (int) f.y + 100);
-				g2D.drawString("Wood: " + f.getWood(), (int) f.x + 120, (int) f.y + 200);
-				g2D.drawString("Iron: " + f.getIron(), (int) f.x + 120, (int) f.y + 220);
 			}
 		}
 
