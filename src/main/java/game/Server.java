@@ -249,7 +249,8 @@ public class Server {
 					cannons.stream().noneMatch(newWall::intersects) &&
 					walls.stream().noneMatch(newWall::intersects) &&
 					!newWall.intersects(fortress1) &&
-					!newWall.intersects(fortress2)
+					!newWall.intersects(fortress2) &&
+					players.stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
 			){
 				// Spend resources from fortress when building a wall
 				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
