@@ -180,6 +180,23 @@ public class Server {
 					break;
 			}
 		}
+
+		// Prevent player from  going out of bounds
+		for (Player p : players) {
+			if(p.x < 0){
+				p.x = 0;
+			}
+			if(p.x > SCREEN_WIDTH - Player.WIDTH){
+				p.x = SCREEN_WIDTH - Player.WIDTH;
+			}
+			if(p.y < 0){
+				p.y = 0;
+			}
+			if(p.y > SCREEN_HEIGHT - Player.HEIGHT){
+				p.y = SCREEN_HEIGHT - Player.HEIGHT;
+			}
+		}
+
 		playerPositionsSpace.getp(new ActualField("players"));
 		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		for (Player p : players) {
@@ -270,6 +287,15 @@ public class Server {
 			}
 		}
 
+		// Prevent player from going through wall
+		for (Player p : players) {
+			for (Wall w : walls) {
+				if(w.getTeam() != p.team && p.intersects(w)){
+					// TODO Move player out of wall (Minkowsky?)
+				}
+			}
+		}
+
 		// Reduce HP of wall if bullet or cannon collides with it
 		mutexSpace.get(new ActualField("bulletsLock"));
 		for (Bullet b : bullets) {
@@ -310,6 +336,15 @@ public class Server {
 				p.wood = 0;
 				p.iron = 0;
 				changed = true;
+			}
+		}
+
+		// Prevent player from going through enemy fortress
+		for (Player p : players) {
+			if (!p.team && p.intersects(fortress2)) {
+				// TODO Move blue player out of red fortress
+			} else if (p.team && p.intersects(fortress1)) {
+				// TODO Move red player out of blue fortress
 			}
 		}
 		
@@ -416,7 +451,9 @@ public class Server {
         Random r = new Random();
         int x = r.nextInt((int)(SCREEN_WIDTH-2*Fortress.WIDTH-2*Resource.WIDTH))+(int)Fortress.WIDTH+(int)Resource.WIDTH;
         int y = r.nextInt((int)(SCREEN_HEIGHT-2*Resource.WIDTH))+(int)Resource.WIDTH;
+		// TODO Balance wood vs iron ratio
         int type = r.nextInt(2);
+		// TODO Check for collision with player, wall, cannon, resource ?
         return new Resource(x, y, type);
     }
 	
