@@ -1,7 +1,11 @@
 package game;
+import java.awt.Button;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Scanner;
@@ -17,11 +21,26 @@ public class Main {
 	private static int windowHeight = 500;
 	private static GameFrame frame;
 	private static MainPanel mainPanel;
+	private static TextField tf;
+	private static Button hostButton;
+	private static Button joinButton;
 	
     public static void main(String[] args) {
         frame = new GameFrame();
 		mainPanel = new MainPanel();
         frame.setPanel(mainPanel);
+        mainPanel.setLayout(null);
+        tf = new TextField(Server.getIP());
+        tf.setBounds(200, 250, 100, 25);
+        hostButton = new Button("Host");
+        joinButton = new Button("Join");
+        hostButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(1);}});
+        joinButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(2);}});
+        hostButton.setBounds(200, 100, 100, 25);
+        joinButton.setBounds(200, 280, 100, 25);
+        mainPanel.add(tf);
+        mainPanel.add(hostButton);
+        mainPanel.add(joinButton);
     }
     
     private static void start(int type) {
@@ -32,10 +51,11 @@ public class Main {
 
     	if (type == 1) {
             server = new Server();
-            client = new Client("localhost", frame);
+            client = new Client(Server.getIP(), frame);
+			System.out.println(Server.getIP());
     	}
     	else {
-            client = new Client("localhost", frame);
+            client = new Client(tf.getText(), frame);
     	}
     }
     
@@ -52,6 +72,7 @@ public class Main {
 			super.paint(g);
 			g2D = (Graphics2D) g;
 			g2D.drawString("Press 1 to host and play or 2 to join", 150, 50);
+			g2D.drawString("Enter Address to join:", 190, 235);
 		}
 		
 		@Override

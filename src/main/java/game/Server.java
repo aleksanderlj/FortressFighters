@@ -1,4 +1,6 @@
 package game;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +48,7 @@ public class Server {
 
 	public Server() {
 		repository = new SpaceRepository();
-		repository.addGate("tcp://localhost:9001/?keep");
+		repository.addGate("tcp://" + getIP() + ":9001/?keep");
 		centralSpace = new SequentialSpace();
 		playerPositionsSpace = new SequentialSpace();
 		playerMovementSpace = new SequentialSpace();
@@ -75,6 +77,8 @@ public class Server {
 	}
 	
 	public void startGame() {
+		numPlayersTeam1 = 0;
+		numPlayersTeam2 = 0;
 		boolean[] disconnected = new boolean[numPlayers];
 		for (int i = 0; i < numPlayers; i++) {
 			disconnected[i] = players.get(i).disconnected;
@@ -112,23 +116,26 @@ public class Server {
 	}
 	
 	private void addPlayer(int id) {
+		double randomY = (new Random()).nextInt((int)(Fortress.HEIGHT - Player.HEIGHT)) + ((SCREEN_HEIGHT - Fortress.HEIGHT) / 2);
+		double xOffset = Fortress.WIDTH + 20;
+
 		if (numPlayersTeam1 == numPlayersTeam2) {
 			int team = (new Random()).nextInt(2);
 			if (team == 0) {
-				players.add(new Player(400, 400, id, true));
+				players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
 				numPlayersTeam1++;
 			}
 			else {
-				players.add(new Player(400, 400, id, false));
+				players.add(new Player(0 + xOffset, randomY, id, false));
 				numPlayersTeam2++;
 			}
 		}
 		else if (numPlayersTeam1 > numPlayersTeam2) {
-			players.add(new Player(400, 400, id, false));
+			players.add(new Player(0 + xOffset, randomY, id, false));
 			numPlayersTeam2++;
 		}
 		else {
-			players.add(new Player(400, 400, id, true));
+			players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
 			numPlayersTeam1++;
 		}
 	}
@@ -160,28 +167,70 @@ public class Server {
 			int playerID = (Integer) movementTuple[0];
 			Player player = players.get(playerID);
 			String direction = (String) movementTuple[1];
-			switch (direction) {
-				case "left":
-					player.x -= Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "right":
-					player.x += Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "down":
-					player.y += Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "up":
-					player.y -= Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				default:
-					break;
+			if (player.stunned <= 0) {
+				double oldX = player.x;
+				double oldY = player.y;
+				switch (direction) {
+					case "left":
+						player.x -= Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "right":
+						player.x += Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "down":
+						player.y += Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "up":
+						player.y -= Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					default:
+						break;
+				}
+
+				// Prevent collision
+				if(
+						walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+						(player.team && fortress1.intersects(player)) ||
+						(!player.team && fortress2.intersects(player))
+				){
+					player.x = oldX;
+					player.y = oldY;
+				}
 			}
 		}
+
+		// Prevent player from  going out of bounds
+		for (Player p : players) {
+			if(p.x < 0){
+				p.x = 0;
+			}
+			if(p.x > SCREEN_WIDTH - Player.WIDTH){
+				p.x = SCREEN_WIDTH - Player.WIDTH;
+			}
+			if(p.y < 0){
+				p.y = 0;
+			}
+			if(p.y > SCREEN_HEIGHT - Player.HEIGHT){
+				p.y = SCREEN_HEIGHT - Player.HEIGHT;
+			}
+		}
+
 		playerPositionsSpace.getp(new ActualField("players"));
 		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
+				mutexSpace.get(new ActualField("bulletsLock"));
+				for (Bullet b : bullets) {
+					if (b.getTeam() != p.team && b.intersects(p)) {
+						p.stunned = 0.5;
+					}
+				}
+				bullets.removeIf(b -> b.getTeam() != p.team && b.intersects(p));
+				mutexSpace.put("bulletsLock");
 				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron);
+				if (p.stunned > 0) {
+					p.stunned -= S_BETWEEN_UPDATES;
+				}
 			}
 		}
 		playerPositionsSpace.put("players");
@@ -249,7 +298,8 @@ public class Server {
 					cannons.stream().noneMatch(newWall::intersects) &&
 					walls.stream().noneMatch(newWall::intersects) &&
 					!newWall.intersects(fortress1) &&
-					!newWall.intersects(fortress2)
+					!newWall.intersects(fortress2) &&
+					players.stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
 			){
 				// Spend resources from fortress when building a wall
 				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
@@ -263,6 +313,15 @@ public class Server {
 				}
 				walls.add(newWall);
 				wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
+			}
+		}
+
+		// Prevent player from going through wall
+		for (Player p : players) {
+			for (Wall w : walls) {
+				if(w.getTeam() != p.team && p.intersects(w)){
+					// TODO Move player out of wall (Minkowsky?)
+				}
 			}
 		}
 
@@ -306,6 +365,15 @@ public class Server {
 				p.wood = 0;
 				p.iron = 0;
 				changed = true;
+			}
+		}
+
+		// Prevent player from going through enemy fortress
+		for (Player p : players) {
+			if (!p.team && p.intersects(fortress2)) {
+				// TODO Move blue player out of red fortress
+			} else if (p.team && p.intersects(fortress1)) {
+				// TODO Move red player out of blue fortress
 			}
 		}
 		
@@ -412,7 +480,9 @@ public class Server {
         Random r = new Random();
         int x = r.nextInt((int)(SCREEN_WIDTH-2*Fortress.WIDTH-2*Resource.WIDTH))+(int)Fortress.WIDTH+(int)Resource.WIDTH;
         int y = r.nextInt((int)(SCREEN_HEIGHT-2*Resource.WIDTH))+(int)Resource.WIDTH;
+		// TODO Balance wood vs iron ratio
         int type = r.nextInt(2);
+		// TODO Check for collision with player, wall, cannon, resource ?
         return new Resource(x, y, type);
     }
 	
@@ -433,6 +503,17 @@ public class Server {
 	private int getActualNumberOfPlayers() {
 		//Get number of players excluding disconnected players.
 		return numPlayersTeam1 + numPlayersTeam2;
+	}
+
+	public static String getIP(){
+		String address = "localhost";
+		try {
+			address = Inet4Address.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
+		return address;
 	}
 	
 	private class Timer implements Runnable {
