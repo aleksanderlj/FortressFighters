@@ -30,7 +30,7 @@ public class Main {
 		mainPanel = new MainPanel();
         frame.setPanel(mainPanel);
         mainPanel.setLayout(null);
-        tf = new TextField("localhost");
+        tf = new TextField(Server.getIP());
         tf.setBounds(200, 250, 100, 25);
         hostButton = new Button("Host");
         joinButton = new Button("Join");
