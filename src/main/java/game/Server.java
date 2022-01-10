@@ -163,7 +163,8 @@ public class Server {
 			int playerID = (Integer) movementTuple[0];
 			Player player = players.get(playerID);
 			String direction = (String) movementTuple[1];
-			switch (direction) {
+			if (player.stunned <= 0) {
+				switch (direction) {
 				case "left":
 					player.x -= Player.SPEED * S_BETWEEN_UPDATES;
 					break;
@@ -178,6 +179,7 @@ public class Server {
 					break;
 				default:
 					break;
+				}	
 			}
 		}
 
@@ -201,7 +203,18 @@ public class Server {
 		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
+				mutexSpace.get(new ActualField("bulletsLock"));
+				for (Bullet b : bullets) {
+					if (b.getTeam() != p.team && b.intersects(p)) {
+						p.stunned = 0.5;
+					}
+				}
+				bullets.removeIf(b -> b.getTeam() != p.team && b.intersects(p));
+				mutexSpace.put("bulletsLock");
 				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron);
+				if (p.stunned > 0) {
+					p.stunned -= S_BETWEEN_UPDATES;
+				}
 			}
 		}
 		playerPositionsSpace.put("players");
