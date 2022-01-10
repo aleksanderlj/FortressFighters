@@ -75,6 +75,8 @@ public class Server {
 	}
 	
 	public void startGame() {
+		numPlayersTeam1 = 0;
+		numPlayersTeam2 = 0;
 		boolean[] disconnected = new boolean[numPlayers];
 		for (int i = 0; i < numPlayers; i++) {
 			disconnected[i] = players.get(i).disconnected;
