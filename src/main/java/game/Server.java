@@ -164,22 +164,34 @@ public class Server {
 			Player player = players.get(playerID);
 			String direction = (String) movementTuple[1];
 			if (player.stunned <= 0) {
+				double oldX = player.x;
+				double oldY = player.y;
 				switch (direction) {
-				case "left":
-					player.x -= Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "right":
-					player.x += Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "down":
-					player.y += Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				case "up":
-					player.y -= Player.SPEED * S_BETWEEN_UPDATES;
-					break;
-				default:
-					break;
-				}	
+					case "left":
+						player.x -= Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "right":
+						player.x += Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "down":
+						player.y += Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					case "up":
+						player.y -= Player.SPEED * S_BETWEEN_UPDATES;
+						break;
+					default:
+						break;
+				}
+
+				// Prevent collision
+				if(
+						walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+						(player.team && fortress1.intersects(player)) ||
+						(!player.team && fortress2.intersects(player))
+				){
+					player.x = oldX;
+					player.y = oldY;
+				}
 			}
 		}
 
