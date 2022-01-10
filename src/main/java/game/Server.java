@@ -1,4 +1,6 @@
 package game;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +48,7 @@ public class Server {
 
 	public Server() {
 		repository = new SpaceRepository();
-		repository.addGate("tcp://localhost:9001/?keep");
+		repository.addGate("tcp://" + getIP() + ":9001/?keep");
 		centralSpace = new SequentialSpace();
 		playerPositionsSpace = new SequentialSpace();
 		playerMovementSpace = new SequentialSpace();
@@ -501,6 +503,17 @@ public class Server {
 	private int getActualNumberOfPlayers() {
 		//Get number of players excluding disconnected players.
 		return numPlayersTeam1 + numPlayersTeam2;
+	}
+
+	public static String getIP(){
+		String address = "localhost";
+		try {
+			address = Inet4Address.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+
+		return address;
 	}
 	
 	private class Timer implements Runnable {

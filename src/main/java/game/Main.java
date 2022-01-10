@@ -51,7 +51,8 @@ public class Main {
 
     	if (type == 1) {
             server = new Server();
-            client = new Client("localhost", frame);
+            client = new Client(Server.getIP(), frame);
+			System.out.println(Server.getIP());
     	}
     	else {
             client = new Client(tf.getText(), frame);
