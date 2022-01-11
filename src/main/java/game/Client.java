@@ -40,7 +40,7 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
-	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred;
+	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -76,6 +76,7 @@ public class Client {
 			cannonred = ImageIO.read(getClass().getClassLoader().getResource("cannonred.png"));
 			fortressblue = ImageIO.read(getClass().getClassLoader().getResource("fortressblue.png"));
 			fortressred = ImageIO.read(getClass().getClassLoader().getResource("fortressred.png"));
+			wood = ImageIO.read(getClass().getClassLoader().getResource("wood.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -285,13 +286,13 @@ public class Client {
 		public void paintResources(){
             for (Resource r : resources) {
                 if (r.getType() == 0) {
-                    g2D.setColor(Color.ORANGE);
+                    g2D.drawImage(wood, (int) r.x, (int) r.y, (int) r.width, (int) r.height, null);
                 }
                 else {
                     g2D.setColor(Color.GRAY);
+					g2D.drawRect((int) r.x, (int) r.y, (int) r.width, (int) r.height);
+					g2D.setColor(Color.BLACK);
                 }
-                g2D.drawRect((int) r.x, (int) r.y, (int) r.width, (int) r.height);
-                g2D.setColor(Color.BLACK);
             }
 		}
 
