@@ -2,9 +2,13 @@ package game;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import game.Client.GamePanel;
+
 public class GameFrame extends JFrame {
 		public JPanel panel;
-
+		public boolean isHost = false;
+		private int numberOfDisconnectedClients = 0;
+		
 		public GameFrame() {
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
@@ -14,9 +18,13 @@ public class GameFrame extends JFrame {
 				remove(panel);
 			}
 			this.panel = panel;
+			if (panel instanceof GamePanel && isHost) {
+				setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			}
 			add(panel);
 			pack();
 			setLocationRelativeTo(null);
 			setVisible(true);
 		}
+		
 	}

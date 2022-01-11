@@ -595,14 +595,33 @@ public class Server {
 					for (int i = 0; i < numPlayersBefore; i++) {
 						if (!players.get(i).disconnected && clientServerChannels.get(i).getp(new ActualField("acknowledged")) == null) {
 							//Client took too long to respond.
-							players.get(i).disconnected = true;
-							if (players.get(i).team == true) {
-								numPlayersTeam1--;
+							if (i == 0) {
+								//The host has disconnected.
+								for (int j = 0; j < numPlayersBefore; j++) {
+									if (!players.get(j).disconnected) {
+										serverClientChannels.get(j).put("stop");
+									}
+								}
+								System.out.println("Host disconnected.");
+								Thread.sleep(500);
+								System.exit(0);
 							}
 							else {
-								numPlayersTeam2--;
+								//A client that is not the host has disconnected.
+								for (int j = 0; j < numPlayersBefore; j++) {
+									if (!players.get(j).disconnected) {
+										serverClientChannels.get(j).put("clientdisconnected");
+									}
+								}
+								players.get(i).disconnected = true;
+								if (players.get(i).team == true) {
+									numPlayersTeam1--;
+								}
+								else {
+									numPlayersTeam2--;
+								}
+								System.out.println("Player disconnected.");
 							}
-							System.out.println("Player disconnected.");
 						}
 					}
 				}

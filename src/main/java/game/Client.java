@@ -43,15 +43,18 @@ public class Client {
 	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
+	private boolean windowClosed = false;
 	private String winningTeam = "";
 	private String defaultFont;
 	private Font fortressStatusFont;
 
 	public Client(String address, GameFrame frame) {
+		this.frame = frame;
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {public void windowClosing(java.awt.event.WindowEvent windowEvent) {windowClosed = true;}});
 		panel = new GamePanel();
 		frame.setPanel(panel);
 		frame.setVisible(true);
-		defaultFont = "Comic Sans";
+		defaultFont = "Comic Sans MS";
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
 			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
@@ -173,8 +176,9 @@ public class Client {
         }
 	}
 
-	private class GamePanel extends JPanel implements KeyListener {
+	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
+		private int numberOfDisconnectedClients = 0;
 
 		public GamePanel() {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
@@ -198,6 +202,10 @@ public class Client {
 				paintWalls();
 				paintPlayers();
 				paintBullets();
+				for (int i = 0; i < numberOfDisconnectedClients; i++) {
+					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
+					g2D.drawString("A player has disconnected.", Server.SCREEN_WIDTH-250, 50+i*20);
+				}
 			}
 			else {
 				g2D.setFont(new Font(defaultFont, Font.PLAIN, 20));
@@ -377,6 +385,22 @@ public class Client {
 			}
 			return input;
 		}
+		
+		public void clientDisconnected() {
+			new Thread(new ShowPlayerDisconnected()).start();
+		}
+		
+		private class ShowPlayerDisconnected implements Runnable {
+			public void run() {
+				numberOfDisconnectedClients++;
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				numberOfDisconnectedClients--;
+			}
+		}
 	}
 
 	private class Timer implements Runnable {
@@ -396,8 +420,16 @@ public class Client {
 		public void run() {
 			try {
 				while (true) {
-					channelFromServer.get(new ActualField("check"));
-					channelToServer.put("acknowledged");	
+					String msg = (String) channelFromServer.get(new FormalField(String.class))[0];
+					if (msg.equals("check") && !windowClosed) {
+						channelToServer.put("acknowledged");
+					}
+					else if (msg.equals("stop") && !frame.isHost) {
+						System.exit(0);
+					}
+					else if (msg.equals("clientdisconnected")) {
+						panel.clientDisconnected();
+					}
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();

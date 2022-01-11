@@ -51,10 +51,12 @@ public class Main {
 
     	if (type == 1) {
             server = new Server();
+            frame.isHost = true;
             client = new Client(Server.getIP(), frame);
 			System.out.println(Server.getIP());
     	}
     	else {
+            frame.isHost = false;
             client = new Client(tf.getText(), frame);
     	}
     }
