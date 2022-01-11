@@ -48,7 +48,7 @@ public class Server {
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private int numberOfResources = 10;
-    private boolean gameOver = false;
+    public boolean gameOver = false;
     private OrbPetriNet orbPetriNet1;
     private OrbPetriNet orbPetriNet2;
 
