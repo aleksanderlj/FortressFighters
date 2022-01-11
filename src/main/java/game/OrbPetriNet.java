@@ -1,8 +1,13 @@
 package game;
 
+import java.util.List;
+
 import org.jspace.ActualField;
+import org.jspace.FormalField;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
+
+import model.OrbHolder;
 
 public class OrbPetriNet implements Runnable {
 	//Implemented using naive approach.
@@ -18,8 +23,8 @@ public class OrbPetriNet implements Runnable {
 	
 	public void run() {
 		Space[] spaces = new Space[7];
-		for (Space space : spaces) {
-			space = new SequentialSpace();
+		for (int i = 0; i < 7; i++) {
+			spaces[i] = new SequentialSpace();
 		}
 		new Thread(new Split(new Space[] {spaces[0]}, new Space[] {spaces[1], spaces[2]})).start();
 		new Thread(new TopOrb(new Space[] {spaces[1]}, new Space[] {spaces[3]})).start();
@@ -27,6 +32,11 @@ public class OrbPetriNet implements Runnable {
 		new Thread(new ConsumeOrbs(new Space[] {spaces[3], spaces[4]}, new Space[] {spaces[5]})).start();
 		new Thread(new Heal(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
 		new Thread(new SpawnOrbs(new Space[] {spaces[6]}, new Space[] {spaces[0]})).start();
+		try {
+			spaces[0].put("token");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private class Activity implements Runnable {
@@ -37,20 +47,22 @@ public class OrbPetriNet implements Runnable {
 			this.outputs = outputs;
 		}
 		public void run() {
-			for (Space input : inputs) {
-				try {
-					input.get(new ActualField("token"));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+			while (true) {
+				for (Space input : inputs) {
+					try {
+						input.get(new ActualField("token"));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
-			}
-			performTask();
-			for (Space output : outputs) {
-				try {
-					output.put("token");
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				performTask();
+				for (Space output : outputs) {
+					try {
+						output.put("token");
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}	
 			}
 		}
 		public void performTask() {}
@@ -63,21 +75,30 @@ public class OrbPetriNet implements Runnable {
 	private class TopOrb extends Activity {
 		public TopOrb(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			
+			try {
+				buffSpace.get(new ActualField(team), new ActualField(true));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	private class BottomOrb extends Activity {
 		public BottomOrb(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			
+			try {
+				buffSpace.get(new ActualField(team), new ActualField(false));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	private class ConsumeOrbs extends Activity {
 		public ConsumeOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			
+			server.resetOrbHolder(team, true);
+			server.resetOrbHolder(team, false);
 		}
 	}
 	
@@ -95,7 +116,8 @@ public class OrbPetriNet implements Runnable {
 	private class SpawnOrbs extends Activity {
 		public SpawnOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			
+			server.createNewOrb();
+			server.createNewOrb();
 		}
 	}
 

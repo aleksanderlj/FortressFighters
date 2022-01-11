@@ -26,6 +26,8 @@ public class Client {
 	private Bullet[] bullets = new Bullet[0];
 	private Fortress[] fortresses = new Fortress[0];
     private Resource[] resources = new Resource[0];
+    private Orb[] orbs = new Orb[0];
+    private OrbHolder[] orbHolders = new OrbHolder[0];
 	private Space centralSpace;
 	private Space playerPositionsSpace;
 	private Space playerMovementSpace;
@@ -34,6 +36,7 @@ public class Client {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
+	private Space orbSpace;
 	private Space channelFromServer;
 	private Space channelToServer;
 	private int id;
@@ -64,6 +67,7 @@ public class Client {
 			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
+			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
 			centralSpace.put("joined");
 			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
 			id = (Integer) tuple[0];
@@ -97,6 +101,7 @@ public class Client {
 					updateWalls();
 					updateFortresses();
 					updateResources();
+					updateOrbs();
 				}
 				else {
 					checkGameStarted();
@@ -120,13 +125,14 @@ public class Client {
 
 	public void updatePlayers() throws InterruptedException {
 		if (playerPositionsSpace.queryp(new ActualField("players")) != null) {
-			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
+			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
 			players = new Player[playersTuples.size()];
 			for (int i = 0; i < playersTuples.size(); i++) {
 				Object[] tuple = playersTuples.get(i);
 				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3]);
 				players[i].wood = (int)tuple[4];
 				players[i].iron = (int)tuple[5];
+				players[i].hasOrb = (boolean)tuple[6];
 			}	
 		}
 	}
@@ -175,6 +181,21 @@ public class Client {
             resources[i] = new Resource((int) tuple[0], (int) tuple[1], (int) tuple[2]);
         }
 	}
+	
+	public void updateOrbs() throws InterruptedException {
+        List<Object[]> orbTuples = orbSpace.queryAll(new FormalField(Integer.class), new FormalField(Integer.class));
+        orbs = new Orb[orbTuples.size()];
+        for (int i = 0; i < orbTuples.size(); i++) {
+            Object[] tuple = orbTuples.get(i);
+            orbs[i] = new Orb((int) tuple[0], (int) tuple[1]);
+        }
+        List<Object[]> orbHolderTuples = orbSpace.queryAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
+        orbHolders = new OrbHolder[orbHolderTuples.size()];
+        for (int i = 0; i < orbHolderTuples.size(); i++) {
+            Object[] tuple = orbHolderTuples.get(i);
+            orbHolders[i] = new OrbHolder((boolean) tuple[0], (boolean) tuple[1], (boolean) tuple[2]);
+        }
+	}
 
 	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
@@ -198,6 +219,7 @@ public class Client {
 				// Render each object on the screen
 				paintFortresses();
 				paintResources();
+				paintOrbs();
 				paintCannons();
 				paintWalls();
 				paintPlayers();
@@ -292,6 +314,20 @@ public class Client {
                 }
                 g2D.drawRect((int) r.x, (int) r.y, (int) r.width, (int) r.height);
                 g2D.setColor(Color.BLACK);
+            }
+		}
+		
+		public void paintOrbs(){
+			for (Orb o : orbs) {
+                g2D.setColor(Color.BLUE);
+                g2D.drawRect((int) o.x, (int) o.y, (int) o.width, (int) o.height);
+                g2D.setColor(Color.BLACK);
+            }
+			for (OrbHolder oh : orbHolders) {
+                g2D.drawRect((int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height);
+                if (oh.hasOrb) {
+                    g2D.drawRect((int) oh.x+3, (int) oh.y+3, (int) oh.width-6, (int) oh.height-6);
+                }
             }
 		}
 

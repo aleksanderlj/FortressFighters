@@ -26,6 +26,8 @@ public class Server {
 	private List<Cannon> cannons = new ArrayList<>();
     private List<Resource> resources = new ArrayList<>();
 	private List<Wall> walls = new ArrayList<>();
+	private List<Orb> orbs = new ArrayList<>();
+	public List<OrbHolder> orbHolders = new ArrayList<>();
 	private Fortress fortress1;
 	private Fortress fortress2;
 	private List<Bullet> bullets = new ArrayList<>();
@@ -38,13 +40,17 @@ public class Server {
 	private Space wallSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
+	private Space orbSpace;
+	private Space buffSpace;
 	private Space mutexSpace;
 	private int numPlayers = 0; //Including disconnected players.
 	private int numPlayersTeam1 = 0; //Excluding disconnected players.
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private int numberOfResources = 10;
-    boolean gameOver = false;
+    private boolean gameOver = false;
+    private OrbPetriNet orbPetriNet1;
+    private OrbPetriNet orbPetriNet2;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -57,6 +63,8 @@ public class Server {
 		wallSpace = new SequentialSpace();
 		fortressSpace = new SequentialSpace();
 		resourceSpace = new SequentialSpace();
+		orbSpace = new SequentialSpace();
+		buffSpace = new SequentialSpace();
 		mutexSpace = new SequentialSpace();
 		repository.add("central", centralSpace);
 		repository.add("playerpositions", playerPositionsSpace);
@@ -66,6 +74,7 @@ public class Server {
 		repository.add("wall", wallSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
+		repository.add("orb", orbSpace);
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 		new Thread(new JoinedReader()).start();
@@ -98,6 +107,9 @@ public class Server {
 			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
 			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 			mutexSpace.get(new ActualField("bulletsLock"));
+			orbSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class));
+			orbSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
+			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
 			bullets = new ArrayList<Bullet>();
 			mutexSpace.put("bulletsLock");
 			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
@@ -109,8 +121,28 @@ public class Server {
 		fortress2 = null;
 		changeFortress();
         resources = new ArrayList<Resource>();
+        orbs = new ArrayList<Orb>();
+        orbHolders = new ArrayList<OrbHolder>();
+        orbPetriNet1 = new OrbPetriNet(this, buffSpace, false);
+        orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
+        new Thread(orbPetriNet1).start();
+        new Thread(orbPetriNet2).start();
         for (int i = 0; i < numberOfResources; i++) {
             resources.add(createRandomResource());
+        }
+        for (int i = 0; i < 3; i++) {
+            createNewOrb();
+        }
+        orbHolders.add(new OrbHolder(false, true, false));
+        orbHolders.add(new OrbHolder(true, false, false));
+        orbHolders.add(new OrbHolder(false, false, false));
+        orbHolders.add(new OrbHolder(true, true, false));
+        for (OrbHolder oh : orbHolders) {
+        	try {
+				orbSpace.put(oh.team, oh.top, oh.hasOrb);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
         }
         resourcesChanged();
 	}
@@ -150,6 +182,7 @@ public class Server {
 				updateWalls();
 				updateFortresses();
 				updateResources();	
+				updateOrbs();
 			}
 			else {
 				if (numPlayers >= 2) {
@@ -216,7 +249,7 @@ public class Server {
 		}
 
 		playerPositionsSpace.getp(new ActualField("players"));
-		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class));
+		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
 		for (Player p : players) {
 			if (!p.disconnected) {
 				mutexSpace.get(new ActualField("bulletsLock"));
@@ -227,7 +260,7 @@ public class Server {
 				}
 				bullets.removeIf(b -> b.getTeam() != p.team && b.intersects(p));
 				mutexSpace.put("bulletsLock");
-				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron);
+				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
 				if (p.stunned > 0) {
 					p.stunned -= S_BETWEEN_UPDATES;
 				}
@@ -477,13 +510,85 @@ public class Server {
     }
     
     public Resource createRandomResource() {
+        int[] pos = getRandomPosition();
+		// TODO Balance wood vs iron ratio
+        int type = (new Random()).nextInt(2);
+		// TODO Check for collision with player, wall, cannon, resource ?
+        return new Resource(pos[0], pos[1], type);
+    }
+    
+    public int[] getRandomPosition() {
         Random r = new Random();
         int x = r.nextInt((int)(SCREEN_WIDTH-2*Fortress.WIDTH-2*Resource.WIDTH))+(int)Fortress.WIDTH+(int)Resource.WIDTH;
         int y = r.nextInt((int)(SCREEN_HEIGHT-2*Resource.WIDTH))+(int)Resource.WIDTH;
-		// TODO Balance wood vs iron ratio
-        int type = r.nextInt(2);
-		// TODO Check for collision with player, wall, cannon, resource ?
-        return new Resource(x, y, type);
+        return new int[] {x, y};
+    }
+    
+    public void updateOrbs() {
+    	List<Orb> newOrbs = new ArrayList<>();
+        for (int i = 0; i < orbs.size(); i++) {
+        	boolean add = true;
+        	Orb o = orbs.get(i);
+        	for (int j = 0; j < players.size(); j++) {
+                Player p = players.get(j);
+                if (!p.disconnected && p.intersects(o) && !p.hasOrb) {
+                	add = false;
+                	p.hasOrb = true;
+                	try {
+						orbSpace.get(new ActualField((int)o.x), new ActualField((int)o.y));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+                }
+        	}
+        	if (add) {
+            	newOrbs.add(o);
+        	}
+        }
+        orbs = newOrbs;
+        for (int i = 0; i < orbHolders.size(); i++) {
+        	OrbHolder oh = orbHolders.get(i);
+        	for (int j = 0; j < players.size(); j++) {
+                Player p = players.get(j);
+                if (!p.disconnected && p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
+                	p.hasOrb = true;
+                	try {
+						orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new ActualField(oh.hasOrb));
+	                	oh.hasOrb = true;
+	                	p.hasOrb = false;
+	                	orbSpace.put(oh.team, oh.top, oh.hasOrb);
+		                buffSpace.put(oh.team, oh.top);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+                }
+        	}
+        }
+    }
+    
+    public void createNewOrb() {
+    	int[] pos = getRandomPosition();
+    	Orb o = new Orb(pos[0], pos[1]);
+    	orbs.add(o);
+    	try {
+			orbSpace.put((int)o.x, (int)o.y);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void resetOrbHolder(boolean team, boolean top) {
+    	for (OrbHolder oh : orbHolders) {
+    		if (oh.team == team && oh.top == top) {
+    			oh.hasOrb = false;
+				try {
+					orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new FormalField(Boolean.class));
+					orbSpace.put(oh.team, oh.top, oh.hasOrb);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+    		}
+    	}
     }
 	
 	private void createNewChannel(int id) {

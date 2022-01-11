@@ -7,7 +7,6 @@ public class Resource extends Rectangle.Double {
     int type; // 0 = wood, 1 = iron
     public static final double WIDTH = 50;
     public static final double HEIGHT = 50;
-    public boolean team;
 
     public Resource(double x, double y, int type) {
         super(x, y, WIDTH, HEIGHT);

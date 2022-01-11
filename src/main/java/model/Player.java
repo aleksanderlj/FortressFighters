@@ -9,6 +9,7 @@ public class Player extends Rectangle.Double {
 	public int id;
 	public boolean team;
 	public boolean disconnected = false;
+	public boolean hasOrb = false;
 	public int wood = 10;
 	public int iron = 20;
 	public double stunned = 0;
