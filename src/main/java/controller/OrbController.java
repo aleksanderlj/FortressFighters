@@ -5,6 +5,8 @@ import game.Server;
 import model.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,9 +15,11 @@ import java.util.Random;
 
 public class OrbController {
     Server server;
+    private Space orbSpace;
 
     public OrbController(Server server){
         this.server = server;
+        orbSpace = new SequentialSpace();
     }
 
     public void updateOrbs() {
@@ -29,7 +33,7 @@ public class OrbController {
                     add = false;
                     p.hasOrb = true;
                     try {
-                        server.getOrbSpace().get(new ActualField((int)o.x), new ActualField((int)o.y));
+                        orbSpace.get(new ActualField((int)o.x), new ActualField((int)o.y));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -47,11 +51,11 @@ public class OrbController {
                 if (!p.disconnected && p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
                     p.hasOrb = true;
                     try {
-                        server.getOrbSpace().get(new ActualField(oh.team), new ActualField(oh.top), new ActualField(oh.hasOrb));
+                        orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new ActualField(oh.hasOrb));
                         oh.hasOrb = true;
                         p.hasOrb = false;
-                        server.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
-                        server.getBuffSpace().put(oh.team, oh.top);
+                        orbSpace.put(oh.team, oh.top, oh.hasOrb);
+                        server.getBuffController().getBuffSpace().put(oh.team, oh.top);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -78,7 +82,7 @@ public class OrbController {
         Orb o = new Orb(pos[0], pos[1]);
         server.getOrbs().add(o);
         try {
-            server.getOrbSpace().put((int)o.x, (int)o.y);
+            orbSpace.put((int)o.x, (int)o.y);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -96,12 +100,21 @@ public class OrbController {
             if (oh.team == team && oh.top == top) {
                 oh.hasOrb = false;
                 try {
-                    server.getOrbSpace().get(new ActualField(oh.team), new ActualField(oh.top), new FormalField(Boolean.class));
-                    server.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
+                    orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new FormalField(Boolean.class));
+                    orbSpace.put(oh.team, oh.top, oh.hasOrb);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    public Space getOrbSpace() {
+        return orbSpace;
+    }
+
+    public void resetOrbSpace() throws InterruptedException {
+        orbSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class));
+        orbSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
     }
 }

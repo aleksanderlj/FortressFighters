@@ -5,6 +5,8 @@ import model.Fortress;
 import model.Player;
 import model.Resource;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -13,9 +15,11 @@ import java.util.Random;
 
 public class ResourceController {
     Server server;
+    private Space resourceSpace;
 
     public ResourceController(Server server){
         this.server = server;
+        resourceSpace = new SequentialSpace();
     }
 
     public void updateResources() {
@@ -52,9 +56,9 @@ public class ResourceController {
 
     public void resourcesChanged() {
         try {
-            server.getResourceSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
+            resourceSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
             for (Resource r : server.getResources()) {
-                server.getResourceSpace().put((int)r.x, (int)r.y, r.getType());
+                resourceSpace.put((int)r.x, (int)r.y, r.getType());
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -87,5 +91,9 @@ public class ResourceController {
         int x = r.nextInt((int)(Server.SCREEN_WIDTH-2* Fortress.WIDTH-2*Resource.WIDTH))+(int)Fortress.WIDTH+(int)Resource.WIDTH;
         int y = r.nextInt((int)(Server.SCREEN_HEIGHT-2*Resource.WIDTH))+(int)Resource.WIDTH;
         return new int[] {x, y};
+    }
+
+    public Space getResourceSpace() {
+        return resourceSpace;
     }
 }

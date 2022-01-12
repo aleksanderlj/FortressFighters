@@ -34,15 +34,6 @@ public class Server {
 	private List<Bullet> bullets = new ArrayList<>();
 	private SpaceRepository repository;
 	private Space centralSpace;
-	private Space playerPositionsSpace;
-	private Space playerMovementSpace;
-	private Space cannonSpace;
-	private Space bulletSpace;
-	private Space wallSpace;
-	private Space fortressSpace;
-	private Space resourceSpace;
-	private Space orbSpace;
-	private Space buffSpace;
 	private Space mutexSpace;
 	public int numPlayers = 0; //Including disconnected players.
 	public int numPlayersTeam1 = 0; //Excluding disconnected players.
@@ -63,25 +54,7 @@ public class Server {
 		repository = new SpaceRepository();
 		repository.addGate("tcp://" + getIP() + ":9001/?keep");
 		centralSpace = new SequentialSpace();
-		playerPositionsSpace = new SequentialSpace();
-		playerMovementSpace = new SequentialSpace();
-		cannonSpace = new SequentialSpace();
-		bulletSpace = new SequentialSpace();
-		wallSpace = new SequentialSpace();
-		fortressSpace = new SequentialSpace();
-		resourceSpace = new SequentialSpace();
-		orbSpace = new SequentialSpace();
-		buffSpace = new SequentialSpace();
 		mutexSpace = new SequentialSpace();
-		repository.add("central", centralSpace);
-		repository.add("playerpositions", playerPositionsSpace);
-		repository.add("playermovement", playerMovementSpace);
-		repository.add("cannon", cannonSpace);
-		repository.add("bullet", bulletSpace);
-		repository.add("wall", wallSpace);
-		repository.add("fortress", fortressSpace);
-		repository.add("resource", resourceSpace);
-		repository.add("orb", orbSpace);
 		playerController = new PlayerController(this);
 		cannonController = new CannonController(this);
 		wallController = new WallController(this);
@@ -89,6 +62,15 @@ public class Server {
 		resourceController = new ResourceController(this);
 		orbController = new OrbController(this);
 		buffController = new BuffController(this);
+		repository.add("central", centralSpace);
+		repository.add("playerpositions", playerController.getPlayerPositionsSpace());
+		repository.add("playermovement", playerController.getPlayerMovementSpace());
+		repository.add("cannon", cannonController.getCannonSpace());
+		repository.add("bullet", cannonController.getBulletSpace());
+		repository.add("wall", wallController.getWallSpace());
+		repository.add("fortress", fortressController.getFortressSpace());
+		repository.add("resource", resourceController.getResourceSpace());
+		repository.add("orb", orbController.getOrbSpace());
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 		new Thread(new JoinedReader()).start();
@@ -116,18 +98,15 @@ public class Server {
 		cannons = new ArrayList<Cannon>();
 		walls = new ArrayList<Wall>();
 		try {
-			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
-			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
-			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+			cannonController.resetCannonSpace();
+			wallController.resetWallSpace();
 			mutexSpace.get(new ActualField("bulletsLock"));
-			orbSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class));
-			orbSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
-			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
+			orbController.resetOrbSpace();
+			buffController.resetBuffSpace();
 			bullets = new ArrayList<Bullet>();
 			mutexSpace.put("bulletsLock");
-			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-			buffSpace = new SequentialSpace();
+			cannonController.resetBulletSpace();
+			buffController.setBuffSpace(new SequentialSpace());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -138,8 +117,8 @@ public class Server {
         resources = new ArrayList<Resource>();
         orbHolders = new ArrayList<OrbHolder>();
         orbs = new ArrayList<Orb>();
-        orbPetriNet1 = new OrbPetriNet(this, buffSpace, false);
-        orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
+        orbPetriNet1 = new OrbPetriNet(this, buffController.getBuffSpace(), false);
+        orbPetriNet2 = new OrbPetriNet(this, buffController.getBuffSpace(), true);
         new Thread(orbPetriNet1).start();
         new Thread(orbPetriNet2).start();
         for (int i = 0; i < INITIAL_RESOURCES; i++) {
@@ -154,7 +133,7 @@ public class Server {
         orbHolders.add(new OrbHolder(true, true, false));
         for (OrbHolder oh : orbHolders) {
         	try {
-				orbSpace.put(oh.team, oh.top, oh.hasOrb);
+				orbController.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -164,10 +143,10 @@ public class Server {
 	
 	private void resetPetriNet() {
 		try {
-			buffSpace.put(false, false);
-			buffSpace.put(false, true);
-			buffSpace.put(true, false);
-			buffSpace.put(true, true);
+			buffController.getBuffSpace().put(false, false);
+			buffController.getBuffSpace().put(false, true);
+			buffController.getBuffSpace().put(true, false);
+			buffController.getBuffSpace().put(true, true);
 			orbPetriNet1.reset();
 			orbPetriNet2.reset();
 		} catch (InterruptedException e) {
@@ -379,42 +358,6 @@ public class Server {
 
 	public List<Bullet> getBullets() {
 		return bullets;
-	}
-
-	public Space getPlayerPositionsSpace() {
-		return playerPositionsSpace;
-	}
-
-	public Space getPlayerMovementSpace() {
-		return playerMovementSpace;
-	}
-
-	public Space getCannonSpace() {
-		return cannonSpace;
-	}
-
-	public Space getBulletSpace() {
-		return bulletSpace;
-	}
-
-	public Space getWallSpace() {
-		return wallSpace;
-	}
-
-	public Space getFortressSpace() {
-		return fortressSpace;
-	}
-
-	public Space getResourceSpace() {
-		return resourceSpace;
-	}
-
-	public Space getOrbSpace() {
-		return orbSpace;
-	}
-
-	public Space getBuffSpace() {
-		return buffSpace;
 	}
 
 	public Space getMutexSpace() {

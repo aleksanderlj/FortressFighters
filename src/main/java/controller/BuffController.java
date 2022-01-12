@@ -6,16 +6,20 @@ import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 import java.util.List;
 
 public class BuffController {
     Server server;
+    private Space buffSpace;
     private double team1GhostTimer = 0;
     private double team2GhostTimer = 0;
 
     public BuffController(Server server){
         this.server = server;
+        buffSpace = new SequentialSpace();
     }
 
     public void updateBuffs() throws InterruptedException {
@@ -25,7 +29,7 @@ public class BuffController {
         else if (team2GhostTimer > 0) {
             team2GhostTimer -= server.S_BETWEEN_UPDATES;
         }
-        List<Object[]> buffs =  server.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
+        List<Object[]> buffs =  buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
         for (Object[] buff : buffs) {
             switch ((String)buff[1]){
                 case "heal":
@@ -55,7 +59,7 @@ public class BuffController {
                         server.getMutexSpace().get(new ActualField("bulletsLock"));
                         server.getBullets().add(bullet);
                         server.getMutexSpace().put("bulletsLock");
-                        server.getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
+                        server.getCannonController().getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
                         bulletHeight -= 40;
                         Thread.sleep(50);
                     }
@@ -71,5 +75,17 @@ public class BuffController {
     public void resetTimers(){
         team1GhostTimer = 0;
         team2GhostTimer = 0;
+    }
+
+    public Space getBuffSpace() {
+        return buffSpace;
+    }
+
+    public void setBuffSpace(Space buffSpace) {
+        this.buffSpace = buffSpace;
+    }
+
+    public void resetBuffSpace() throws InterruptedException {
+        buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
     }
 }

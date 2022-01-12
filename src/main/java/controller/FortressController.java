@@ -6,12 +6,16 @@ import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 public class FortressController {
     Server server;
+    private Space fortressSpace;
 
     public FortressController(Server server){
         this.server = server;
+        fortressSpace = new SequentialSpace();
     }
 
     public void updateFortresses() throws InterruptedException {
@@ -74,18 +78,22 @@ public class FortressController {
 
     public void changeFortress() {
         try {
-            server.getFortressSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+            fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
 
             // Update fortresses if they exist, otherwise build two new ones
             if (server.getFortress1() != null) {
-                server.getFortressSpace().put(server.getFortress1().getWood(), server.getFortress1().getIron(), server.getFortress1().getHP(), false);
-                server.getFortressSpace().put(server.getFortress2().getWood(), server.getFortress2().getIron(), server.getFortress2().getHP(), true);
+                fortressSpace.put(server.getFortress1().getWood(), server.getFortress1().getIron(), server.getFortress1().getHP(), false);
+                fortressSpace.put(server.getFortress2().getWood(), server.getFortress2().getIron(), server.getFortress2().getHP(), true);
             } else {
                 server.setFortress1(new Fortress(false));
                 server.setFortress2(new Fortress(true));
-                server.getFortressSpace().put(0, 0, 100, false);
-                server.getFortressSpace().put(0, 0, 100, true);
+                fortressSpace.put(0, 0, 100, false);
+                fortressSpace.put(0, 0, 100, true);
             }
         } catch (InterruptedException e) {}
+    }
+
+    public Space getFortressSpace() {
+        return fortressSpace;
     }
 }

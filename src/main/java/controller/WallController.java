@@ -6,18 +6,22 @@ import model.Player;
 import model.Wall;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 import java.util.List;
 
 public class WallController {
     Server server;
+    private Space wallSpace;
 
     public WallController(Server server){
         this.server = server;
+        wallSpace = new SequentialSpace();
     }
 
     public void updateWalls() throws InterruptedException{
-        List<Object[]> wallCommands = server.getWallSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
+        List<Object[]> wallCommands = wallSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
         Wall newWall;
         for (Object[] command : wallCommands) {
             int id = (int) command[0];
@@ -44,7 +48,7 @@ public class WallController {
                     return;
                 }
                 server.getWalls().add(newWall);
-                server.getWallSpace().put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
+                wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
             }
         }
 
@@ -62,10 +66,10 @@ public class WallController {
         for (Bullet b : server.getBullets()) {
             for (Wall w : server.getWalls()) {
                 if(b.intersects(w) && b.getTeam() != w.getTeam()){
-                    server.getWallSpace().getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+                    wallSpace.getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
                     w.setHealth(w.getHealth() - 1);
                     if(w.getHealth() > 0) {
-                        server.getWallSpace().put("wall", w.getId(), w.x, w.y, w.getTeam());
+                        wallSpace.put("wall", w.getId(), w.x, w.y, w.getTeam());
                     }
                 }
             }
@@ -74,5 +78,14 @@ public class WallController {
         server.getBullets().removeIf(b -> server.getWalls().stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
         server.getWalls().removeIf(w -> w.getHealth() <= 0);
         server.getMutexSpace().put("bulletsLock");
+    }
+
+    public Space getWallSpace() {
+        return wallSpace;
+    }
+
+    public void resetWallSpace() throws InterruptedException {
+        wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
+        wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
     }
 }

@@ -6,15 +6,21 @@ import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
+import org.jspace.Space;
 
 import java.util.List;
 import java.util.Random;
 
 public class PlayerController {
     Server server;
+    private Space playerPositionsSpace;
+    private Space playerMovementSpace;
 
     public PlayerController(Server server){
         this.server = server;
+        playerPositionsSpace = new SequentialSpace();
+        playerMovementSpace = new SequentialSpace();
     }
 
     public void addPlayer(int id) {
@@ -43,7 +49,7 @@ public class PlayerController {
     }
 
     public void updatePlayers() throws InterruptedException {
-        List<Object[]> movementTuples = server.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class));
+        List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
         int[][] movementVectors = new int[server.getPlayers().size()][2];
         for (Object[] movementTuple : movementTuples) {
             int playerID = (Integer) movementTuple[0];
@@ -106,8 +112,8 @@ public class PlayerController {
             }
         }
 
-        server.getPlayerPositionsSpace().getp(new ActualField("players"));
-        server.getPlayerPositionsSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+        playerPositionsSpace.getp(new ActualField("players"));
+        playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
         for (Player p : server.getPlayers()) {
             if (!p.disconnected) {
                 server.getMutexSpace().get(new ActualField("bulletsLock"));
@@ -118,18 +124,26 @@ public class PlayerController {
                 }
                 server.getBullets().removeIf(b -> !server.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p));
                 server.getMutexSpace().put("bulletsLock");
-                server.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
+                playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
                 if (p.stunned > 0) {
                     p.stunned -= server.S_BETWEEN_UPDATES;
                 }
             }
         }
-        server.getPlayerPositionsSpace().put("players");
+        playerPositionsSpace.put("players");
     }
 
     public boolean isColliding(Player player) {
         return (!server.getBuffController().isGhost(player) && server.getWalls().stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
                 (player.team && server.getFortress1().intersects(player)) ||
                 (!player.team && server.getFortress2().intersects(player)));
+    }
+
+    public Space getPlayerMovementSpace() {
+        return playerMovementSpace;
+    }
+
+    public Space getPlayerPositionsSpace() {
+        return playerPositionsSpace;
     }
 }
