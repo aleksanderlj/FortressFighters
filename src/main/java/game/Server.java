@@ -245,7 +245,7 @@ public class Server {
 			double oldY = player.y;
 			double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
 			if (mvLength != 0) {
-				double speed = Player.SPEED * S_BETWEEN_UPDATES;
+				double speed = Player.SPEED * S_BETWEEN_UPDATES * 8;
 				if (isGhost(player)) {
 					speed *= 2;
 				}
@@ -514,6 +514,23 @@ public class Server {
 					} else {
 						team2GhostTimer = 5;
 					}
+				case "bullets":
+					Bullet bullet;
+					double bulletHeight = Fortress.HEIGHT;
+					while (bulletHeight > SCREEN_HEIGHT-Fortress.HEIGHT) {
+						if((boolean) buff[0]) {
+							bullet = new Bullet(fortress1.x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+						} else {
+							bullet = new Bullet(fortress2.x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+						}
+						mutexSpace.get(new ActualField("bulletsLock"));
+						bullets.add(bullet);
+						mutexSpace.put("bulletsLock");
+						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
+						bulletHeight -= 40;
+						Thread.sleep(50);
+					}
+					break;
 			}
 		}
 	}

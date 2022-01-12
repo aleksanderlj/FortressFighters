@@ -34,6 +34,7 @@ public class OrbPetriNet implements Runnable {
 		new Thread(new ConsumeOrbs(new Space[] {spaces[3], spaces[4]}, new Space[] {spaces[5]})).start();
 		new Thread(new Heal(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
 		new Thread(new GhostBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
+		new Thread(new BulletBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
 		new Thread(new SpawnOrbs(new Space[] {spaces[6]}, new Space[] {spaces[0]})).start();
 		try {
 			spaces[0].put("token");
@@ -131,6 +132,17 @@ public class OrbPetriNet implements Runnable {
 		public void performTask() {
 			try {
 				buffSpace.put(team, "ghost");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class BulletBuff extends Activity {
+		public BulletBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
+		public void performTask() {
+			try {
+				buffSpace.put(team, "bullets");
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
