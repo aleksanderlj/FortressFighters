@@ -52,6 +52,8 @@ public class Server {
     public boolean gameOver = false;
     private OrbPetriNet orbPetriNet1;
     private OrbPetriNet orbPetriNet2;
+    private double team1GhostTimer = 0;
+    private double team2GhostTimer = 0;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -243,15 +245,19 @@ public class Server {
 			double oldY = player.y;
 			double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
 			if (mvLength != 0) {
-				player.x += (movementVectors[i][0] / mvLength) * Player.SPEED * S_BETWEEN_UPDATES;
-				player.y += (movementVectors[i][1] / mvLength) * Player.SPEED * S_BETWEEN_UPDATES;
+				double speed = Player.SPEED * S_BETWEEN_UPDATES;
+				if (isGhost(player)) {
+					speed *= 2;
+				}
+				player.x += (movementVectors[i][0] / mvLength) * speed;
+				player.y += (movementVectors[i][1] / mvLength) * speed;
 			}
 			
 			// Prevent collision
 			if(
-					walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+					(!isGhost(player) && walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
 					(player.team && fortress1.intersects(player)) ||
-					(!player.team && fortress2.intersects(player))
+					(!player.team && fortress2.intersects(player)))
 			){
 				player.x = oldX;
 				player.y = oldY;
@@ -280,11 +286,11 @@ public class Server {
 			if (!p.disconnected) {
 				mutexSpace.get(new ActualField("bulletsLock"));
 				for (Bullet b : bullets) {
-					if (b.getTeam() != p.team && b.intersects(p)) {
+					if (!isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
 						p.stunned = 0.5;
 					}
 				}
-				bullets.removeIf(b -> b.getTeam() != p.team && b.intersects(p));
+				bullets.removeIf(b -> !isGhost(p) && b.getTeam() != p.team && b.intersects(p));
 				mutexSpace.put("bulletsLock");
 				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
 				if (p.stunned > 0) {
@@ -293,6 +299,10 @@ public class Server {
 			}
 		}
 		playerPositionsSpace.put("players");
+	}
+	
+	private boolean isGhost(Player p) {
+		return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
 	}
 
 	public void updateCannons() throws InterruptedException {
@@ -479,6 +489,12 @@ public class Server {
 	}
 
 	public void updateBuffs() throws InterruptedException {
+		if (team1GhostTimer > 0) {
+			team1GhostTimer -= S_BETWEEN_UPDATES;
+		}
+		else if (team2GhostTimer > 0) {
+			team2GhostTimer -= S_BETWEEN_UPDATES;
+		}
 		List<Object[]> buffs =  buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
 		for (Object[] buff : buffs) {
 			switch ((String)buff[1]){
@@ -490,6 +506,12 @@ public class Server {
 					}
 					changeFortress();
 					break;
+				case "ghost":
+					if((boolean) buff[0]){
+						team1GhostTimer = 5;
+					} else {
+						team2GhostTimer = 5;
+					}
 			}
 		}
 	}
