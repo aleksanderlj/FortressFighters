@@ -2,8 +2,10 @@ package controller;
 
 import game.Server;
 import model.Bullet;
+import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
+import org.jspace.FormalField;
 
 public class FortressController {
     Server server;
@@ -67,6 +69,23 @@ public class FortressController {
             server.gameOver(true);
         }
 
-        if (changed) { server.changeFortress(); }
+        if (changed) { changeFortress(); }
+    }
+
+    public void changeFortress() {
+        try {
+            server.fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+
+            // Update fortresses if they exist, otherwise build two new ones
+            if (server.fortress1 != null) {
+                server.fortressSpace.put(server.fortress1.getWood(), server.fortress1.getIron(), server.fortress1.getHP(), false);
+                server.fortressSpace.put(server.fortress2.getWood(), server.fortress2.getIron(), server.fortress2.getHP(), true);
+            } else {
+                server.fortress1 = new Fortress(false);
+                server.fortress2 = new Fortress(true);
+                server.fortressSpace.put(0, 0, 100, false);
+                server.fortressSpace.put(0, 0, 100, true);
+            }
+        } catch (InterruptedException e) {}
     }
 }

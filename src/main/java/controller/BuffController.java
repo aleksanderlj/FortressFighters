@@ -31,7 +31,7 @@ public class BuffController {
                     } else {
                         server.fortress2.setHP(server.fortress2.getHP() + 50);
                     }
-                    server.changeFortress();
+                    server.fortressController.changeFortress();
                     break;
                 case "ghost":
                     if((boolean) buff[0]){

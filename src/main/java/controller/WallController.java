@@ -36,10 +36,10 @@ public class WallController {
                 // Spend resources from fortress when building a wall
                 if (!newWall.getTeam() && server.fortress1.getWood() >= Wall.WOOD_COST) {
                     server.fortress1.setWood(server.fortress1.getWood() - Wall.WOOD_COST);
-                    server.changeFortress();
+                    server.fortressController.changeFortress();
                 } else if (newWall.getTeam() && server.fortress2.getWood() >= Wall.WOOD_COST) {
                     server.fortress2.setWood(server.fortress2.getWood() - Wall.WOOD_COST);
-                    server.changeFortress();
+                    server.fortressController.changeFortress();
                 } else {
                     return;
                 }

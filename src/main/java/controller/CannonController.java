@@ -34,10 +34,10 @@ public class CannonController {
                 // Spend resources from fortress when building a cannon
                 if (!newCannon.getTeam() && server.fortress1.getIron() >= Cannon.IRON_COST) {
                     server.fortress1.setIron(server.fortress1.getIron() - Cannon.IRON_COST);
-                    server.changeFortress();
+                    server.fortressController.changeFortress();
                 } else if (newCannon.getTeam() && server.fortress2.getIron() >= Cannon.IRON_COST) {
                     server.fortress2.setIron(server.fortress2.getIron() - Cannon.IRON_COST);
-                    server.changeFortress();
+                    server.fortressController.changeFortress();
                 } else {
                     return;
                 }

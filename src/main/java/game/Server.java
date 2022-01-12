@@ -46,8 +46,8 @@ public class Server {
 	public Space buffSpace;
 	public Space mutexSpace;
 	private int numPlayers = 0; //Including disconnected players.
-	private int numPlayersTeam1 = 0; //Excluding disconnected players.
-	private int numPlayersTeam2 = 0; //Excluding disconnected players.
+	public int numPlayersTeam1 = 0; //Excluding disconnected players.
+	public int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private int numberOfResources = 10;
     public boolean gameOver = false;
@@ -112,7 +112,7 @@ public class Server {
 		}
 		players = new ArrayList<Player>();
 		for (int i = 0; i < numPlayers; i++) {
-			addPlayer(i);
+			playerController.addPlayer(i);
 			players.get(i).disconnected = disconnected[i];
 		}
 		Collections.shuffle(players);
@@ -139,7 +139,7 @@ public class Server {
 	    team2GhostTimer = 0;
 		fortress1 = null;
 		fortress2 = null;
-		changeFortress();
+		fortressController.changeFortress();
         resources = new ArrayList<Resource>();
         orbHolders = new ArrayList<OrbHolder>();
         orbs = new ArrayList<Orb>();
@@ -148,10 +148,10 @@ public class Server {
         new Thread(orbPetriNet1).start();
         new Thread(orbPetriNet2).start();
         for (int i = 0; i < numberOfResources; i++) {
-            resources.add(createRandomResource());
+            resources.add(resourceController.createRandomResource());
         }
         for (int i = 0; i < 3; i++) {
-            createNewOrb();
+            orbController.createNewOrb();
         }
         orbHolders.add(new OrbHolder(false, true, false));
         orbHolders.add(new OrbHolder(true, false, false));
@@ -164,7 +164,7 @@ public class Server {
 				e.printStackTrace();
 			}
         }
-        resourcesChanged();
+        resourceController.resourcesChanged();
 	}
 	
 	private void resetPetriNet() {
@@ -177,31 +177,6 @@ public class Server {
 			orbPetriNet2.reset();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
-	}
-	
-	private void addPlayer(int id) {
-		double randomY = (new Random()).nextInt((int)(Fortress.HEIGHT - Player.HEIGHT)) + ((SCREEN_HEIGHT - Fortress.HEIGHT) / 2);
-		double xOffset = Fortress.WIDTH + 20;
-
-		if (numPlayersTeam1 == numPlayersTeam2) {
-			int team = (new Random()).nextInt(2);
-			if (team == 0) {
-				players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
-				numPlayersTeam1++;
-			}
-			else {
-				players.add(new Player(0 + xOffset, randomY, id, false));
-				numPlayersTeam2++;
-			}
-		}
-		else if (numPlayersTeam1 > numPlayersTeam2) {
-			players.add(new Player(0 + xOffset, randomY, id, false));
-			numPlayersTeam2++;
-		}
-		else {
-			players.add(new Player(SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
-			numPlayersTeam1++;
 		}
 	}
 
@@ -227,35 +202,6 @@ public class Server {
 			}
 		} catch (InterruptedException e) {e.printStackTrace();}
 	}
-
-
-	
-	public boolean isGhost(Player p) {
-		return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
-	}
-	
-	public boolean isColliding(Player player) {
-		return (!isGhost(player) && walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
-				(player.team && fortress1.intersects(player)) ||
-				(!player.team && fortress2.intersects(player)));
-	}
-
-	public void changeFortress() {
-		try {
-			fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
-
-			// Update fortresses if they exist, otherwise build two new ones
-			if (fortress1 != null) {
-				fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
-				fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
-			} else {
-				fortress1 = new Fortress(false);
-				fortress2 = new Fortress(true);
-				fortressSpace.put(0, 0, 100, false);
-				fortressSpace.put(0, 0, 100, true);
-			}
-		} catch (InterruptedException e) {}
-	}
 	
 	public void gameOver(boolean winningTeam) {
 		try {
@@ -271,85 +217,6 @@ public class Server {
 		}
 		
 	}
-    
-    public void resourcesChanged() {
-        try {
-            resourceSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
-            for (Resource r : resources) {
-                resourceSpace.put((int)r.x, (int)r.y, r.getType());
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public Resource createRandomResource() {
-        int[] pos;
-    	while (true) {
-    		pos = getRandomPosition();
-    		boolean breakWhile = true;
-    		for (Player p : players) {
-    			if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
-    				breakWhile = false;
-    				break;
-    			}
-    		}
-    		if (breakWhile) {
-    			break;
-    		}
-    	}
-		// TODO Balance wood vs iron ratio
-        int type = (new Random()).nextInt(2);
-		// TODO Check for collision with player, wall, cannon, resource ?
-        return new Resource(pos[0], pos[1], type);
-    }
-    
-    public int[] getRandomPosition() {
-        Random r = new Random();
-        int x = r.nextInt((int)(SCREEN_WIDTH-2*Fortress.WIDTH-2*Resource.WIDTH))+(int)Fortress.WIDTH+(int)Resource.WIDTH;
-        int y = r.nextInt((int)(SCREEN_HEIGHT-2*Resource.WIDTH))+(int)Resource.WIDTH;
-        return new int[] {x, y};
-    }
-    
-
-    
-    public void createNewOrb() {
-    	int[] pos;
-    	while (true) {
-    		pos = getRandomPosition();
-    		boolean breakWhile = true;
-    		for (Player p : players) {
-    			if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
-    				breakWhile = false;
-    				break;
-    			}
-    		}
-    		if (breakWhile) {
-    			break;
-    		}
-    	}
-    	Orb o = new Orb(pos[0], pos[1]);
-    	orbs.add(o);
-    	try {
-			orbSpace.put((int)o.x, (int)o.y);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public void resetOrbHolder(boolean team, boolean top) {
-    	for (OrbHolder oh : orbHolders) {
-    		if (oh.team == team && oh.top == top) {
-    			oh.hasOrb = false;
-				try {
-					orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new FormalField(Boolean.class));
-					orbSpace.put(oh.team, oh.top, oh.hasOrb);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-    		}
-    	}
-    }
 	
 	private void createNewChannel(int id) {
 		Space serverClient = new QueueSpace();
@@ -403,7 +270,7 @@ public class Server {
 				while (true) {
 					centralSpace.get(new ActualField("joined"));
 					createNewChannel(numPlayers);
-					addPlayer(numPlayers);
+					playerController.addPlayer(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");
 				}

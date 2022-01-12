@@ -106,8 +106,8 @@ public class OrbPetriNet implements Runnable {
 	private class ConsumeOrbs extends Activity {
 		public ConsumeOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			server.resetOrbHolder(team, true);
-			server.resetOrbHolder(team, false);
+			server.orbController.resetOrbHolder(team, true);
+			server.orbController.resetOrbHolder(team, false);
 		}
 	}
 	
@@ -147,8 +147,8 @@ public class OrbPetriNet implements Runnable {
 	private class SpawnOrbs extends Activity {
 		public SpawnOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			server.createNewOrb();
-			server.createNewOrb();
+			server.orbController.createNewOrb();
+			server.orbController.createNewOrb();
 		}
 	}
 
