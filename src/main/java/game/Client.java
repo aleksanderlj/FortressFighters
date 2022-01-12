@@ -43,7 +43,7 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
-	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood, iron, bulletred, bulletblue;
+	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood, iron, bulletred, bulletblue, orb;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -84,6 +84,7 @@ public class Client {
 			iron = ImageIO.read(getClass().getClassLoader().getResource("iron.png"));
 			bulletred = ImageIO.read(getClass().getClassLoader().getResource("bulletred.png"));
 			bulletblue = ImageIO.read(getClass().getClassLoader().getResource("bulletblue.png"));
+			orb = ImageIO.read(getClass().getClassLoader().getResource("orb.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -318,9 +319,7 @@ public class Client {
 		
 		public void paintOrbs(){
 			for (Orb o : orbs) {
-                g2D.setColor(Color.BLUE);
-                g2D.drawRect((int) o.x, (int) o.y, (int) o.width, (int) o.height);
-                g2D.setColor(Color.BLACK);
+				g2D.drawImage(orb, (int) o.x, (int) o.y, (int) o.width, (int) o.height, null);
             }
 			for (OrbHolder oh : orbHolders) {
                 g2D.drawRect((int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height);
