@@ -43,7 +43,7 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
-	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood, iron;
+	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood, iron, bulletred, bulletblue;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -81,7 +81,8 @@ public class Client {
 			fortressblue = ImageIO.read(getClass().getClassLoader().getResource("fortressblue.png"));
 			fortressred = ImageIO.read(getClass().getClassLoader().getResource("fortressred.png"));
 			wood = ImageIO.read(getClass().getClassLoader().getResource("wood.png"));
-			iron = ImageIO.read(getClass().getClassLoader().getResource("iron.png"));
+			bulletred = ImageIO.read(getClass().getClassLoader().getResource("bulletred.png"));
+			bulletblue = ImageIO.read(getClass().getClassLoader().getResource("bulletblue.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -265,14 +266,11 @@ public class Client {
 
 		public void paintBullets(){
 			for (Bullet b : bullets) {
-				/*
 				if(b.getTeam()){
 					g2D.drawImage(bulletred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
 				} else {
 					g2D.drawImage(bulletblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
 				}
-				 */
-				g2D.drawRect((int) b.x, (int) b.y, (int) b.width, (int) b.height);
 			}
 		}
 
