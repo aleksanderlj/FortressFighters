@@ -1,4 +1,5 @@
 package game;
+import java.awt.Rectangle;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -535,7 +536,20 @@ public class Server {
     }
     
     public Resource createRandomResource() {
-        int[] pos = getRandomPosition();
+        int[] pos;
+    	while (true) {
+    		pos = getRandomPosition();
+    		boolean breakWhile = true;
+    		for (Player p : players) {
+    			if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
+    				breakWhile = false;
+    				break;
+    			}
+    		}
+    		if (breakWhile) {
+    			break;
+    		}
+    	}
 		// TODO Balance wood vs iron ratio
         int type = (new Random()).nextInt(2);
 		// TODO Check for collision with player, wall, cannon, resource ?
@@ -592,7 +606,20 @@ public class Server {
     }
     
     public void createNewOrb() {
-    	int[] pos = getRandomPosition();
+    	int[] pos;
+    	while (true) {
+    		pos = getRandomPosition();
+    		boolean breakWhile = true;
+    		for (Player p : players) {
+    			if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
+    				breakWhile = false;
+    				break;
+    			}
+    		}
+    		if (breakWhile) {
+    			break;
+    		}
+    	}
     	Orb o = new Orb(pos[0], pos[1]);
     	orbs.add(o);
     	try {
