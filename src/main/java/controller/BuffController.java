@@ -34,9 +34,9 @@ public class BuffController {
             switch ((String)buff[1]){
                 case "heal":
                     if((boolean) buff[0]){
-                        server.getFortress1().setHP(server.getFortress1().getHP() + 50);
+                        server.getFortressController().getFortress1().setHP(server.getFortressController().getFortress1().getHP() + 50);
                     } else {
-                        server.getFortress2().setHP(server.getFortress2().getHP() + 50);
+                        server.getFortressController().getFortress2().setHP(server.getFortressController().getFortress2().getHP() + 50);
                     }
                     server.getFortressController().changeFortress();
                     break;
@@ -52,12 +52,12 @@ public class BuffController {
                     double bulletHeight = Fortress.HEIGHT;
                     while (bulletHeight > server.SCREEN_HEIGHT-Fortress.HEIGHT) {
                         if((boolean) buff[0]) {
-                            bullet = new Bullet(server.getFortress1().x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(server.getFortressController().getFortress1().x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
                         } else {
-                            bullet = new Bullet(server.getFortress2().x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(server.getFortressController().getFortress2().x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
                         }
                         server.getMutexSpace().get(new ActualField("bulletsLock"));
-                        server.getBullets().add(bullet);
+                        server.getCannonController().getBullets().add(bullet);
                         server.getMutexSpace().put("bulletsLock");
                         server.getCannonController().getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
                         bulletHeight -= 40;

@@ -16,19 +16,30 @@ import java.util.Random;
 public class ResourceController {
     Server server;
     private Space resourceSpace;
+    private List<Resource> resources;
+    public static final int INITIAL_RESOURCES = 10;
 
     public ResourceController(Server server){
         this.server = server;
         resourceSpace = new SequentialSpace();
+        resources = new ArrayList<Resource>();
+    }
+
+    public void initializeResources(){
+        resources.clear();
+        for (int i = 0; i < INITIAL_RESOURCES; i++) {
+            resources.add(createRandomResource());
+        }
+        resourcesChanged();
     }
 
     public void updateResources() {
         List<Resource> newResources = new ArrayList<>();
-        for (int i = 0; i < server.getResources().size(); i++) {
+        for (int i = 0; i < resources.size(); i++) {
             boolean add = true;
-            Resource r = server.getResources().get(i);
-            for (int j = 0; j < server.getPlayers().size(); j++) {
-                Player p = server.getPlayers().get(j);
+            Resource r = resources.get(i);
+            for (int j = 0; j < server.getPlayerController().getPlayers().size(); j++) {
+                Player p = server.getPlayerController().getPlayers().get(j);
                 if (!p.disconnected && p.intersects(r)) {
                     add = false;
                     if (r.getType() == 0) {
@@ -44,11 +55,11 @@ public class ResourceController {
                 newResources.add(r);
             }
         }
-        boolean update = server.getResources().size() != newResources.size();
-        for (int i = newResources.size(); i < server.getResources().size(); i++) {
+        boolean update = resources.size() != newResources.size();
+        for (int i = newResources.size(); i < resources.size(); i++) {
             newResources.add(createRandomResource());
         }
-        server.setResources(newResources);
+        resources = newResources;
         if (update) {
             resourcesChanged();
         }
@@ -57,7 +68,7 @@ public class ResourceController {
     public void resourcesChanged() {
         try {
             resourceSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
-            for (Resource r : server.getResources()) {
+            for (Resource r : resources) {
                 resourceSpace.put((int)r.x, (int)r.y, r.getType());
             }
         } catch (InterruptedException e) {
@@ -70,7 +81,7 @@ public class ResourceController {
         while (true) {
             pos = getRandomPosition();
             boolean breakWhile = true;
-            for (Player p : server.getPlayers()) {
+            for (Player p : server.getPlayerController().getPlayers()) {
                 if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
                     breakWhile = false;
                     break;
@@ -95,5 +106,9 @@ public class ResourceController {
 
     public Space getResourceSpace() {
         return resourceSpace;
+    }
+
+    public List<Resource> getResources() {
+        return resources;
     }
 }

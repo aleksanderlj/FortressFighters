@@ -1,6 +1,7 @@
 package controller;
 
 import com.sun.org.apache.xpath.internal.operations.Or;
+import game.OrbPetriNet;
 import game.Server;
 import model.*;
 import org.jspace.ActualField;
@@ -16,19 +17,67 @@ import java.util.Random;
 public class OrbController {
     Server server;
     private Space orbSpace;
+    private List<Orb> orbs;
+    private List<OrbHolder> orbHolders;
+    private OrbPetriNet orbPetriNet1;
+    private OrbPetriNet orbPetriNet2;
 
     public OrbController(Server server){
         this.server = server;
         orbSpace = new SequentialSpace();
+        orbs = new ArrayList<>();
+        orbHolders = new ArrayList<>();
+    }
+
+    public void initializeOrbPetriNets(){
+        orbPetriNet1 = new OrbPetriNet(server, false);
+        orbPetriNet2 = new OrbPetriNet(server, true);
+        new Thread(orbPetriNet1).start();
+        new Thread(orbPetriNet2).start();
+        for (int i = 0; i < 3; i++) {
+            createNewOrb();
+        }
+        orbHolders.add(new OrbHolder(false, true, false));
+        orbHolders.add(new OrbHolder(true, false, false));
+        orbHolders.add(new OrbHolder(false, false, false));
+        orbHolders.add(new OrbHolder(true, true, false));
+        for (OrbHolder oh : orbHolders) {
+            try {
+                orbSpace.put(oh.team, oh.top, oh.hasOrb);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void initializeOrbs(){
+        orbs.clear();
+    }
+
+    public void initializeOrbHolders(){
+        orbHolders.clear();
+    }
+
+    public void resetPetriNet() {
+        try {
+            server.getBuffController().getBuffSpace().put(false, false);
+            server.getBuffController().getBuffSpace().put(false, true);
+            server.getBuffController().getBuffSpace().put(true, false);
+            server.getBuffController().getBuffSpace().put(true, true);
+            orbPetriNet1.reset();
+            orbPetriNet2.reset();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateOrbs() {
         List<Orb> newOrbs = new ArrayList<>();
-        for (int i = 0; i < server.getOrbs().size(); i++) {
+        for (int i = 0; i < orbs.size(); i++) {
             boolean add = true;
-            Orb o = server.getOrbs().get(i);
-            for (int j = 0; j < server.getPlayers().size(); j++) {
-                Player p = server.getPlayers().get(j);
+            Orb o = orbs.get(i);
+            for (int j = 0; j < server.getPlayerController().getPlayers().size(); j++) {
+                Player p = server.getPlayerController().getPlayers().get(j);
                 if (!p.disconnected && p.intersects(o) && !p.hasOrb) {
                     add = false;
                     p.hasOrb = true;
@@ -43,11 +92,11 @@ public class OrbController {
                 newOrbs.add(o);
             }
         }
-        server.setOrbs(newOrbs);
-        for (int i = 0; i < server.getOrbHolders().size(); i++) {
-            OrbHolder oh = server.getOrbHolders().get(i);
-            for (int j = 0; j < server.getPlayers().size(); j++) {
-                Player p = server.getPlayers().get(j);
+        orbs = newOrbs;
+        for (int i = 0; i < orbHolders.size(); i++) {
+            OrbHolder oh = orbHolders.get(i);
+            for (int j = 0; j < server.getPlayerController().getPlayers().size(); j++) {
+                Player p = server.getPlayerController().getPlayers().get(j);
                 if (!p.disconnected && p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
                     p.hasOrb = true;
                     try {
@@ -69,7 +118,7 @@ public class OrbController {
         while (true) {
             pos = getRandomPosition();
             boolean breakWhile = true;
-            for (Player p : server.getPlayers()) {
+            for (Player p : server.getPlayerController().getPlayers()) {
                 if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
                     breakWhile = false;
                     break;
@@ -80,7 +129,7 @@ public class OrbController {
             }
         }
         Orb o = new Orb(pos[0], pos[1]);
-        server.getOrbs().add(o);
+        orbs.add(o);
         try {
             orbSpace.put((int)o.x, (int)o.y);
         } catch (InterruptedException e) {
@@ -96,7 +145,7 @@ public class OrbController {
     }
 
     public void resetOrbHolder(boolean team, boolean top) {
-        for (OrbHolder oh : server.getOrbHolders()) {
+        for (OrbHolder oh : orbHolders) {
             if (oh.team == team && oh.top == top) {
                 oh.hasOrb = false;
                 try {

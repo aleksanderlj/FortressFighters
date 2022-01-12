@@ -11,9 +11,9 @@ public class OrbPetriNet implements Runnable {
 	private Space beforeBuffSpace;
 	private boolean team;
 	
-	public OrbPetriNet(Server server, Space buffSpace, boolean team) {
+	public OrbPetriNet(Server server, boolean team) {
 		this.server = server;
-		this.buffSpace = buffSpace;
+		this.buffSpace = server.getBuffController().getBuffSpace();
 		this.team = team;
 	}
 	
