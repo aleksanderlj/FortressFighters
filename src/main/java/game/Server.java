@@ -120,7 +120,8 @@ public class Server {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
+		team1GhostTimer = 0;
+	    team2GhostTimer = 0;
 		fortress1 = null;
 		fortress2 = null;
 		changeFortress();
@@ -245,7 +246,7 @@ public class Server {
 			double oldY = player.y;
 			double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
 			if (mvLength != 0) {
-				double speed = Player.SPEED * S_BETWEEN_UPDATES * 8;
+				double speed = Player.SPEED * S_BETWEEN_UPDATES;
 				if (isGhost(player)) {
 					speed *= 2;
 				}

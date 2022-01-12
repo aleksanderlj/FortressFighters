@@ -1,13 +1,8 @@
 package game;
 
-import java.util.List;
-
 import org.jspace.ActualField;
-import org.jspace.FormalField;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
-
-import model.OrbHolder;
 
 public class OrbPetriNet implements Runnable {
 	//Implemented using naive approach.
@@ -54,8 +49,8 @@ public class OrbPetriNet implements Runnable {
 	}
 	
 	private class Activity implements Runnable {
-		private Space[] inputs;
-		private Space[] outputs;
+		protected Space[] inputs;
+		protected Space[] outputs;
 		public Activity(Space[] inputs, Space[] outputs) {
 			this.inputs = inputs;
 			this.outputs = outputs;
