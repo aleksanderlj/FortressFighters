@@ -210,6 +210,7 @@ public class Client {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
 			addKeyListener(this);
 	        setFocusable(true);
+			//setBackground(new Color(52, 121, 40));
 		}
 
 		public void paint(Graphics g) {

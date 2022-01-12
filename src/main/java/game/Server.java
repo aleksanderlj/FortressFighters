@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import controller.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.QueueSpace;
@@ -23,27 +24,27 @@ public class Server {
 	public static final int SCREEN_HEIGHT = 720;
 	private List<Space> serverClientChannels = new ArrayList<Space>();
 	private List<Space> clientServerChannels = new ArrayList<Space>();
-	private List<Player> players = new ArrayList<>();
-	private List<Cannon> cannons = new ArrayList<>();
-    private List<Resource> resources = new ArrayList<>();
-	private List<Wall> walls = new ArrayList<>();
-	private List<Orb> orbs = new ArrayList<>();
+	public List<Player> players = new ArrayList<>();
+	public List<Cannon> cannons = new ArrayList<>();
+	public List<Resource> resources = new ArrayList<>();
+	public List<Wall> walls = new ArrayList<>();
+	public List<Orb> orbs = new ArrayList<>();
 	public List<OrbHolder> orbHolders = new ArrayList<>();
-	private Fortress fortress1;
-	private Fortress fortress2;
-	private List<Bullet> bullets = new ArrayList<>();
+	public Fortress fortress1;
+	public Fortress fortress2;
+	public List<Bullet> bullets = new ArrayList<>();
 	private SpaceRepository repository;
-	private Space centralSpace;
-	private Space playerPositionsSpace;
-	private Space playerMovementSpace;
-	private Space cannonSpace;
-	private Space bulletSpace;
-	private Space wallSpace;
-	private Space fortressSpace;
-	private Space resourceSpace;
-	private Space orbSpace;
-	private Space buffSpace;
-	private Space mutexSpace;
+	public Space centralSpace;
+	public Space playerPositionsSpace;
+	public Space playerMovementSpace;
+	public Space cannonSpace;
+	public Space bulletSpace;
+	public Space wallSpace;
+	public Space fortressSpace;
+	public Space resourceSpace;
+	public Space orbSpace;
+	public Space buffSpace;
+	public Space mutexSpace;
 	private int numPlayers = 0; //Including disconnected players.
 	private int numPlayersTeam1 = 0; //Excluding disconnected players.
 	private int numPlayersTeam2 = 0; //Excluding disconnected players.
@@ -52,8 +53,15 @@ public class Server {
     public boolean gameOver = false;
     private OrbPetriNet orbPetriNet1;
     private OrbPetriNet orbPetriNet2;
-    private double team1GhostTimer = 0;
-    private double team2GhostTimer = 0;
+    public double team1GhostTimer = 0;
+    public double team2GhostTimer = 0;
+	public PlayerController playerController;
+	public CannonController cannonController;
+	public WallController wallController;
+	public FortressController fortressController;
+	public ResourceController resourceController;
+	public OrbController orbController;
+	public BuffController buffController;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -78,6 +86,13 @@ public class Server {
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
 		repository.add("orb", orbSpace);
+		playerController = new PlayerController(this);
+		cannonController = new CannonController(this);
+		wallController = new WallController(this);
+		fortressController = new FortressController(this);
+		resourceController = new ResourceController(this);
+		orbController = new OrbController(this);
+		buffController = new BuffController(this);
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 		new Thread(new JoinedReader()).start();
@@ -194,14 +209,14 @@ public class Server {
 		try {
 			if (gameStarted) {
 				// Handle game logic for each object
-				updatePlayers();
-				updateCannons();
-				updateBullets();
-				updateWalls();
-				updateFortresses();
-				updateResources();	
-				updateOrbs();
-				updateBuffs();
+				playerController.updatePlayers();
+				cannonController.updateCannons();
+				cannonController.updateBullets();
+				wallController.updateWalls();
+				fortressController.updateFortresses();
+				resourceController.updateResources();
+				orbController.updateOrbs();
+				buffController.updateBuffs();
 			}
 			else {
 				if (numPlayers >= 2) {
@@ -213,271 +228,22 @@ public class Server {
 		} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
-	public void updatePlayers() throws InterruptedException {
-		List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
-		int[][] movementVectors = new int[players.size()][2];
-		for (Object[] movementTuple : movementTuples) {
-			int playerID = (Integer) movementTuple[0];
-			Player player = players.get(playerID);
-			String direction = (String) movementTuple[1];
-			if (player.stunned <= 0) {
-				switch (direction) {
-					case "left":
-						movementVectors[playerID][0] -= 1;
-						break;
-					case "right":
-						movementVectors[playerID][0] += 1;
-						break;
-					case "down":
-						movementVectors[playerID][1] += 1;
-						break;
-					case "up":
-						movementVectors[playerID][1] -= 1;
-						break;
-					default:
-						break;
-				}
-			}
-		}
-			
-		for (int i = 0; i < movementVectors.length; i++) {
-			Player player = players.get(i);
-			double oldX = player.x;
-			double oldY = player.y;
-			double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
-			if (mvLength != 0) {
-				double speed = Player.SPEED * S_BETWEEN_UPDATES;
-				if (isGhost(player)) {
-					speed *= 2;
-				}
-				player.x += (movementVectors[i][0] / mvLength) * speed;
-				player.y += (movementVectors[i][1] / mvLength) * speed;
-			}
-			
-			// Prevent collision
-			if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team))){
-				player.x = oldX;
-				player.y = oldY;
-			}
-		}
 
-		// Prevent player from  going out of bounds
-		for (Player p : players) {
-			if(p.x < 0){
-				p.x = 0;
-			}
-			if(p.x > SCREEN_WIDTH - Player.WIDTH){
-				p.x = SCREEN_WIDTH - Player.WIDTH;
-			}
-			if(p.y < 0){
-				p.y = 0;
-			}
-			if(p.y > SCREEN_HEIGHT - Player.HEIGHT){
-				p.y = SCREEN_HEIGHT - Player.HEIGHT;
-			}
-		}
-
-		playerPositionsSpace.getp(new ActualField("players"));
-		playerPositionsSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
-		for (Player p : players) {
-			if (!p.disconnected) {
-				mutexSpace.get(new ActualField("bulletsLock"));
-				for (Bullet b : bullets) {
-					if (!isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
-						p.stunned = 0.5;
-					}
-				}
-				bullets.removeIf(b -> !isGhost(p) && b.getTeam() != p.team && b.intersects(p));
-				mutexSpace.put("bulletsLock");
-				playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
-				if (p.stunned > 0) {
-					p.stunned -= S_BETWEEN_UPDATES;
-				}
-			}
-		}
-		playerPositionsSpace.put("players");
-	}
 	
-	private boolean isGhost(Player p) {
+	public boolean isGhost(Player p) {
 		return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
 	}
 	
-	private boolean isColliding(Player player) {
+	public boolean isColliding(Player player) {
 		return (!isGhost(player) && walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
 				(player.team && fortress1.intersects(player)) ||
 				(!player.team && fortress2.intersects(player)));
 	}
 
-	public void updateCannons() throws InterruptedException {
-		List<Object[]> cannonCommands = cannonSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
-		Cannon newCannon;
-		for (Object[] command : cannonCommands) {
-			int id = (int) command[0];
-			Player player = players.get(id);
-			newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
-
-			// Only build cannon if it's not colliding with another cannon, wall, fortress
-			if(
-					cannons.stream().noneMatch(newCannon::intersects) &&
-					walls.stream().noneMatch(newCannon::intersects) &&
-					!newCannon.intersects(fortress1) &&
-					!newCannon.intersects(fortress2)
-			){
-				// Spend resources from fortress when building a cannon
-				if (!newCannon.getTeam() && fortress1.getIron() >= Cannon.IRON_COST) {
-					fortress1.setIron(fortress1.getIron() - Cannon.IRON_COST);
-					changeFortress();
-				} else if (newCannon.getTeam() && fortress2.getIron() >= Cannon.IRON_COST) {
-					fortress2.setIron(fortress2.getIron() - Cannon.IRON_COST);
-					changeFortress();
-				} else {
-					return;
-				}
-				
-				cannons.add(newCannon);
-				cannonSpace.put("cannon", newCannon.x, newCannon.y, newCannon.getTeam());
-				new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
-			}
-		}
-	}
-
-	public void updateBullets() throws InterruptedException{
-		bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-		mutexSpace.get(new ActualField("bulletsLock"));
-		bullets.removeIf(b -> b.x < 0 || b.x > SCREEN_WIDTH); // Remove bullets that are out of bounds
-		for (Bullet b : bullets) {
-			if(b.getTeam()){
-				b.x -= Bullet.SPEED * S_BETWEEN_UPDATES;
-			} else {
-				b.x += Bullet.SPEED * S_BETWEEN_UPDATES;
-			}
-			bulletSpace.put(b.x, b.y, b.getTeam());
-		}
-		mutexSpace.put("bulletsLock");
-	}
-
-	public void updateWalls() throws InterruptedException{
-		List<Object[]> wallCommands = wallSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
-		Wall newWall;
-		for (Object[] command : wallCommands) {
-			int id = (int) command[0];
-			Player player = players.get(id);
-			double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
-			newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
-
-			// Only build wall if it's not colliding with another cannon, wall, fortress
-			if(
-					cannons.stream().noneMatch(newWall::intersects) &&
-					walls.stream().noneMatch(newWall::intersects) &&
-					!newWall.intersects(fortress1) &&
-					!newWall.intersects(fortress2) &&
-					players.stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
-			){
-				// Spend resources from fortress when building a wall
-				if (!newWall.getTeam() && fortress1.getWood() >= Wall.WOOD_COST) {
-					fortress1.setWood(fortress1.getWood() - Wall.WOOD_COST);
-					changeFortress();
-				} else if (newWall.getTeam() && fortress2.getWood() >= Wall.WOOD_COST) {
-					fortress2.setWood(fortress2.getWood() - Wall.WOOD_COST);
-					changeFortress();
-				} else {
-					return;
-				}
-				walls.add(newWall);
-				wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
-			}
-		}
-
-		// Prevent player from going through wall
-		for (Player p : players) {
-			for (Wall w : walls) {
-				if(w.getTeam() != p.team && p.intersects(w)){
-					// TODO Move player out of wall (Minkowsky?)
-				}
-			}
-		}
-
-		// Reduce HP of wall if bullet or cannon collides with it
-		mutexSpace.get(new ActualField("bulletsLock"));
-		for (Bullet b : bullets) {
-			for (Wall w : walls) {
-				if(b.intersects(w) && b.getTeam() != w.getTeam()){
-					wallSpace.getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-					w.setHealth(w.getHealth() - 1);
-					if(w.getHealth() > 0) {
-						wallSpace.put("wall", w.getId(), w.x, w.y, w.getTeam());
-					}
-				}
-			}
-		}
-		// Remove bullets that hit wall
-		bullets.removeIf(b -> walls.stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
-		walls.removeIf(w -> w.getHealth() <= 0);
-		mutexSpace.put("bulletsLock");
-	}
-
-	public void updateFortresses() throws InterruptedException {
-		if (fortress1 == null) { return; }
-		
-		boolean changed = false;
-		
-		// Increase resources if player collides with fortress when holding resources
-		for (Player p : players) {
-			if (p.wood == 0 && p.iron == 0) { continue; }
-			
-			if (p.team && p.intersects(fortress2)) {
-				fortress2.setWood(fortress2.getWood() + p.wood);
-				fortress2.setIron(fortress2.getIron() + p.iron);
-				p.wood = 0;
-				p.iron = 0;
-				changed = true;
-			} else if (!p.team && p.intersects(fortress1)) {
-				fortress1.setWood(fortress1.getWood() + p.wood);
-				fortress1.setIron(fortress1.getIron() + p.iron);
-				p.wood = 0;
-				p.iron = 0;
-				changed = true;
-			}
-		}
-
-		// Prevent player from going through enemy fortress
-		for (Player p : players) {
-			if (!p.team && p.intersects(fortress2)) {
-				// TODO Move blue player out of red fortress
-			} else if (p.team && p.intersects(fortress1)) {
-				// TODO Move red player out of blue fortress
-			}
-		}
-		
-		// Reduce HP of fortress if bullet or cannon collides with it
-		mutexSpace.get(new ActualField("bulletsLock"));
-		for (Bullet b : bullets) {
-			if (b.getTeam() && b.intersects(fortress1)) {
-				fortress1.setHP(fortress1.getHP() - 5);
-				changed = true;
-			} else if (!b.getTeam() && b.intersects(fortress2)) {
-				fortress2.setHP(fortress2.getHP() - 5);
-				changed = true;
-			}
-		}
-		// Remove bullets that hit fortress
-		bullets.removeIf(b -> (b.intersects(fortress1) && b.getTeam()) || (b.intersects(fortress2) && !b.getTeam()));
-		mutexSpace.put("bulletsLock");
-
-		// Look for a winner
-		if (fortress1.getHP() <= 0) {
-			gameOver(false);
-		} else if (fortress2.getHP() <= 0) {
-			gameOver(true);
-		}
-
-		if (changed) { changeFortress(); }
-	}
-	
 	public void changeFortress() {
 		try {
 			fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
-			
+
 			// Update fortresses if they exist, otherwise build two new ones
 			if (fortress1 != null) {
 				fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
@@ -489,52 +255,6 @@ public class Server {
 				fortressSpace.put(0, 0, 100, true);
 			}
 		} catch (InterruptedException e) {}
-	}
-
-	public void updateBuffs() throws InterruptedException {
-		if (team1GhostTimer > 0) {
-			team1GhostTimer -= S_BETWEEN_UPDATES;
-		}
-		else if (team2GhostTimer > 0) {
-			team2GhostTimer -= S_BETWEEN_UPDATES;
-		}
-		List<Object[]> buffs =  buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
-		for (Object[] buff : buffs) {
-			switch ((String)buff[1]){
-				case "heal":
-					if((boolean) buff[0]){
-						fortress1.setHP(fortress1.getHP() + 50);
-					} else {
-						fortress2.setHP(fortress2.getHP() + 50);
-					}
-					changeFortress();
-					break;
-				case "ghost":
-					if((boolean) buff[0]){
-						team1GhostTimer = 5;
-					} else {
-						team2GhostTimer = 5;
-					}
-					break;
-				case "bullets":
-					Bullet bullet;
-					double bulletHeight = Fortress.HEIGHT;
-					while (bulletHeight > SCREEN_HEIGHT-Fortress.HEIGHT) {
-						if((boolean) buff[0]) {
-							bullet = new Bullet(fortress1.x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
-						} else {
-							bullet = new Bullet(fortress2.x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
-						}
-						mutexSpace.get(new ActualField("bulletsLock"));
-						bullets.add(bullet);
-						mutexSpace.put("bulletsLock");
-						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
-						bulletHeight -= 40;
-						Thread.sleep(50);
-					}
-					break;
-			}
-		}
 	}
 	
 	public void gameOver(boolean winningTeam) {
@@ -551,38 +271,6 @@ public class Server {
 		}
 		
 	}
-
-    public void updateResources() {
-        List<Resource> newResources = new ArrayList<>();
-        for (int i = 0; i < resources.size(); i++) {
-            boolean add = true;
-            Resource r = resources.get(i);
-            for (int j = 0; j < players.size(); j++) {
-                Player p = players.get(j);
-                if (!p.disconnected && p.intersects(r)) {
-                    add = false;
-                    if (r.getType() == 0) {
-                        p.wood++;
-                    }
-                    else {
-                        p.iron++;
-                    }
-                    break;
-                }
-            }
-            if (add) {
-                newResources.add(r);
-            }
-        }
-        boolean update = resources.size() != newResources.size();
-        for (int i = newResources.size(); i < resources.size(); i++) {
-            newResources.add(createRandomResource());
-        }
-        resources = newResources;
-        if (update) {
-            resourcesChanged();
-        }
-    }
     
     public void resourcesChanged() {
         try {
@@ -623,47 +311,7 @@ public class Server {
         return new int[] {x, y};
     }
     
-    public void updateOrbs() {
-    	List<Orb> newOrbs = new ArrayList<>();
-        for (int i = 0; i < orbs.size(); i++) {
-        	boolean add = true;
-        	Orb o = orbs.get(i);
-        	for (int j = 0; j < players.size(); j++) {
-                Player p = players.get(j);
-                if (!p.disconnected && p.intersects(o) && !p.hasOrb) {
-                	add = false;
-                	p.hasOrb = true;
-                	try {
-						orbSpace.get(new ActualField((int)o.x), new ActualField((int)o.y));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-                }
-        	}
-        	if (add) {
-            	newOrbs.add(o);
-        	}
-        }
-        orbs = newOrbs;
-        for (int i = 0; i < orbHolders.size(); i++) {
-        	OrbHolder oh = orbHolders.get(i);
-        	for (int j = 0; j < players.size(); j++) {
-                Player p = players.get(j);
-                if (!p.disconnected && p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
-                	p.hasOrb = true;
-                	try {
-						orbSpace.get(new ActualField(oh.team), new ActualField(oh.top), new ActualField(oh.hasOrb));
-	                	oh.hasOrb = true;
-	                	p.hasOrb = false;
-	                	orbSpace.put(oh.team, oh.top, oh.hasOrb);
-		                buffSpace.put(oh.team, oh.top);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-                }
-        	}
-        }
-    }
+
     
     public void createNewOrb() {
     	int[] pos;
@@ -765,38 +413,6 @@ public class Server {
 		}
 	}
 
-	public class CannonShooter implements Runnable {
-		public static final int COOLDOWN = 3000;
-		Cannon cannon;
-
-		public CannonShooter(Cannon cannon){
-			this.cannon = cannon;
-		}
-
-		public void run() {
-			try {
-				Thread.sleep(COOLDOWN);
-				while(!gameOver && cannon.isAlive()){
-					if(cannon.isActive()){
-						Bullet bullet;
-						if(cannon.getTeam()){
-							bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
-						} else {
-							bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
-						}
-						mutexSpace.get(new ActualField("bulletsLock"));
-						bullets.add(bullet);
-						mutexSpace.put("bulletsLock");
-						bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
-						Thread.sleep(COOLDOWN);
-					}
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	private class DisconnectChecker implements Runnable {
 		public void run() {
 			//Protocol checking if players are still in the game.
