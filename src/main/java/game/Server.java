@@ -101,9 +101,6 @@ public class Server {
 		cannons.forEach(c -> c.setAlive(false));
 		cannons = new ArrayList<Cannon>();
 		walls = new ArrayList<Wall>();
-        if (orbPetriNet1 != null) {
-        	resetPetriNet();
-        }
 		try {
 			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
 			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
@@ -116,6 +113,7 @@ public class Server {
 			bullets = new ArrayList<Bullet>();
 			mutexSpace.put("bulletsLock");
 			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+			buffSpace = new SequentialSpace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -152,15 +150,10 @@ public class Server {
 	
 	private void resetPetriNet() {
 		try {
-			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
-			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class));
 			buffSpace.put(false, false);
 			buffSpace.put(false, true);
 			buffSpace.put(true, false);
 			buffSpace.put(true, true);
-			buffSpace.get(new ActualField(false), new FormalField(String.class));
-			buffSpace.get(new ActualField(true), new FormalField(String.class));
-			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -475,10 +468,11 @@ public class Server {
 		try {
 			centralSpace.put("game over", winningTeam ? "blue" : "red");
 			gameOver = true;
+        	resetPetriNet();
 			Thread.sleep(5000);
-			gameOver = false;
 			centralSpace.get(new ActualField("game over"), new FormalField(String.class));
 			startGame();
+			gameOver = false;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
