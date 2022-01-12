@@ -53,8 +53,6 @@ public class Server {
     public boolean gameOver = false;
     private OrbPetriNet orbPetriNet1;
     private OrbPetriNet orbPetriNet2;
-    public double team1GhostTimer = 0;
-    public double team2GhostTimer = 0;
 	public PlayerController playerController;
 	public CannonController cannonController;
 	public WallController wallController;
@@ -135,8 +133,7 @@ public class Server {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		team1GhostTimer = 0;
-	    team2GhostTimer = 0;
+		buffController.resetTimers();
 		fortress1 = null;
 		fortress2 = null;
 		fortressController.changeFortress();

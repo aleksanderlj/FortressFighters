@@ -3,6 +3,7 @@ package controller;
 import game.Server;
 import model.Bullet;
 import model.Fortress;
+import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
@@ -10,17 +11,19 @@ import java.util.List;
 
 public class BuffController {
     Server server;
+    private double team1GhostTimer = 0;
+    private double team2GhostTimer = 0;
 
     public BuffController(Server server){
         this.server = server;
     }
 
     public void updateBuffs() throws InterruptedException {
-        if (server.team1GhostTimer > 0) {
-            server.team1GhostTimer -= server.S_BETWEEN_UPDATES;
+        if (team1GhostTimer > 0) {
+            team1GhostTimer -= server.S_BETWEEN_UPDATES;
         }
-        else if (server.team2GhostTimer > 0) {
-            server.team2GhostTimer -= server.S_BETWEEN_UPDATES;
+        else if (team2GhostTimer > 0) {
+            team2GhostTimer -= server.S_BETWEEN_UPDATES;
         }
         List<Object[]> buffs =  server.buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
         for (Object[] buff : buffs) {
@@ -35,9 +38,9 @@ public class BuffController {
                     break;
                 case "ghost":
                     if((boolean) buff[0]){
-                        server.team1GhostTimer = 5;
+                        team1GhostTimer = 5;
                     } else {
-                        server.team2GhostTimer = 5;
+                        team2GhostTimer = 5;
                     }
                     break;
                 case "bullets":
@@ -59,5 +62,14 @@ public class BuffController {
                     break;
             }
         }
+    }
+
+    public boolean isGhost(Player p) {
+        return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
+    }
+
+    public void resetTimers(){
+        team1GhostTimer = 0;
+        team2GhostTimer = 0;
     }
 }

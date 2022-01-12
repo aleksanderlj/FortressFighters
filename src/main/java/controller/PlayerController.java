@@ -76,7 +76,7 @@ public class PlayerController {
             double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
             if (mvLength != 0) {
                 double speed = Player.SPEED * server.S_BETWEEN_UPDATES;
-                if (isGhost(player)) {
+                if (server.buffController.isGhost(player)) {
                     speed *= 2;
                 }
                 player.x += (movementVectors[i][0] / mvLength) * speed;
@@ -112,11 +112,11 @@ public class PlayerController {
             if (!p.disconnected) {
                 server.mutexSpace.get(new ActualField("bulletsLock"));
                 for (Bullet b : server.bullets) {
-                    if (!isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
+                    if (!server.buffController.isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
                         p.stunned = 0.5;
                     }
                 }
-                server.bullets.removeIf(b -> !isGhost(p) && b.getTeam() != p.team && b.intersects(p));
+                server.bullets.removeIf(b -> !server.buffController.isGhost(p) && b.getTeam() != p.team && b.intersects(p));
                 server.mutexSpace.put("bulletsLock");
                 server.playerPositionsSpace.put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
                 if (p.stunned > 0) {
@@ -127,12 +127,8 @@ public class PlayerController {
         server.playerPositionsSpace.put("players");
     }
 
-    public boolean isGhost(Player p) {
-        return (server.team1GhostTimer > 0 && !p.team) || (server.team2GhostTimer > 0 && p.team);
-    }
-
     public boolean isColliding(Player player) {
-        return (!isGhost(player) && server.walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+        return (!server.buffController.isGhost(player) && server.walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
                 (player.team && server.fortress1.intersects(player)) ||
                 (!player.team && server.fortress2.intersects(player)));
     }
