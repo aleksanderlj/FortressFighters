@@ -254,11 +254,7 @@ public class Server {
 			}
 			
 			// Prevent collision
-			if(
-					(!isGhost(player) && walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
-					(player.team && fortress1.intersects(player)) ||
-					(!player.team && fortress2.intersects(player)))
-			){
+			if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team))){
 				player.x = oldX;
 				player.y = oldY;
 			}
@@ -303,6 +299,12 @@ public class Server {
 	
 	private boolean isGhost(Player p) {
 		return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
+	}
+	
+	private boolean isColliding(Player player) {
+		return (!isGhost(player) && walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+				(player.team && fortress1.intersects(player)) ||
+				(!player.team && fortress2.intersects(player)));
 	}
 
 	public void updateCannons() throws InterruptedException {
