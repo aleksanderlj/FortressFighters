@@ -101,6 +101,9 @@ public class Server {
 		cannons.forEach(c -> c.setAlive(false));
 		cannons = new ArrayList<Cannon>();
 		walls = new ArrayList<Wall>();
+        if (orbPetriNet1 != null) {
+        	resetPetriNet();
+        }
 		try {
 			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
 			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
@@ -121,11 +124,8 @@ public class Server {
 		fortress2 = null;
 		changeFortress();
         resources = new ArrayList<Resource>();
-        orbs = new ArrayList<Orb>();
         orbHolders = new ArrayList<OrbHolder>();
-        if (orbPetriNet1 != null) {
-        	resetPetriNet();
-        }
+        orbs = new ArrayList<Orb>();
         orbPetriNet1 = new OrbPetriNet(this, buffSpace, false);
         orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
         new Thread(orbPetriNet1).start();
