@@ -154,6 +154,8 @@ public class Server {
 			buffSpace.put(false, true);
 			buffSpace.put(true, false);
 			buffSpace.put(true, true);
+			orbPetriNet1.reset();
+			orbPetriNet2.reset();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

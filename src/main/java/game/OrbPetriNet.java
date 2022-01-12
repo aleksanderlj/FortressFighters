@@ -13,6 +13,7 @@ public class OrbPetriNet implements Runnable {
 	//Implemented using naive approach.
 	private Server server;
 	private Space buffSpace;
+	private Space beforeBuffSpace;
 	private boolean team;
 	
 	public OrbPetriNet(Server server, Space buffSpace, boolean team) {
@@ -26,6 +27,7 @@ public class OrbPetriNet implements Runnable {
 		for (int i = 0; i < 7; i++) {
 			spaces[i] = new SequentialSpace();
 		}
+		beforeBuffSpace = spaces[5];
 		new Thread(new Split(new Space[] {spaces[0]}, new Space[] {spaces[1], spaces[2]})).start();
 		new Thread(new TopOrb(new Space[] {spaces[1]}, new Space[] {spaces[3]})).start();
 		new Thread(new BottomOrb(new Space[] {spaces[2]}, new Space[] {spaces[4]})).start();
@@ -36,6 +38,16 @@ public class OrbPetriNet implements Runnable {
 			spaces[0].put("token");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void reset() {
+		for (int i = 0; i < 3; i++) {
+			try {
+				beforeBuffSpace.put("token");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
