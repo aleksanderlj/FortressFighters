@@ -208,39 +208,49 @@ public class Server {
 
 	public void updatePlayers() throws InterruptedException {
 		List<Object[]> movementTuples = playerMovementSpace.queryAll(new FormalField(Integer.class), new FormalField(String.class));
+		int[][] movementVectors = new int[players.size()][2];
 		for (Object[] movementTuple : movementTuples) {
 			int playerID = (Integer) movementTuple[0];
 			Player player = players.get(playerID);
 			String direction = (String) movementTuple[1];
 			if (player.stunned <= 0) {
-				double oldX = player.x;
-				double oldY = player.y;
 				switch (direction) {
 					case "left":
-						player.x -= Player.SPEED * S_BETWEEN_UPDATES;
+						movementVectors[playerID][0] -= 1;
 						break;
 					case "right":
-						player.x += Player.SPEED * S_BETWEEN_UPDATES;
+						movementVectors[playerID][0] += 1;
 						break;
 					case "down":
-						player.y += Player.SPEED * S_BETWEEN_UPDATES;
+						movementVectors[playerID][1] += 1;
 						break;
 					case "up":
-						player.y -= Player.SPEED * S_BETWEEN_UPDATES;
+						movementVectors[playerID][1] -= 1;
 						break;
 					default:
 						break;
 				}
-
-				// Prevent collision
-				if(
-						walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
-						(player.team && fortress1.intersects(player)) ||
-						(!player.team && fortress2.intersects(player))
-				){
-					player.x = oldX;
-					player.y = oldY;
-				}
+			}
+		}
+			
+		for (int i = 0; i < movementVectors.length; i++) {
+			Player player = players.get(i);
+			double oldX = player.x;
+			double oldY = player.y;
+			double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
+			if (mvLength != 0) {
+				player.x += (movementVectors[i][0] / mvLength) * Player.SPEED * S_BETWEEN_UPDATES;
+				player.y += (movementVectors[i][1] / mvLength) * Player.SPEED * S_BETWEEN_UPDATES;
+			}
+			
+			// Prevent collision
+			if(
+					walls.stream().anyMatch(w -> w.getTeam() != player.team && w.intersects(player)) ||
+					(player.team && fortress1.intersects(player)) ||
+					(!player.team && fortress2.intersects(player))
+			){
+				player.x = oldX;
+				player.y = oldY;
 			}
 		}
 
