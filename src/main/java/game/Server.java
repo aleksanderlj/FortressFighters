@@ -198,6 +198,7 @@ public class Server {
 				updateFortresses();
 				updateResources();	
 				updateOrbs();
+				updateBuffs();
 			}
 			else {
 				if (numPlayers >= 2) {
@@ -475,6 +476,22 @@ public class Server {
 				fortressSpace.put(0, 0, 100, true);
 			}
 		} catch (InterruptedException e) {}
+	}
+
+	public void updateBuffs() throws InterruptedException {
+		List<Object[]> buffs =  buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
+		for (Object[] buff : buffs) {
+			switch ((String)buff[1]){
+				case "heal":
+					if((boolean) buff[0]){
+						fortress1.setHP(fortress1.getHP() + 50);
+					} else {
+						fortress2.setHP(fortress2.getHP() + 50);
+					}
+					changeFortress();
+					break;
+			}
+		}
 	}
 	
 	public void gameOver(boolean winningTeam) {
