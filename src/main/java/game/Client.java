@@ -81,6 +81,7 @@ public class Client {
 			fortressblue = ImageIO.read(getClass().getClassLoader().getResource("fortressblue.png"));
 			fortressred = ImageIO.read(getClass().getClassLoader().getResource("fortressred.png"));
 			wood = ImageIO.read(getClass().getClassLoader().getResource("wood.png"));
+			iron = ImageIO.read(getClass().getClassLoader().getResource("iron.png"));
 			bulletred = ImageIO.read(getClass().getClassLoader().getResource("bulletred.png"));
 			bulletblue = ImageIO.read(getClass().getClassLoader().getResource("bulletblue.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
