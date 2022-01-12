@@ -514,6 +514,7 @@ public class Server {
 					} else {
 						team2GhostTimer = 5;
 					}
+					break;
 				case "bullets":
 					Bullet bullet;
 					double bulletHeight = Fortress.HEIGHT;
