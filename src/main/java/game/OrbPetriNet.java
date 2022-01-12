@@ -76,11 +76,7 @@ public class OrbPetriNet implements Runnable {
 		public TopOrb(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
 			try {
-				while (!server.gameOver) {
-					if (buffSpace.getp(new ActualField(team), new ActualField(true)) != null) {
-						break;
-					}
-				}
+				buffSpace.get(new ActualField(team), new ActualField(true));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -91,11 +87,7 @@ public class OrbPetriNet implements Runnable {
 		public BottomOrb(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
 			try {
-				while (!server.gameOver) {
-					if (buffSpace.getp(new ActualField(team), new ActualField(false)) != null) {
-						break;
-					}
-				}
+				buffSpace.get(new ActualField(team), new ActualField(false));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -123,6 +123,9 @@ public class Server {
         resources = new ArrayList<Resource>();
         orbs = new ArrayList<Orb>();
         orbHolders = new ArrayList<OrbHolder>();
+        if (orbPetriNet1 != null) {
+        	resetPetriNet();
+        }
         orbPetriNet1 = new OrbPetriNet(this, buffSpace, false);
         orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
         new Thread(orbPetriNet1).start();
@@ -145,6 +148,22 @@ public class Server {
 			}
         }
         resourcesChanged();
+	}
+	
+	private void resetPetriNet() {
+		try {
+			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
+			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class));
+			buffSpace.put(false, false);
+			buffSpace.put(false, true);
+			buffSpace.put(true, false);
+			buffSpace.put(true, true);
+			buffSpace.get(new ActualField(false), new FormalField(String.class));
+			buffSpace.get(new ActualField(true), new FormalField(String.class));
+			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void addPlayer(int id) {
