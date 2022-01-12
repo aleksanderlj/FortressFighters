@@ -56,7 +56,7 @@ public class OrbPetriNet implements Runnable {
 			this.outputs = outputs;
 		}
 		public void run() {
-			while (!server.gameOver) {
+			while (!server.isGameOver()) {
 				for (Space input : inputs) {
 					try {
 						input.get(new ActualField("token"));
@@ -106,8 +106,8 @@ public class OrbPetriNet implements Runnable {
 	private class ConsumeOrbs extends Activity {
 		public ConsumeOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			server.orbController.resetOrbHolder(team, true);
-			server.orbController.resetOrbHolder(team, false);
+			server.getOrbController().resetOrbHolder(team, true);
+			server.getOrbController().resetOrbHolder(team, false);
 		}
 	}
 	
@@ -147,8 +147,8 @@ public class OrbPetriNet implements Runnable {
 	private class SpawnOrbs extends Activity {
 		public SpawnOrbs(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
 		public void performTask() {
-			server.orbController.createNewOrb();
-			server.orbController.createNewOrb();
+			server.getOrbController().createNewOrb();
+			server.getOrbController().createNewOrb();
 		}
 	}
 

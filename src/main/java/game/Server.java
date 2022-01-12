@@ -1,11 +1,9 @@
 package game;
-import java.awt.Rectangle;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import controller.*;
 import org.jspace.ActualField;
@@ -22,44 +20,44 @@ public class Server {
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	public static final int SCREEN_WIDTH = 1280;
 	public static final int SCREEN_HEIGHT = 720;
+	public static final int INITIAL_RESOURCES = 10;
 	private List<Space> serverClientChannels = new ArrayList<Space>();
 	private List<Space> clientServerChannels = new ArrayList<Space>();
-	public List<Player> players = new ArrayList<>();
-	public List<Cannon> cannons = new ArrayList<>();
-	public List<Resource> resources = new ArrayList<>();
-	public List<Wall> walls = new ArrayList<>();
-	public List<Orb> orbs = new ArrayList<>();
-	public List<OrbHolder> orbHolders = new ArrayList<>();
-	public Fortress fortress1;
-	public Fortress fortress2;
-	public List<Bullet> bullets = new ArrayList<>();
+	private List<Player> players = new ArrayList<>();
+	private List<Cannon> cannons = new ArrayList<>();
+	private List<Resource> resources = new ArrayList<>();
+	private List<Wall> walls = new ArrayList<>();
+	private List<Orb> orbs = new ArrayList<>();
+	private List<OrbHolder> orbHolders = new ArrayList<>();
+	private Fortress fortress1;
+	private Fortress fortress2;
+	private List<Bullet> bullets = new ArrayList<>();
 	private SpaceRepository repository;
-	public Space centralSpace;
-	public Space playerPositionsSpace;
-	public Space playerMovementSpace;
-	public Space cannonSpace;
-	public Space bulletSpace;
-	public Space wallSpace;
-	public Space fortressSpace;
-	public Space resourceSpace;
-	public Space orbSpace;
-	public Space buffSpace;
-	public Space mutexSpace;
-	private int numPlayers = 0; //Including disconnected players.
+	private Space centralSpace;
+	private Space playerPositionsSpace;
+	private Space playerMovementSpace;
+	private Space cannonSpace;
+	private Space bulletSpace;
+	private Space wallSpace;
+	private Space fortressSpace;
+	private Space resourceSpace;
+	private Space orbSpace;
+	private Space buffSpace;
+	private Space mutexSpace;
+	public int numPlayers = 0; //Including disconnected players.
 	public int numPlayersTeam1 = 0; //Excluding disconnected players.
 	public int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
-    private int numberOfResources = 10;
-    public boolean gameOver = false;
+    private boolean gameOver = false;
     private OrbPetriNet orbPetriNet1;
     private OrbPetriNet orbPetriNet2;
-	public PlayerController playerController;
-	public CannonController cannonController;
-	public WallController wallController;
-	public FortressController fortressController;
-	public ResourceController resourceController;
-	public OrbController orbController;
-	public BuffController buffController;
+	private PlayerController playerController;
+	private CannonController cannonController;
+	private WallController wallController;
+	private FortressController fortressController;
+	private ResourceController resourceController;
+	private OrbController orbController;
+	private BuffController buffController;
 
 	public Server() {
 		repository = new SpaceRepository();
@@ -144,7 +142,7 @@ public class Server {
         orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
         new Thread(orbPetriNet1).start();
         new Thread(orbPetriNet2).start();
-        for (int i = 0; i < numberOfResources; i++) {
+        for (int i = 0; i < INITIAL_RESOURCES; i++) {
             resources.add(resourceController.createRandomResource());
         }
         for (int i = 0; i < 3; i++) {
@@ -324,5 +322,134 @@ public class Server {
 				}
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}
+	}
+
+
+
+	/*********************
+	 Getters and setters
+	*********************/
+	public List<Player> getPlayers() {
+		return players;
+	}
+
+	public List<Cannon> getCannons() {
+		return cannons;
+	}
+
+	public List<Resource> getResources() {
+		return resources;
+	}
+
+	public void setResources(List<Resource> resources) {
+		this.resources = resources;
+	}
+
+	public List<Wall> getWalls() {
+		return walls;
+	}
+
+	public List<Orb> getOrbs() {
+		return orbs;
+	}
+
+	public void setOrbs(List<Orb> orbs) {
+		this.orbs = orbs;
+	}
+
+	public List<OrbHolder> getOrbHolders() {
+		return orbHolders;
+	}
+
+	public Fortress getFortress1() {
+		return fortress1;
+	}
+
+	public void setFortress1(Fortress fortress1) {
+		this.fortress1 = fortress1;
+	}
+
+	public Fortress getFortress2() {
+		return fortress2;
+	}
+
+	public void setFortress2(Fortress fortress2) {
+		this.fortress2 = fortress2;
+	}
+
+	public List<Bullet> getBullets() {
+		return bullets;
+	}
+
+	public Space getPlayerPositionsSpace() {
+		return playerPositionsSpace;
+	}
+
+	public Space getPlayerMovementSpace() {
+		return playerMovementSpace;
+	}
+
+	public Space getCannonSpace() {
+		return cannonSpace;
+	}
+
+	public Space getBulletSpace() {
+		return bulletSpace;
+	}
+
+	public Space getWallSpace() {
+		return wallSpace;
+	}
+
+	public Space getFortressSpace() {
+		return fortressSpace;
+	}
+
+	public Space getResourceSpace() {
+		return resourceSpace;
+	}
+
+	public Space getOrbSpace() {
+		return orbSpace;
+	}
+
+	public Space getBuffSpace() {
+		return buffSpace;
+	}
+
+	public Space getMutexSpace() {
+		return mutexSpace;
+	}
+
+	public PlayerController getPlayerController() {
+		return playerController;
+	}
+
+	public CannonController getCannonController() {
+		return cannonController;
+	}
+
+	public WallController getWallController() {
+		return wallController;
+	}
+
+	public FortressController getFortressController() {
+		return fortressController;
+	}
+
+	public ResourceController getResourceController() {
+		return resourceController;
+	}
+
+	public OrbController getOrbController() {
+		return orbController;
+	}
+
+	public BuffController getBuffController() {
+		return buffController;
+	}
+
+	public boolean isGameOver() {
+		return gameOver;
 	}
 }

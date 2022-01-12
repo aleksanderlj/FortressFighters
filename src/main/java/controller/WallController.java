@@ -17,40 +17,40 @@ public class WallController {
     }
 
     public void updateWalls() throws InterruptedException{
-        List<Object[]> wallCommands = server.wallSpace.getAll(new FormalField(Integer.class), new FormalField(String.class));
+        List<Object[]> wallCommands = server.getWallSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Wall newWall;
         for (Object[] command : wallCommands) {
             int id = (int) command[0];
-            Player player = server.players.get(id);
+            Player player = server.getPlayers().get(id);
             double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
             newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
 
             // Only build wall if it's not colliding with another cannon, wall, fortress
             if(
-                    server.cannons.stream().noneMatch(newWall::intersects) &&
-                            server.walls.stream().noneMatch(newWall::intersects) &&
-                            !newWall.intersects(server.fortress1) &&
-                            !newWall.intersects(server.fortress2) &&
-                            server.players.stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
+                    server.getCannons().stream().noneMatch(newWall::intersects) &&
+                            server.getWalls().stream().noneMatch(newWall::intersects) &&
+                            !newWall.intersects(server.getFortress1()) &&
+                            !newWall.intersects(server.getFortress2()) &&
+                            server.getPlayers().stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
             ){
                 // Spend resources from fortress when building a wall
-                if (!newWall.getTeam() && server.fortress1.getWood() >= Wall.WOOD_COST) {
-                    server.fortress1.setWood(server.fortress1.getWood() - Wall.WOOD_COST);
-                    server.fortressController.changeFortress();
-                } else if (newWall.getTeam() && server.fortress2.getWood() >= Wall.WOOD_COST) {
-                    server.fortress2.setWood(server.fortress2.getWood() - Wall.WOOD_COST);
-                    server.fortressController.changeFortress();
+                if (!newWall.getTeam() && server.getFortress1().getWood() >= Wall.WOOD_COST) {
+                    server.getFortress1().setWood(server.getFortress1().getWood() - Wall.WOOD_COST);
+                    server.getFortressController().changeFortress();
+                } else if (newWall.getTeam() && server.getFortress2().getWood() >= Wall.WOOD_COST) {
+                    server.getFortress2().setWood(server.getFortress2().getWood() - Wall.WOOD_COST);
+                    server.getFortressController().changeFortress();
                 } else {
                     return;
                 }
-                server.walls.add(newWall);
-                server.wallSpace.put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
+                server.getWalls().add(newWall);
+                server.getWallSpace().put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
             }
         }
 
         // Prevent player from going through wall
-        for (Player p : server.players) {
-            for (Wall w : server.walls) {
+        for (Player p : server.getPlayers()) {
+            for (Wall w : server.getWalls()) {
                 if(w.getTeam() != p.team && p.intersects(w)){
                     // TODO Move player out of wall (Minkowsky?)
                 }
@@ -58,21 +58,21 @@ public class WallController {
         }
 
         // Reduce HP of wall if bullet or cannon collides with it
-        server.mutexSpace.get(new ActualField("bulletsLock"));
-        for (Bullet b : server.bullets) {
-            for (Wall w : server.walls) {
+        server.getMutexSpace().get(new ActualField("bulletsLock"));
+        for (Bullet b : server.getBullets()) {
+            for (Wall w : server.getWalls()) {
                 if(b.intersects(w) && b.getTeam() != w.getTeam()){
-                    server.wallSpace.getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+                    server.getWallSpace().getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
                     w.setHealth(w.getHealth() - 1);
                     if(w.getHealth() > 0) {
-                        server.wallSpace.put("wall", w.getId(), w.x, w.y, w.getTeam());
+                        server.getWallSpace().put("wall", w.getId(), w.x, w.y, w.getTeam());
                     }
                 }
             }
         }
         // Remove bullets that hit wall
-        server.bullets.removeIf(b -> server.walls.stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
-        server.walls.removeIf(w -> w.getHealth() <= 0);
-        server.mutexSpace.put("bulletsLock");
+        server.getBullets().removeIf(b -> server.getWalls().stream().anyMatch(w -> b.intersects(w) && b.getTeam() != w.getTeam()));
+        server.getWalls().removeIf(w -> w.getHealth() <= 0);
+        server.getMutexSpace().put("bulletsLock");
     }
 }

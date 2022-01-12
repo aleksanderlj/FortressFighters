@@ -15,23 +15,23 @@ public class FortressController {
     }
 
     public void updateFortresses() throws InterruptedException {
-        if (server.fortress1 == null) { return; }
+        if (server.getFortress1() == null) { return; }
 
         boolean changed = false;
 
         // Increase resources if player collides with fortress when holding resources
-        for (Player p : server.players) {
+        for (Player p : server.getPlayers()) {
             if (p.wood == 0 && p.iron == 0) { continue; }
 
-            if (p.team && p.intersects(server.fortress2)) {
-                server.fortress2.setWood(server.fortress2.getWood() + p.wood);
-                server.fortress2.setIron(server.fortress2.getIron() + p.iron);
+            if (p.team && p.intersects(server.getFortress2())) {
+                server.getFortress2().setWood(server.getFortress2().getWood() + p.wood);
+                server.getFortress2().setIron(server.getFortress2().getIron() + p.iron);
                 p.wood = 0;
                 p.iron = 0;
                 changed = true;
-            } else if (!p.team && p.intersects(server.fortress1)) {
-                server.fortress1.setWood(server.fortress1.getWood() + p.wood);
-                server.fortress1.setIron(server.fortress1.getIron() + p.iron);
+            } else if (!p.team && p.intersects(server.getFortress1())) {
+                server.getFortress1().setWood(server.getFortress1().getWood() + p.wood);
+                server.getFortress1().setIron(server.getFortress1().getIron() + p.iron);
                 p.wood = 0;
                 p.iron = 0;
                 changed = true;
@@ -39,33 +39,33 @@ public class FortressController {
         }
 
         // Prevent player from going through enemy fortress
-        for (Player p : server.players) {
-            if (!p.team && p.intersects(server.fortress2)) {
+        for (Player p : server.getPlayers()) {
+            if (!p.team && p.intersects(server.getFortress2())) {
                 // TODO Move blue player out of red fortress
-            } else if (p.team && p.intersects(server.fortress1)) {
+            } else if (p.team && p.intersects(server.getFortress1())) {
                 // TODO Move red player out of blue fortress
             }
         }
 
         // Reduce HP of fortress if bullet or cannon collides with it
-        server.mutexSpace.get(new ActualField("bulletsLock"));
-        for (Bullet b : server.bullets) {
-            if (b.getTeam() && b.intersects(server.fortress1)) {
-                server.fortress1.setHP(server.fortress1.getHP() - 5);
+        server.getMutexSpace().get(new ActualField("bulletsLock"));
+        for (Bullet b : server.getBullets()) {
+            if (b.getTeam() && b.intersects(server.getFortress1())) {
+                server.getFortress1().setHP(server.getFortress1().getHP() - 5);
                 changed = true;
-            } else if (!b.getTeam() && b.intersects(server.fortress2)) {
-                server.fortress2.setHP(server.fortress2.getHP() - 5);
+            } else if (!b.getTeam() && b.intersects(server.getFortress2())) {
+                server.getFortress2().setHP(server.getFortress2().getHP() - 5);
                 changed = true;
             }
         }
         // Remove bullets that hit fortress
-        server.bullets.removeIf(b -> (b.intersects(server.fortress1) && b.getTeam()) || (b.intersects(server.fortress2) && !b.getTeam()));
-        server.mutexSpace.put("bulletsLock");
+        server.getBullets().removeIf(b -> (b.intersects(server.getFortress1()) && b.getTeam()) || (b.intersects(server.getFortress2()) && !b.getTeam()));
+        server.getMutexSpace().put("bulletsLock");
 
         // Look for a winner
-        if (server.fortress1.getHP() <= 0) {
+        if (server.getFortress1().getHP() <= 0) {
             server.gameOver(false);
-        } else if (server.fortress2.getHP() <= 0) {
+        } else if (server.getFortress2().getHP() <= 0) {
             server.gameOver(true);
         }
 
@@ -74,17 +74,17 @@ public class FortressController {
 
     public void changeFortress() {
         try {
-            server.fortressSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+            server.getFortressSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
 
             // Update fortresses if they exist, otherwise build two new ones
-            if (server.fortress1 != null) {
-                server.fortressSpace.put(server.fortress1.getWood(), server.fortress1.getIron(), server.fortress1.getHP(), false);
-                server.fortressSpace.put(server.fortress2.getWood(), server.fortress2.getIron(), server.fortress2.getHP(), true);
+            if (server.getFortress1() != null) {
+                server.getFortressSpace().put(server.getFortress1().getWood(), server.getFortress1().getIron(), server.getFortress1().getHP(), false);
+                server.getFortressSpace().put(server.getFortress2().getWood(), server.getFortress2().getIron(), server.getFortress2().getHP(), true);
             } else {
-                server.fortress1 = new Fortress(false);
-                server.fortress2 = new Fortress(true);
-                server.fortressSpace.put(0, 0, 100, false);
-                server.fortressSpace.put(0, 0, 100, true);
+                server.setFortress1(new Fortress(false));
+                server.setFortress2(new Fortress(true));
+                server.getFortressSpace().put(0, 0, 100, false);
+                server.getFortressSpace().put(0, 0, 100, true);
             }
         } catch (InterruptedException e) {}
     }

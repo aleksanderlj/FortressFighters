@@ -25,16 +25,16 @@ public class BuffController {
         else if (team2GhostTimer > 0) {
             team2GhostTimer -= server.S_BETWEEN_UPDATES;
         }
-        List<Object[]> buffs =  server.buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
+        List<Object[]> buffs =  server.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
         for (Object[] buff : buffs) {
             switch ((String)buff[1]){
                 case "heal":
                     if((boolean) buff[0]){
-                        server.fortress1.setHP(server.fortress1.getHP() + 50);
+                        server.getFortress1().setHP(server.getFortress1().getHP() + 50);
                     } else {
-                        server.fortress2.setHP(server.fortress2.getHP() + 50);
+                        server.getFortress2().setHP(server.getFortress2().getHP() + 50);
                     }
-                    server.fortressController.changeFortress();
+                    server.getFortressController().changeFortress();
                     break;
                 case "ghost":
                     if((boolean) buff[0]){
@@ -48,14 +48,14 @@ public class BuffController {
                     double bulletHeight = Fortress.HEIGHT;
                     while (bulletHeight > server.SCREEN_HEIGHT-Fortress.HEIGHT) {
                         if((boolean) buff[0]) {
-                            bullet = new Bullet(server.fortress1.x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(server.getFortress1().x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
                         } else {
-                            bullet = new Bullet(server.fortress2.x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(server.getFortress2().x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
                         }
-                        server.mutexSpace.get(new ActualField("bulletsLock"));
-                        server.bullets.add(bullet);
-                        server.mutexSpace.put("bulletsLock");
-                        server.bulletSpace.put(bullet.x, bullet.y, bullet.getTeam());
+                        server.getMutexSpace().get(new ActualField("bulletsLock"));
+                        server.getBullets().add(bullet);
+                        server.getMutexSpace().put("bulletsLock");
+                        server.getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
                         bulletHeight -= 40;
                         Thread.sleep(50);
                     }
