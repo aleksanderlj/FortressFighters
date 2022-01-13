@@ -43,7 +43,13 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
-	private BufferedImage manblue, manred, cannonblue, cannonred, fortressblue, fortressred, wood, iron, bulletred, bulletblue, orb;
+	private BufferedImage manblue, manred,
+			cannonblue, cannonred,
+			fortressblue, fortressred,
+			wood, iron, orb,
+			bulletred, bulletblue,
+			wallred1, wallred2, wallred3,
+			wallblue1, wallblue2, wallblue3;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -85,6 +91,12 @@ public class Client {
 			bulletred = ImageIO.read(getClass().getClassLoader().getResource("bulletred.png"));
 			bulletblue = ImageIO.read(getClass().getClassLoader().getResource("bulletblue.png"));
 			orb = ImageIO.read(getClass().getClassLoader().getResource("orb.png"));
+			wallred1 = ImageIO.read(getClass().getClassLoader().getResource("wallred1.png"));
+			wallred2 = ImageIO.read(getClass().getClassLoader().getResource("wallred2.png"));
+			wallred3 = ImageIO.read(getClass().getClassLoader().getResource("wallred3.png"));
+			wallblue1 = ImageIO.read(getClass().getClassLoader().getResource("wallblue1.png"));
+			wallblue2 = ImageIO.read(getClass().getClassLoader().getResource("wallblue2.png"));
+			wallblue3 = ImageIO.read(getClass().getClassLoader().getResource("wallblue3.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -161,11 +173,18 @@ public class Client {
 	}
 
 	public void updateWalls() throws InterruptedException {
-		List<Object[]> wallTuples = wallSpace.queryAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		List<Object[]> wallTuples = wallSpace.queryAll(
+				new ActualField("wall"),
+				new FormalField(Integer.class),
+				new FormalField(Integer.class),
+				new FormalField(Double.class),
+				new FormalField(Double.class),
+				new FormalField(Boolean.class)
+		);
 		walls = new Wall[wallTuples.size()];
 		for (int i = 0; i < wallTuples.size(); i++) {
 			Object[] tuple = wallTuples.get(i);
-			walls[i] = new Wall((int) tuple[1], (double)tuple[2], (double)tuple[3], (boolean)tuple[4]);
+			walls[i] = new Wall((int) tuple[1], (int) tuple[2], (double)tuple[3], (double)tuple[4], (boolean)tuple[5]);
 		}
 	}
 
@@ -279,14 +298,23 @@ public class Client {
 
 		public void paintWalls(){
 			for (Wall w : walls) {
-				/*
 				if(w.getTeam()){
-					g2D.drawImage(wallred, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					if (w.getHealth() == Wall.MAX_HEALTH){
+						g2D.drawImage(wallred1, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					} else if(w.getHealth() >= 3){
+						g2D.drawImage(wallred2, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					} else if(w.getHealth() > 0){
+						g2D.drawImage(wallred3, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					}
 				} else {
-					g2D.drawImage(wallblue, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					if (w.getHealth() == Wall.MAX_HEALTH){
+						g2D.drawImage(wallblue1, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					} else if(w.getHealth() >= 3){
+						g2D.drawImage(wallblue2, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					} else if(w.getHealth() > 0){
+						g2D.drawImage(wallblue3, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
+					}
 				}
-				 */
-				g2D.drawRect((int) w.x, (int) w.y, (int) w.width, (int) w.height);
 			}
 		}
 

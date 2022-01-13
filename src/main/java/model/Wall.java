@@ -19,11 +19,11 @@ public class Wall extends Rectangle.Double {
         this.health = MAX_HEALTH;
     }
 
-    public Wall(int id, double x, double y, boolean team){
+    public Wall(int id, int health, double x, double y, boolean team){
         super(x, y, WIDTH, HEIGHT);
         this.id = id;
+        this.health = health;
         this.team = team;
-        this.health = MAX_HEALTH;
     }
 
     public int getId() {

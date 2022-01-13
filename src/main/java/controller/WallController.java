@@ -19,7 +19,7 @@ public class WallController {
     public void initializeWalls() throws InterruptedException {
         s.getWalls().clear();
         s.getWallSpace().getAll(new FormalField(Integer.class), new ActualField(String.class));
-        s.getWallSpace().getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+        s.getWallSpace().getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
     }
 
     public void updateWalls() throws InterruptedException{
@@ -50,7 +50,7 @@ public class WallController {
                     return;
                 }
                 s.getWalls().add(newWall);
-                s.getWallSpace().put("wall", newWall.getId(), newWall.x, newWall.y, newWall.getTeam());
+                s.getWallSpace().put("wall", newWall.getId(), newWall.getHealth(), newWall.x, newWall.y, newWall.getTeam());
             }
         }
 
@@ -68,10 +68,10 @@ public class WallController {
         for (Bullet b : s.getBullets()) {
             for (Wall w : s.getWalls()) {
                 if(b.intersects(w) && b.getTeam() != w.getTeam()){
-                    s.getWallSpace().getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+                    s.getWallSpace().getp(new ActualField("wall"), new ActualField(w.getId()), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
                     w.setHealth(w.getHealth() - 1);
                     if(w.getHealth() > 0) {
-                        s.getWallSpace().put("wall", w.getId(), w.x, w.y, w.getTeam());
+                        s.getWallSpace().put("wall", w.getId(), w.getHealth(), w.x, w.y, w.getTeam());
                     }
                 }
             }
