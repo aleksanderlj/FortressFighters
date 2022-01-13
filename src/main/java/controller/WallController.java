@@ -16,6 +16,10 @@ public class WallController {
         this.s = server;
     }
 
+    public void initializeWalls(){
+        s.getWalls().clear();
+    }
+
     public void updateWalls() throws InterruptedException{
         List<Object[]> wallCommands = s.getWallSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Wall newWall;

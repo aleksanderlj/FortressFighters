@@ -13,9 +13,18 @@ import java.util.Random;
 
 public class ResourceController {
     Server s;
+    public static final int INITIAL_RESOURCES = 10;
 
     public ResourceController(Server server){
         this.s = server;
+    }
+
+    public void initializeResources(){
+        s.getResources().clear();
+        for (int i = 0; i < INITIAL_RESOURCES; i++) {
+            s.getResources().add(createRandomResource());
+        }
+        resourcesChanged();
     }
 
     public void updateResources() {

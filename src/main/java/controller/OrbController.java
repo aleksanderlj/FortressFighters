@@ -1,5 +1,6 @@
 package controller;
 
+import game.OrbPetriNet;
 import game.Server;
 import model.*;
 import org.jspace.ActualField;
@@ -12,9 +13,53 @@ import java.util.Random;
 
 public class OrbController {
     Server s;
+    private OrbPetriNet orbPetriNet1;
+    private OrbPetriNet orbPetriNet2;
 
     public OrbController(Server server){
         this.s = server;
+    }
+
+    public void initializeOrbPetriNets(){
+        orbPetriNet1 = new OrbPetriNet(s, s.getBuffSpace(), false);
+        orbPetriNet2 = new OrbPetriNet(s, s.getBuffSpace(), true);
+        new Thread(orbPetriNet1).start();
+        new Thread(orbPetriNet2).start();
+        for (int i = 0; i < 3; i++) {
+            createNewOrb();
+        }
+        s.getOrbHolders().add(new OrbHolder(false, true, false));
+        s.getOrbHolders().add(new OrbHolder(true, false, false));
+        s.getOrbHolders().add(new OrbHolder(false, false, false));
+        s.getOrbHolders().add(new OrbHolder(true, true, false));
+        for (OrbHolder oh : s.getOrbHolders()) {
+            try {
+                s.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void initializeOrbs(){
+        s.getOrbs().clear();
+    }
+
+    public void initializeOrbHolders(){
+        s.getOrbHolders().clear();
+    }
+
+    public void resetPetriNet() {
+        try {
+            s.getBuffSpace().put(false, false);
+            s.getBuffSpace().put(false, true);
+            s.getBuffSpace().put(true, false);
+            s.getBuffSpace().put(true, true);
+            orbPetriNet1.reset();
+            orbPetriNet2.reset();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateOrbs() {

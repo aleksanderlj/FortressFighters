@@ -7,6 +7,7 @@ import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -15,6 +16,20 @@ public class PlayerController {
 
     public PlayerController(Server server){
         this.s = server;
+    }
+
+    public void initializePlayers(){
+        boolean[] disconnected = new boolean[s.numPlayers];
+        for (int i = 0; i < s.numPlayers; i++) {
+            disconnected[i] = s.getPlayers().get(i).disconnected;
+        }
+
+        s.getPlayers().clear();
+        for (int i = 0; i < s.numPlayers; i++) {
+            addPlayer(i);
+            s.getPlayers().get(i).disconnected = disconnected[i];
+        }
+        Collections.shuffle(s.getPlayers());
     }
 
     public void addPlayer(int id) {

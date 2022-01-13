@@ -16,6 +16,15 @@ public class CannonController {
         this.s = server;
     }
 
+    public void initializeCannons(){
+        s.getCannons().forEach(c -> c.setAlive(false));
+        s.getCannons().clear();
+    }
+
+    public void initializeBullets(){
+        s.getBullets().clear();
+    }
+
     public void updateCannons() throws InterruptedException {
         List<Object[]> cannonCommands = s.getCannonSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Cannon newCannon;

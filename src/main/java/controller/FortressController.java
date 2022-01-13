@@ -14,6 +14,12 @@ public class FortressController {
         this.s = server;
     }
 
+    public void initializeFortresses(){
+        s.setFortress1(null);
+        s.setFortress2(null);
+        changeFortress();
+    }
+
     public void updateFortresses() throws InterruptedException {
         if (s.getFortress1() == null) { return; }
 

@@ -20,7 +20,6 @@ public class Server {
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	public static final int SCREEN_WIDTH = 1280;
 	public static final int SCREEN_HEIGHT = 720;
-	public static final int INITIAL_RESOURCES = 10;
 	private List<Space> serverClientChannels = new ArrayList<Space>();
 	private List<Space> clientServerChannels = new ArrayList<Space>();
 	private List<Player> players = new ArrayList<>();
@@ -49,8 +48,6 @@ public class Server {
 	public int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private boolean gameOver = false;
-    private OrbPetriNet orbPetriNet1;
-    private OrbPetriNet orbPetriNet2;
 	private PlayerController playerController;
 	private CannonController cannonController;
 	private WallController wallController;
@@ -102,19 +99,9 @@ public class Server {
 	public void startGame() {
 		numPlayersTeam1 = 0;
 		numPlayersTeam2 = 0;
-		boolean[] disconnected = new boolean[numPlayers];
-		for (int i = 0; i < numPlayers; i++) {
-			disconnected[i] = players.get(i).disconnected;
-		}
-		players = new ArrayList<Player>();
-		for (int i = 0; i < numPlayers; i++) {
-			playerController.addPlayer(i);
-			players.get(i).disconnected = disconnected[i];
-		}
-		Collections.shuffle(players);
-		cannons.forEach(c -> c.setAlive(false));
-		cannons = new ArrayList<Cannon>();
-		walls = new ArrayList<Wall>();
+		playerController.initializePlayers();
+		cannonController.initializeCannons();
+		wallController.initializeWalls();
 		try {
 			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
 			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
@@ -124,7 +111,7 @@ public class Server {
 			orbSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class));
 			orbSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
 			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
-			bullets = new ArrayList<Bullet>();
+			cannonController.initializeBullets();
 			mutexSpace.put("bulletsLock");
 			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
 			buffSpace = new SequentialSpace();
@@ -132,47 +119,11 @@ public class Server {
 			e.printStackTrace();
 		}
 		buffController.resetTimers();
-		fortress1 = null;
-		fortress2 = null;
-		fortressController.changeFortress();
-        resources = new ArrayList<Resource>();
-        orbHolders = new ArrayList<OrbHolder>();
-        orbs = new ArrayList<Orb>();
-        orbPetriNet1 = new OrbPetriNet(this, buffSpace, false);
-        orbPetriNet2 = new OrbPetriNet(this, buffSpace, true);
-        new Thread(orbPetriNet1).start();
-        new Thread(orbPetriNet2).start();
-        for (int i = 0; i < INITIAL_RESOURCES; i++) {
-            resources.add(resourceController.createRandomResource());
-        }
-        for (int i = 0; i < 3; i++) {
-            orbController.createNewOrb();
-        }
-        orbHolders.add(new OrbHolder(false, true, false));
-        orbHolders.add(new OrbHolder(true, false, false));
-        orbHolders.add(new OrbHolder(false, false, false));
-        orbHolders.add(new OrbHolder(true, true, false));
-        for (OrbHolder oh : orbHolders) {
-        	try {
-				orbSpace.put(oh.team, oh.top, oh.hasOrb);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-        }
-        resourceController.resourcesChanged();
-	}
-	
-	private void resetPetriNet() {
-		try {
-			buffSpace.put(false, false);
-			buffSpace.put(false, true);
-			buffSpace.put(true, false);
-			buffSpace.put(true, true);
-			orbPetriNet1.reset();
-			orbPetriNet2.reset();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		fortressController.initializeFortresses();
+        resourceController.initializeResources();
+        orbController.initializeOrbHolders();
+        orbController.initializeOrbs();
+        orbController.initializeOrbPetriNets();
 	}
 
 	public void update() {
@@ -202,7 +153,7 @@ public class Server {
 		try {
 			centralSpace.put("game over", winningTeam ? "blue" : "red");
 			gameOver = true;
-        	resetPetriNet();
+        	orbController.resetPetriNet();
 			Thread.sleep(5000);
 			centralSpace.get(new ActualField("game over"), new FormalField(String.class));
 			startGame();
