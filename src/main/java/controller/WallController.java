@@ -37,7 +37,7 @@ public class WallController {
                             s.getWalls().stream().noneMatch(newWall::intersects) &&
                             !newWall.intersects(s.getFortress1()) &&
                             !newWall.intersects(s.getFortress2()) &&
-                            s.getPlayers().stream().filter(p -> p.team != player.team || player.disconnected).noneMatch(newWall::intersects)
+                            s.getPlayers().stream().filter(p -> p.team != player.team || p.disconnected).noneMatch(newWall::intersects)
             ){
                 // Spend resources from fortress when building a wall
                 if (!newWall.getTeam() && s.getFortress1().getWood() >= Wall.WOOD_COST) {
