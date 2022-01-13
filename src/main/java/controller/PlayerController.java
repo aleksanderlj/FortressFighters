@@ -23,13 +23,14 @@ public class PlayerController {
         for (int i = 0; i < s.numPlayers; i++) {
             disconnected[i] = s.getPlayers().get(i).disconnected;
         }
-
         s.getPlayers().clear();
         for (int i = 0; i < s.numPlayers; i++) {
             addPlayer(i);
-            s.getPlayers().get(i).disconnected = disconnected[i];
         }
         Collections.shuffle(s.getPlayers());
+        for (int i = 0; i < s.numPlayers; i++) {
+            s.getPlayers().get(i).disconnected = disconnected[i];
+        }
     }
 
     public void addPlayer(int id) {
