@@ -97,33 +97,22 @@ public class Server {
 	}
 	
 	public void startGame() {
-		numPlayersTeam1 = 0;
-		numPlayersTeam2 = 0;
-		playerController.initializePlayers();
-		cannonController.initializeCannons();
-		wallController.initializeWalls();
 		try {
-			cannonSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
-			cannonSpace.getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-			wallSpace.getAll(new FormalField(Integer.class), new ActualField(String.class));
-			wallSpace.getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-			mutexSpace.get(new ActualField("bulletsLock"));
-			orbSpace.getAll(new FormalField(Integer.class), new FormalField(Integer.class));
-			orbSpace.getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
-			buffSpace.getAll(new FormalField(Boolean.class), new FormalField(String.class));
+			numPlayersTeam1 = 0;
+			numPlayersTeam2 = 0;
+			playerController.initializePlayers();
+			cannonController.initializeCannons();
+			wallController.initializeWalls();
 			cannonController.initializeBullets();
-			mutexSpace.put("bulletsLock");
-			bulletSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-			buffSpace = new SequentialSpace();
+			orbController.initializeOrbs();
+			buffController.initializeBuffs();
+			fortressController.initializeFortresses();
+			resourceController.initializeResources();
+			orbController.initializeOrbHolders();
+			orbController.initializeOrbPetriNets();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		buffController.resetTimers();
-		fortressController.initializeFortresses();
-        resourceController.initializeResources();
-        orbController.initializeOrbHolders();
-        orbController.initializeOrbs();
-        orbController.initializeOrbPetriNets();
 	}
 
 	public void update() {
@@ -366,6 +355,10 @@ public class Server {
 
 	public Space getBuffSpace() {
 		return buffSpace;
+	}
+
+	public void setBuffSpace(Space buffSpace) {
+		this.buffSpace = buffSpace;
 	}
 
 	public Space getMutexSpace() {

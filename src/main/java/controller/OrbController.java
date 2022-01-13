@@ -41,8 +41,10 @@ public class OrbController {
         }
     }
 
-    public void initializeOrbs(){
+    public void initializeOrbs() throws InterruptedException {
         s.getOrbs().clear();
+        s.getOrbSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class));
+        s.getOrbSpace().getAll(new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Boolean.class));
     }
 
     public void initializeOrbHolders(){

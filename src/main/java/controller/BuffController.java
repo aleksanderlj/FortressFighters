@@ -6,6 +6,7 @@ import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.SequentialSpace;
 
 import java.util.List;
 
@@ -16,6 +17,13 @@ public class BuffController {
 
     public BuffController(Server server){
         this.s = server;
+    }
+
+    public void initializeBuffs() throws InterruptedException {
+        team1GhostTimer = 0;
+        team2GhostTimer = 0;
+        s.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
+        s.setBuffSpace(new SequentialSpace());
     }
 
     public void updateBuffs() throws InterruptedException {
@@ -66,10 +74,5 @@ public class BuffController {
 
     public boolean isGhost(Player p) {
         return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
-    }
-
-    public void resetTimers(){
-        team1GhostTimer = 0;
-        team2GhostTimer = 0;
     }
 }

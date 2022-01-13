@@ -16,8 +16,10 @@ public class WallController {
         this.s = server;
     }
 
-    public void initializeWalls(){
+    public void initializeWalls() throws InterruptedException {
         s.getWalls().clear();
+        s.getWallSpace().getAll(new FormalField(Integer.class), new ActualField(String.class));
+        s.getWallSpace().getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
     }
 
     public void updateWalls() throws InterruptedException{

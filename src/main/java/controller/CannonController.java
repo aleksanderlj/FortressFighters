@@ -16,13 +16,18 @@ public class CannonController {
         this.s = server;
     }
 
-    public void initializeCannons(){
+    public void initializeCannons() throws InterruptedException {
         s.getCannons().forEach(c -> c.setAlive(false));
         s.getCannons().clear();
+        s.getCannonSpace().getAll(new FormalField(Integer.class), new ActualField(String.class));
+        s.getCannonSpace().getAll(new ActualField("cannon"), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
     }
 
-    public void initializeBullets(){
+    public void initializeBullets() throws InterruptedException {
+        s.getMutexSpace().get(new ActualField("bulletsLock"));
         s.getBullets().clear();
+        s.getBulletSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+        s.getMutexSpace().put("bulletsLock");
     }
 
     public void updateCannons() throws InterruptedException {
