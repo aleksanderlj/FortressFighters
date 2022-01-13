@@ -38,17 +38,17 @@ public class BuffController {
             switch ((String)buff[1]){
                 case "heal":
                     if((boolean) buff[0]){
-                        s.getFortress1().setHP(s.getFortress1().getHP() + 50);
+                        s.getFortress2().setHP(s.getFortress1().getHP() + 50);
                     } else {
-                        s.getFortress2().setHP(s.getFortress2().getHP() + 50);
+                        s.getFortress1().setHP(s.getFortress2().getHP() + 50);
                     }
                     s.getFortressController().changeFortress();
                     break;
                 case "ghost":
                     if((boolean) buff[0]){
-                        team1GhostTimer = 5;
-                    } else {
                         team2GhostTimer = 5;
+                    } else {
+                        team1GhostTimer = 5;
                     }
                     break;
                 case "bullets":
@@ -56,9 +56,9 @@ public class BuffController {
                     double bulletHeight = Fortress.HEIGHT;
                     while (bulletHeight > Server.SCREEN_HEIGHT-Fortress.HEIGHT) {
                         if((boolean) buff[0]) {
-                            bullet = new Bullet(s.getFortress1().x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(s.getFortress2().x - Bullet.WIDTH * 2, bulletHeight, (boolean)buff[0]);
                         } else {
-                            bullet = new Bullet(s.getFortress2().x - Bullet.WIDTH * 2, bulletHeight, !(boolean)buff[0]);
+                            bullet = new Bullet(s.getFortress1().x + Fortress.WIDTH + Bullet.WIDTH * 2, bulletHeight, (boolean)buff[0]);
                         }
                         s.getMutexSpace().get(new ActualField("bulletsLock"));
                         s.getBullets().add(bullet);
