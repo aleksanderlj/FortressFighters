@@ -255,6 +255,9 @@ public class Server {
 								else {
 									numPlayersTeam2--;
 								}
+								if (players.get(i).hasOrb) {
+									orbController.createNewOrb();
+								}
 								System.out.println("Player disconnected.");
 							}
 						}
