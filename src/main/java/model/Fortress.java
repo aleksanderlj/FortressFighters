@@ -6,6 +6,7 @@ import game.Server;
 public class Fortress extends Rectangle.Double {
 	public static final double WIDTH = 150;
 	public static final double HEIGHT = 600;
+	public static final int RESOURCE_CAP = 999;
     private int wood;
     private int iron;
 	private int hp;
@@ -45,10 +46,16 @@ public class Fortress extends Rectangle.Double {
 	
 	public void setWood(int wood) {
 		this.wood = wood;
+		if (this.wood > RESOURCE_CAP) {
+			this.wood = RESOURCE_CAP;
+		}
 	}
 	
 	public void setIron(int iron) {
 		this.iron = iron;
+		if (this.iron > RESOURCE_CAP) {
+			this.iron = RESOURCE_CAP;
+		}
 	}
 	
 	public void setHP(int hp) {

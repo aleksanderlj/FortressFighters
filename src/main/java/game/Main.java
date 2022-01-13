@@ -1,20 +1,14 @@
 package game;
-import java.awt.Button;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.TextField;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.Scanner;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
-
-import org.jspace.ActualField;
-
-import model.Player;
 
 public class Main {
 	private static int windowWidth = 500;
@@ -51,28 +45,40 @@ public class Main {
 
     	if (type == 1) {
             server = new Server();
+            frame.isHost = true;
             client = new Client(Server.getIP(), frame);
 			System.out.println(Server.getIP());
     	}
     	else {
+            frame.isHost = false;
             client = new Client(tf.getText(), frame);
     	}
     }
     
     private static class MainPanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
+		private BufferedImage background;
+		private double backgroundScale = 1.3;
 
 		public MainPanel() {
 			setPreferredSize(new Dimension(windowWidth, windowHeight));
 			addKeyListener(this);
 	        setFocusable(true);
+			try {
+				background = ImageIO.read(getClass().getClassLoader().getResource("launcherbackground.jpg"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		public void paint(Graphics g) {
 			super.paint(g);
 			g2D = (Graphics2D) g;
+			g2D.drawImage(background, (int)((getWidth()/2) - ((background.getWidth()*backgroundScale)/2)), -70, (int)(background.getWidth() * backgroundScale), (int)(background.getHeight()*backgroundScale), null);
+			g2D.setColor(Color.WHITE);
 			g2D.drawString("Press 1 to host and play or 2 to join", 150, 50);
 			g2D.drawString("Enter Address to join:", 190, 235);
+			g2D.setColor(Color.BLACK);
 		}
 		
 		@Override
