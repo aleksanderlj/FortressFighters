@@ -10,58 +10,58 @@ import org.jspace.FormalField;
 import java.util.List;
 
 public class CannonController {
-    Server server;
+    Server s;
 
     public CannonController(Server server){
-        this.server = server;
+        this.s = server;
     }
 
     public void updateCannons() throws InterruptedException {
-        List<Object[]> cannonCommands = server.getCannonSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
+        List<Object[]> cannonCommands = s.getCannonSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Cannon newCannon;
         for (Object[] command : cannonCommands) {
             int id = (int) command[0];
-            Player player = server.getPlayers().get(id);
+            Player player = s.getPlayers().get(id);
             newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
 
             // Only build cannon if it's not colliding with another cannon, wall, fortress
             if(
-                    server.getCannons().stream().noneMatch(newCannon::intersects) &&
-                            server.getWalls().stream().noneMatch(newCannon::intersects) &&
-                            !newCannon.intersects(server.getFortress1()) &&
-                            !newCannon.intersects(server.getFortress2())
+                    s.getCannons().stream().noneMatch(newCannon::intersects) &&
+                            s.getWalls().stream().noneMatch(newCannon::intersects) &&
+                            !newCannon.intersects(s.getFortress1()) &&
+                            !newCannon.intersects(s.getFortress2())
             ){
                 // Spend resources from fortress when building a cannon
-                if (!newCannon.getTeam() && server.getFortress1().getIron() >= Cannon.IRON_COST) {
-                    server.getFortress1().setIron(server.getFortress1().getIron() - Cannon.IRON_COST);
-                    server.getFortressController().changeFortress();
-                } else if (newCannon.getTeam() && server.getFortress2().getIron() >= Cannon.IRON_COST) {
-                    server.getFortress2().setIron(server.getFortress2().getIron() - Cannon.IRON_COST);
-                    server.getFortressController().changeFortress();
+                if (!newCannon.getTeam() && s.getFortress1().getIron() >= Cannon.IRON_COST) {
+                    s.getFortress1().setIron(s.getFortress1().getIron() - Cannon.IRON_COST);
+                    s.getFortressController().changeFortress();
+                } else if (newCannon.getTeam() && s.getFortress2().getIron() >= Cannon.IRON_COST) {
+                    s.getFortress2().setIron(s.getFortress2().getIron() - Cannon.IRON_COST);
+                    s.getFortressController().changeFortress();
                 } else {
                     return;
                 }
 
-                server.getCannons().add(newCannon);
-                server.getCannonSpace().put("cannon", newCannon.x, newCannon.y, newCannon.getTeam());
+                s.getCannons().add(newCannon);
+                s.getCannonSpace().put("cannon", newCannon.x, newCannon.y, newCannon.getTeam());
                 new Thread(new CannonShooter(newCannon)).start(); // TODO Need some way to stop and remove this when game is reset or cannon is destroyed
             }
         }
     }
 
     public void updateBullets() throws InterruptedException{
-        server.getBulletSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
-        server.getMutexSpace().get(new ActualField("bulletsLock"));
-        server.getBullets().removeIf(b -> b.x < 0 || b.x > server.SCREEN_WIDTH); // Remove bullets that are out of bounds
-        for (Bullet b : server.getBullets()) {
+        s.getBulletSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+        s.getMutexSpace().get(new ActualField("bulletsLock"));
+        s.getBullets().removeIf(b -> b.x < 0 || b.x > s.SCREEN_WIDTH); // Remove bullets that are out of bounds
+        for (Bullet b : s.getBullets()) {
             if(b.getTeam()){
-                b.x -= Bullet.SPEED * server.S_BETWEEN_UPDATES;
+                b.x -= Bullet.SPEED * s.S_BETWEEN_UPDATES;
             } else {
-                b.x += Bullet.SPEED * server.S_BETWEEN_UPDATES;
+                b.x += Bullet.SPEED * s.S_BETWEEN_UPDATES;
             }
-            server.getBulletSpace().put(b.x, b.y, b.getTeam());
+            s.getBulletSpace().put(b.x, b.y, b.getTeam());
         }
-        server.getMutexSpace().put("bulletsLock");
+        s.getMutexSpace().put("bulletsLock");
     }
 
     public class CannonShooter implements Runnable {
@@ -75,7 +75,7 @@ public class CannonController {
         public void run() {
             try {
                 Thread.sleep(COOLDOWN);
-                while(!server.isGameOver() && cannon.isAlive()){
+                while(!s.isGameOver() && cannon.isAlive()){
                     if(cannon.isActive()){
                         Bullet bullet;
                         if(cannon.getTeam()){
@@ -83,10 +83,10 @@ public class CannonController {
                         } else {
                             bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
                         }
-                        server.getMutexSpace().get(new ActualField("bulletsLock"));
-                        server.getBullets().add(bullet);
-                        server.getMutexSpace().put("bulletsLock");
-                        server.getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
+                        s.getMutexSpace().get(new ActualField("bulletsLock"));
+                        s.getBullets().add(bullet);
+                        s.getMutexSpace().put("bulletsLock");
+                        s.getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
                         Thread.sleep(COOLDOWN);
                     }
                 }

@@ -12,19 +12,19 @@ import java.util.List;
 import java.util.Random;
 
 public class ResourceController {
-    Server server;
+    Server s;
 
     public ResourceController(Server server){
-        this.server = server;
+        this.s = server;
     }
 
     public void updateResources() {
         List<Resource> newResources = new ArrayList<>();
-        for (int i = 0; i < server.getResources().size(); i++) {
+        for (int i = 0; i < s.getResources().size(); i++) {
             boolean add = true;
-            Resource r = server.getResources().get(i);
-            for (int j = 0; j < server.getPlayers().size(); j++) {
-                Player p = server.getPlayers().get(j);
+            Resource r = s.getResources().get(i);
+            for (int j = 0; j < s.getPlayers().size(); j++) {
+                Player p = s.getPlayers().get(j);
                 if (!p.disconnected && p.intersects(r)) {
                     add = false;
                     if (r.getType() == 0) {
@@ -40,11 +40,11 @@ public class ResourceController {
                 newResources.add(r);
             }
         }
-        boolean update = server.getResources().size() != newResources.size();
-        for (int i = newResources.size(); i < server.getResources().size(); i++) {
+        boolean update = s.getResources().size() != newResources.size();
+        for (int i = newResources.size(); i < s.getResources().size(); i++) {
             newResources.add(createRandomResource());
         }
-        server.setResources(newResources);
+        s.setResources(newResources);
         if (update) {
             resourcesChanged();
         }
@@ -52,9 +52,9 @@ public class ResourceController {
 
     public void resourcesChanged() {
         try {
-            server.getResourceSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
-            for (Resource r : server.getResources()) {
-                server.getResourceSpace().put((int)r.x, (int)r.y, r.getType());
+            s.getResourceSpace().getAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class));
+            for (Resource r : s.getResources()) {
+                s.getResourceSpace().put((int)r.x, (int)r.y, r.getType());
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -66,7 +66,7 @@ public class ResourceController {
         while (true) {
             pos = getRandomPosition();
             boolean breakWhile = true;
-            for (Player p : server.getPlayers()) {
+            for (Player p : s.getPlayers()) {
                 if (p.intersects(new Rectangle.Double(pos[0], pos[1], 0, 0))) {
                     breakWhile = false;
                     break;
