@@ -49,7 +49,8 @@ public class Client {
 			wood, iron, orb,
 			bulletred, bulletblue,
 			wallred1, wallred2, wallred3,
-			wallblue1, wallblue2, wallblue3;
+			wallblue1, wallblue2, wallblue3,
+			orbholderempty, orbholderfull;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -97,6 +98,8 @@ public class Client {
 			wallblue1 = ImageIO.read(getClass().getClassLoader().getResource("wallblue1.png"));
 			wallblue2 = ImageIO.read(getClass().getClassLoader().getResource("wallblue2.png"));
 			wallblue3 = ImageIO.read(getClass().getClassLoader().getResource("wallblue3.png"));
+			orbholderempty = ImageIO.read(getClass().getClassLoader().getResource("orbholderempty.png"));
+			orbholderfull = ImageIO.read(getClass().getClassLoader().getResource("orbholderfull.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -351,10 +354,11 @@ public class Client {
 				g2D.drawImage(orb, (int) o.x, (int) o.y, (int) o.width, (int) o.height, null);
             }
 			for (OrbHolder oh : orbHolders) {
-                g2D.drawRect((int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height);
                 if (oh.hasOrb) {
-                    g2D.drawRect((int) oh.x+3, (int) oh.y+3, (int) oh.width-6, (int) oh.height-6);
-                }
+					g2D.drawImage(orbholderfull, (int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height, null);
+                } else {
+					g2D.drawImage(orbholderempty, (int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height, null);
+				}
             }
 		}
 
