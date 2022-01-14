@@ -126,6 +126,9 @@ public class PlayerController {
                 if (s.getBuffController().isGhost(player)) {
                     speed *= 2;
                 }
+                if (player.hasOrb) {
+                	speed *= 0.8;
+                }
                 player.x += (movementVectors[i][0] / mvLength) * speed;
                 player.y += (movementVectors[i][1] / mvLength) * speed;
             }
