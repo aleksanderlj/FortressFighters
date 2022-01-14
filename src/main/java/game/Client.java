@@ -57,9 +57,11 @@ public class Client {
 	private String winningTeam = "";
 	private String defaultFont;
 	private Font fortressStatusFont;
+	private String name;
 
-	public Client(String address, GameFrame frame) {
+	public Client(String address, GameFrame frame, String name) {
 		this.frame = frame;
+		this.name = name;
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {public void windowClosing(java.awt.event.WindowEvent windowEvent) {windowClosed = true;}});
 		panel = new GamePanel();
 		frame.setPanel(panel);
@@ -75,7 +77,7 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
-			centralSpace.put("joined");
+			centralSpace.put("joined", name);
 			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
 			id = (Integer) tuple[0];
 			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
@@ -145,11 +147,11 @@ public class Client {
 
 	public void updatePlayers() throws InterruptedException {
 		if (playerPositionsSpace.queryp(new ActualField("players")) != null) {
-			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(String.class));
 			players = new Player[playersTuples.size()];
 			for (int i = 0; i < playersTuples.size(); i++) {
 				Object[] tuple = playersTuples.get(i);
-				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3]);
+				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3], (String)tuple[7]);
 				players[i].wood = (int)tuple[4];
 				players[i].iron = (int)tuple[5];
 				players[i].hasOrb = (boolean)tuple[6];

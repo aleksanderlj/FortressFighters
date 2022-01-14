@@ -45,7 +45,7 @@ public class PlayerController {
     	}
     }
 
-    public void addPlayer(int id) {
+    public void addPlayer(int id, String name) {
     	boolean team = getNextTeam();
     	double[] pos = getRandomPlayerPosition(team);
     	if (team) {
@@ -54,7 +54,7 @@ public class PlayerController {
     	else {
             s.numPlayersTeam2++;
     	}
-    	s.getPlayers().add(new Player(pos[0], pos[1], id, team));
+    	s.getPlayers().add(new Player(pos[0], pos[1], id, team, name));
     }
     
     public boolean getNextTeam() {
@@ -134,7 +134,7 @@ public class PlayerController {
             }
 
             // Prevent collision
-            if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team))){
+            if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team, player.name))){
                 player.x = oldX;
                 player.y = oldY;
             }
@@ -157,7 +157,7 @@ public class PlayerController {
         }
 
         s.getPlayerPositionsSpace().getp(new ActualField("players"));
-        s.getPlayerPositionsSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+        s.getPlayerPositionsSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(String.class));
         for (Player p : s.getPlayers()) {
             s.getMutexSpace().get(new ActualField("bulletsLock"));
             for (Bullet b : s.getBullets()) {
@@ -167,7 +167,7 @@ public class PlayerController {
             }
             s.getBullets().removeIf(b -> !s.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p));
             s.getMutexSpace().put("bulletsLock");
-            s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
+            s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb, p.name);
             if (p.stunned > 0) {
                 p.stunned -= Server.S_BETWEEN_UPDATES;
             }
