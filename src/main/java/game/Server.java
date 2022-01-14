@@ -20,8 +20,6 @@ public class Server {
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	public static final int SCREEN_WIDTH = 1280;
 	public static final int SCREEN_HEIGHT = 720;
-	private List<Space> serverClientChannels = new ArrayList<Space>();
-	private List<Space> clientServerChannels = new ArrayList<Space>();
 	private List<Player> players = new ArrayList<>();
 	private List<Cannon> cannons = new ArrayList<>();
 	private List<Resource> resources = new ArrayList<>();
@@ -158,8 +156,8 @@ public class Server {
 		Space clientServer = new QueueSpace();
 		repository.add("serverclient"+id, serverClient);
 		repository.add("client"+id+"server", clientServer);
-		serverClientChannels.add(serverClient);
-		clientServerChannels.add(clientServer);
+		getPlayerWithID(id).clientToServer = clientServer;
+		getPlayerWithID(id).serverToClient = serverClient;
 		try {
 			centralSpace.put(id, "serverclient"+id, "client"+id+"server");
 		} catch (InterruptedException e) {
@@ -167,9 +165,18 @@ public class Server {
 		}
 	}
 
-	private int getActualNumberOfPlayers() {
+	public int getActualNumberOfPlayers() {
 		//Get number of players excluding disconnected players.
-		return numPlayersTeam1 + numPlayersTeam2;
+		return players.size();
+	}
+	
+	public Player getPlayerWithID(int id) {
+		for (Player player : players) {
+			if (player.id == id) {
+				return player;
+			}
+		}
+		return null;
 	}
 
 	public static String getIP(){
@@ -203,11 +210,13 @@ public class Server {
 		public void run() {
 			try {
 				while (true) {
+					System.out.println(players.size());
 					centralSpace.get(new ActualField("joined"));
-					createNewChannel(numPlayers);
 					playerController.addPlayer(numPlayers);
+					createNewChannel(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");
+					System.out.println(players.size());
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -220,35 +229,30 @@ public class Server {
 			//Protocol checking if players are still in the game.
 			try {
 				while (true) {
-					for (int i = 0; i < numPlayers; i++) {
-						if (!players.get(i).disconnected) {
-							serverClientChannels.get(i).put("check");
-						}
+					for (int i = 0; i < getActualNumberOfPlayers(); i++) {
+						players.get(i).serverToClient.put("check");
 					}
-					int numPlayersBefore = numPlayers;
+					int numPlayersBefore = getActualNumberOfPlayers();
 					Thread.sleep(2000);
+					List<Player> newPlayers = new ArrayList<>();
 					for (int i = 0; i < numPlayersBefore; i++) {
-						if (!players.get(i).disconnected && clientServerChannels.get(i).getp(new ActualField("acknowledged")) == null) {
+						if (players.get(i).clientToServer.getp(new ActualField("acknowledged")) == null) {
 							//Client took too long to respond.
 							if (i == 0) {
 								//The host has disconnected.
-								for (int j = 0; j < numPlayersBefore; j++) {
-									if (!players.get(j).disconnected) {
-										serverClientChannels.get(j).put("stop");
-									}
+								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
+									players.get(j).serverToClient.put("stop");
 								}
 								System.out.println("Host disconnected.");
+								players.remove(i);
 								Thread.sleep(500);
 								System.exit(0);
 							}
 							else {
 								//A client that is not the host has disconnected.
-								for (int j = 0; j < numPlayersBefore; j++) {
-									if (!players.get(j).disconnected) {
-										serverClientChannels.get(j).put("clientdisconnected");
-									}
+								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
+									players.get(j).serverToClient.put("clientdisconnected");
 								}
-								players.get(i).disconnected = true;
 								if (players.get(i).team == true) {
 									numPlayersTeam1--;
 								}
@@ -261,7 +265,12 @@ public class Server {
 								System.out.println("Player disconnected.");
 							}
 						}
+						else {
+							newPlayers.add(players.get(i));
+						}
 					}
+					players.clear();
+					players.addAll(newPlayers);
 				}
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}

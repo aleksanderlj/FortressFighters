@@ -69,9 +69,9 @@ public class OrbController {
         for (int i = 0; i < s.getOrbs().size(); i++) {
             boolean add = true;
             Orb o = s.getOrbs().get(i);
-            for (int j = 0; j < s.getPlayers().size(); j++) {
+            for (int j = 0; j < s.getActualNumberOfPlayers(); j++) {
                 Player p = s.getPlayers().get(j);
-                if (!p.disconnected && p.intersects(o) && !p.hasOrb) {
+                if (p.intersects(o) && !p.hasOrb) {
                     add = false;
                     p.hasOrb = true;
                     try {
@@ -88,9 +88,9 @@ public class OrbController {
         s.setOrbs(newOrbs);
         for (int i = 0; i < s.getOrbHolders().size(); i++) {
             OrbHolder oh = s.getOrbHolders().get(i);
-            for (int j = 0; j < s.getPlayers().size(); j++) {
+            for (int j = 0; j < s.getActualNumberOfPlayers(); j++) {
                 Player p = s.getPlayers().get(j);
-                if (!p.disconnected && p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
+                if (p.intersects(oh) && p.hasOrb && !oh.hasOrb) {
                     p.hasOrb = true;
                     try {
                         s.getOrbSpace().get(new ActualField(oh.team), new ActualField(oh.top), new ActualField(oh.hasOrb));

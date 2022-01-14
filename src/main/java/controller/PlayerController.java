@@ -19,18 +19,15 @@ public class PlayerController {
     }
 
     public void initializePlayers(){
-        boolean[] disconnected = new boolean[s.numPlayers];
-        for (int i = 0; i < s.numPlayers; i++) {
-            disconnected[i] = s.getPlayers().get(i).disconnected;
+        int[] ids = new int[s.getActualNumberOfPlayers()];
+        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
+            ids[i] = s.getPlayers().get(i).id;
         }
         s.getPlayers().clear();
-        for (int i = 0; i < s.numPlayers; i++) {
-            addPlayer(i);
+        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
+            addPlayer(ids[i]);
         }
         Collections.shuffle(s.getPlayers());
-        for (int i = 0; i < s.numPlayers; i++) {
-            s.getPlayers().get(i).disconnected = disconnected[i];
-        }
     }
 
     public void addPlayer(int id) {
@@ -60,10 +57,10 @@ public class PlayerController {
 
     public void updatePlayers() throws InterruptedException {
         List<Object[]> movementTuples = s.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class));
-        int[][] movementVectors = new int[s.getPlayers().size()][2];
+        int[][] movementVectors = new int[s.numPlayers][2];
         for (Object[] movementTuple : movementTuples) {
             int playerID = (Integer) movementTuple[0];
-            Player player = s.getPlayers().get(playerID);
+            Player player = s.getPlayerWithID(playerID);
             String direction = (String) movementTuple[1];
             if (player.stunned <= 0) {
                 switch (direction) {
@@ -86,7 +83,10 @@ public class PlayerController {
         }
 
         for (int i = 0; i < movementVectors.length; i++) {
-            Player player = s.getPlayers().get(i);
+            Player player = s.getPlayerWithID(i);
+            if (player == null) {
+            	continue;
+            }
             double oldX = player.x;
             double oldY = player.y;
             double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
@@ -125,19 +125,17 @@ public class PlayerController {
         s.getPlayerPositionsSpace().getp(new ActualField("players"));
         s.getPlayerPositionsSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
         for (Player p : s.getPlayers()) {
-            if (!p.disconnected) {
-                s.getMutexSpace().get(new ActualField("bulletsLock"));
-                for (Bullet b : s.getBullets()) {
-                    if (!s.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
-                        p.stunned = 0.5;
-                    }
+            s.getMutexSpace().get(new ActualField("bulletsLock"));
+            for (Bullet b : s.getBullets()) {
+                if (!s.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p)) {
+                    p.stunned = 0.5;
                 }
-                s.getBullets().removeIf(b -> !s.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p));
-                s.getMutexSpace().put("bulletsLock");
-                s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
-                if (p.stunned > 0) {
-                    p.stunned -= s.S_BETWEEN_UPDATES;
-                }
+            }
+            s.getBullets().removeIf(b -> !s.getBuffController().isGhost(p) && b.getTeam() != p.team && b.intersects(p));
+            s.getMutexSpace().put("bulletsLock");
+            s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
+            if (p.stunned > 0) {
+                p.stunned -= s.S_BETWEEN_UPDATES;
             }
         }
         s.getPlayerPositionsSpace().put("players");

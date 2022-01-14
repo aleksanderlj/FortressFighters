@@ -27,7 +27,7 @@ public class WallController {
         Wall newWall;
         for (Object[] command : wallCommands) {
             int id = (int) command[0];
-            Player player = s.getPlayers().get(id);
+            Player player = s.getPlayerWithID(id);
             double wallXOffset = player.team ? -Wall.WIDTH : Player.WIDTH;
             newWall = new Wall(player.x + wallXOffset, (player.y+Player.HEIGHT/2) - Wall.HEIGHT/2, player.team);
 
@@ -37,7 +37,7 @@ public class WallController {
                             s.getWalls().stream().noneMatch(newWall::intersects) &&
                             !newWall.intersects(s.getFortress1()) &&
                             !newWall.intersects(s.getFortress2()) &&
-                            s.getPlayers().stream().filter(p -> p.team != player.team && !p.disconnected).noneMatch(newWall::intersects)
+                            s.getPlayers().stream().filter(p -> p.team != player.team).noneMatch(newWall::intersects)
             ){
                 // Spend resources from fortress when building a wall
                 if (!newWall.getTeam() && s.getFortress1().getWood() >= Wall.WOOD_COST) {

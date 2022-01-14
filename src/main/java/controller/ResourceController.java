@@ -32,9 +32,9 @@ public class ResourceController {
         for (int i = 0; i < s.getResources().size(); i++) {
             boolean add = true;
             Resource r = s.getResources().get(i);
-            for (int j = 0; j < s.getPlayers().size(); j++) {
+            for (int j = 0; j < s.getActualNumberOfPlayers(); j++) {
                 Player p = s.getPlayers().get(j);
-                if (!p.disconnected && p.intersects(r)) {
+                if (p.intersects(r)) {
                     add = false;
                     if (r.getType() == 0) {
                         p.wood++;
