@@ -208,8 +208,8 @@ public class Server {
 		public void run() {
 			try {
 				while (true) {
-					centralSpace.get(new ActualField("joined"));
-					playerController.addPlayer(numPlayers);
+					Object[] tuple = centralSpace.get(new ActualField("joined"), new FormalField(String.class));
+					playerController.addPlayer(numPlayers, (String)tuple[1]);
 					createNewChannel(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");

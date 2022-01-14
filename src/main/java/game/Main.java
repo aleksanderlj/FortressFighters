@@ -15,7 +15,8 @@ public class Main {
 	private static int windowHeight = 500;
 	private static GameFrame frame;
 	private static MainPanel mainPanel;
-	private static TextField tf;
+	private static TextField ipTextField;
+	private static TextField nameTextField;
 	private static Button hostButton;
 	private static Button joinButton;
 	
@@ -24,15 +25,18 @@ public class Main {
 		mainPanel = new MainPanel();
         frame.setPanel(mainPanel);
         mainPanel.setLayout(null);
-        tf = new TextField(Server.getIP());
-        tf.setBounds(200, 250, 100, 25);
+        ipTextField = new TextField(Server.getIP());
+        nameTextField = new TextField();
+        ipTextField.setBounds(200, 270, 100, 25);
+        nameTextField.setBounds(200, 60, 100, 25);
         hostButton = new Button("Host");
         joinButton = new Button("Join");
         hostButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(1);}});
         joinButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(2);}});
-        hostButton.setBounds(200, 100, 100, 25);
-        joinButton.setBounds(200, 280, 100, 25);
-        mainPanel.add(tf);
+        hostButton.setBounds(200, 170, 100, 25);
+        joinButton.setBounds(200, 300, 100, 25);
+        mainPanel.add(ipTextField);
+        mainPanel.add(nameTextField);
         mainPanel.add(hostButton);
         mainPanel.add(joinButton);
     }
@@ -46,12 +50,12 @@ public class Main {
     	if (type == 1) {
             server = new Server();
             frame.isHost = true;
-            client = new Client(Server.getIP(), frame);
+            client = new Client(Server.getIP(), frame, nameTextField.getText());
 			System.out.println(Server.getIP());
     	}
     	else {
             frame.isHost = false;
-            client = new Client(tf.getText(), frame);
+            client = new Client(ipTextField.getText(), frame, nameTextField.getText());
     	}
     }
     
@@ -76,8 +80,8 @@ public class Main {
 			g2D = (Graphics2D) g;
 			g2D.drawImage(background, (int)((getWidth()/2) - ((background.getWidth()*backgroundScale)/2)), -70, (int)(background.getWidth() * backgroundScale), (int)(background.getHeight()*backgroundScale), null);
 			g2D.setColor(Color.WHITE);
-			g2D.drawString("Press 1 to host and play or 2 to join", 150, 50);
-			g2D.drawString("Enter Address to join:", 190, 235);
+			g2D.drawString("Enter your name:", 200, 50);
+			g2D.drawString("Enter Address to join:", 190, 255);
 			g2D.setColor(Color.BLACK);
 		}
 		
