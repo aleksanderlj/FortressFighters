@@ -278,6 +278,7 @@ public class Client {
 				if (p.id == id) {
 					g2D.setFont(new Font(defaultFont, Font.BOLD, 12));
 				}
+				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 50);
 				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
 				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
 				g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
