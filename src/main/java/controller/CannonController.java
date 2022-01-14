@@ -35,7 +35,7 @@ public class CannonController {
         Cannon newCannon;
         for (Object[] command : cannonCommands) {
             int id = (int) command[0];
-            Player player = s.getPlayers().get(id);
+            Player player = s.getPlayerWithID(id);
             newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
 
             // Only build cannon if it's not colliding with another cannon, wall, fortress

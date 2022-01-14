@@ -6,6 +6,7 @@ import model.Fortress;
 import model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.Space;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,40 +20,70 @@ public class PlayerController {
     }
 
     public void initializePlayers(){
-        int[] ids = new int[s.getActualNumberOfPlayers()];
-        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
-            ids[i] = s.getPlayers().get(i).id;
-        }
-        s.getPlayers().clear();
-        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
-            addPlayer(ids[i]);
-        }
+		s.numPlayersTeam1 = 0;
+		s.numPlayersTeam2 = 0;
         Collections.shuffle(s.getPlayers());
+        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
+        	resetPlayer(s.getPlayers().get(i));
+        }
+    }
+    
+    public void resetPlayer(Player player) {
+		player.hasOrb = false;
+		player.wood = 10;
+		player.iron = 20;
+		player.stunned = 0;
+		player.team = getNextTeam();
+    	double[] pos = getRandomPlayerPosition(player.team);
+    	player.x = pos[0];
+    	player.y = pos[1];
+    	if (player.team) {
+            s.numPlayersTeam1++;
+    	}
+    	else {
+            s.numPlayersTeam2++;
+    	}
     }
 
     public void addPlayer(int id) {
-        double randomY = (new Random()).nextInt((int)(Fortress.HEIGHT - Player.HEIGHT)) + ((Server.SCREEN_HEIGHT - Fortress.HEIGHT) / 2);
-        double xOffset = Fortress.WIDTH + 20;
-
+    	boolean team = getNextTeam();
+    	double[] pos = getRandomPlayerPosition(team);
+    	if (team) {
+            s.numPlayersTeam1++;
+    	}
+    	else {
+            s.numPlayersTeam2++;
+    	}
+    	s.getPlayers().add(new Player(pos[0], pos[1], id, team));
+    }
+    
+    public boolean getNextTeam() {
         if (s.numPlayersTeam1 == s.numPlayersTeam2) {
             int team = (new Random()).nextInt(2);
             if (team == 0) {
-                s.getPlayers().add(new Player(Server.SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
-                s.numPlayersTeam1++;
+            	return true;
             }
             else {
-                s.getPlayers().add(new Player(0 + xOffset, randomY, id, false));
-                s.numPlayersTeam2++;
+            	return false;
             }
         }
         else if (s.numPlayersTeam1 > s.numPlayersTeam2) {
-            s.getPlayers().add(new Player(0 + xOffset, randomY, id, false));
-            s.numPlayersTeam2++;
+        	return false;
         }
         else {
-            s.getPlayers().add(new Player(Server.SCREEN_WIDTH - xOffset - Player.WIDTH, randomY, id, true));
-            s.numPlayersTeam1++;
+        	return true;
         }
+    }
+    
+    public double[] getRandomPlayerPosition(boolean team) {
+    	double xOffset = Fortress.WIDTH + 20;
+    	double y = (new Random()).nextInt((int)(Fortress.HEIGHT - Player.HEIGHT)) + ((Server.SCREEN_HEIGHT - Fortress.HEIGHT) / 2);
+    	if (team) {
+    		return new double[] {Server.SCREEN_WIDTH - xOffset - Player.WIDTH, y};
+    	}
+    	else {
+    		return new double[] {xOffset, y};
+    	}
     }
 
     public void updatePlayers() throws InterruptedException {
@@ -135,7 +166,7 @@ public class PlayerController {
             s.getMutexSpace().put("bulletsLock");
             s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb);
             if (p.stunned > 0) {
-                p.stunned -= s.S_BETWEEN_UPDATES;
+                p.stunned -= Server.S_BETWEEN_UPDATES;
             }
         }
         s.getPlayerPositionsSpace().put("players");

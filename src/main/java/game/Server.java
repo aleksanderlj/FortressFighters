@@ -96,8 +96,6 @@ public class Server {
 	
 	public void startGame() {
 		try {
-			numPlayersTeam1 = 0;
-			numPlayersTeam2 = 0;
 			playerController.initializePlayers();
 			cannonController.initializeCannons();
 			wallController.initializeWalls();
@@ -210,13 +208,11 @@ public class Server {
 		public void run() {
 			try {
 				while (true) {
-					System.out.println(players.size());
 					centralSpace.get(new ActualField("joined"));
 					playerController.addPlayer(numPlayers);
 					createNewChannel(numPlayers);
 					numPlayers++;
 					System.out.println("Player joined.");
-					System.out.println(players.size());
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -234,17 +230,17 @@ public class Server {
 					}
 					int numPlayersBefore = getActualNumberOfPlayers();
 					Thread.sleep(2000);
-					List<Player> newPlayers = new ArrayList<>();
+					List<Player> playersToRemove = new ArrayList<>();
 					for (int i = 0; i < numPlayersBefore; i++) {
 						if (players.get(i).clientToServer.getp(new ActualField("acknowledged")) == null) {
 							//Client took too long to respond.
-							if (i == 0) {
+							if (players.get(i).id == 0) {
 								//The host has disconnected.
 								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
 									players.get(j).serverToClient.put("stop");
 								}
 								System.out.println("Host disconnected.");
-								players.remove(i);
+								playersToRemove.add(players.get(i));
 								Thread.sleep(500);
 								System.exit(0);
 							}
@@ -262,15 +258,14 @@ public class Server {
 								if (players.get(i).hasOrb) {
 									orbController.createNewOrb();
 								}
+								playersToRemove.add(players.get(i));
 								System.out.println("Player disconnected.");
 							}
 						}
-						else {
-							newPlayers.add(players.get(i));
-						}
 					}
-					players.clear();
-					players.addAll(newPlayers);
+					for (Player player : playersToRemove) {
+						players.remove(player);
+					}
 				}
 			} catch (InterruptedException e) {e.printStackTrace();}
 		}

@@ -23,4 +23,5 @@ public class Player extends Rectangle.Double {
 		this.id = id;
 		this.team = team;
 	}
+
 }
