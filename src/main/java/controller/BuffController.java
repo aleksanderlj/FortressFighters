@@ -69,6 +69,10 @@ public class BuffController {
                     }
                     break;
             }
+
+            for (Player p : s.getPlayers()) {
+                p.serverToClient.put("buff_activated", (String)buff[1], (boolean) buff[0]);
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -230,6 +231,7 @@ public class Client {
 	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
 		private List<String> disconnectedClients = new ArrayList<>();
+		private List<BuffMessage> buffMessages = new ArrayList<>();
 
 		public GamePanel() {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
@@ -255,6 +257,7 @@ public class Client {
 				paintWalls();
 				paintPlayers();
 				paintBullets();
+				paintBuffs();
 				for (int i = 0; i < disconnectedClients.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
 					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
@@ -371,6 +374,24 @@ public class Client {
             }
 		}
 
+		private void paintBuffs(){
+			try {
+				Object[] msg = channelFromServer.getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
+				if(msg != null){
+					buffMessages.add(new BuffMessage((String) msg[1], (boolean)msg[2]));
+				}
+				for (int i = 0 ; i < buffMessages.size() ; i++){
+					buffMessages.get(i).update();
+					g2D.setFont(new Font(defaultFont, Font.PLAIN, 18));
+					String s = buffMessages.get(i).buff.toUpperCase(Locale.ROOT) + " has been activated for " + (buffMessages.get(i).getTeam() ? "red" : "blue") + " team!";
+					g2D.drawString(s, (Server.SCREEN_WIDTH/2) - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT - 20 - (30 * i));
+				}
+				buffMessages.removeIf(b -> !b.isActive());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 		public void updatePanel() {
 			repaint();
 		}
@@ -479,6 +500,35 @@ public class Client {
 					e.printStackTrace();
 				}
 				disconnectedClients.remove(playerName);
+			}
+		}
+
+		private class BuffMessage {
+			private String buff;
+			private boolean team;
+			private final static double BUFF_MSG_TIMER_MAX = 3;
+			private double buffMessageTimer;
+
+			public BuffMessage(String buff, boolean team){
+				this.buff = buff;
+				this.team = team;
+				this.buffMessageTimer = BUFF_MSG_TIMER_MAX;
+			}
+
+			public void update(){
+				buffMessageTimer -= S_BETWEEN_UPDATES;
+			}
+
+			public boolean isActive(){
+				return buffMessageTimer > 0;
+			}
+
+			public String getBuff() {
+				return buff;
+			}
+
+			public boolean getTeam(){
+				return team;
 			}
 		}
 	}
