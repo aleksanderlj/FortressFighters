@@ -228,19 +228,19 @@ public class Server {
 					for (int i = 0; i < getActualNumberOfPlayers(); i++) {
 						players.get(i).serverToClient.put("check");
 					}
-					int numPlayersBefore = getActualNumberOfPlayers();
+					List<Player> playersBefore = new ArrayList<Player>(players);
 					Thread.sleep(2000);
 					List<Player> playersToRemove = new ArrayList<>();
-					for (int i = 0; i < numPlayersBefore; i++) {
-						if (players.get(i).clientToServer.getp(new ActualField("acknowledged")) == null) {
+					for (int i = 0; i < playersBefore.size(); i++) {
+						if (playersBefore.get(i).clientToServer.getp(new ActualField("acknowledged")) == null) {
 							//Client took too long to respond.
-							if (players.get(i).id == 0) {
+							if (playersBefore.get(i).id == 0) {
 								//The host has disconnected.
 								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
 									players.get(j).serverToClient.put("stop");
 								}
 								System.out.println("Host disconnected.");
-								playersToRemove.add(players.get(i));
+								playersToRemove.add(playersBefore.get(i));
 								Thread.sleep(500);
 								System.exit(0);
 							}
@@ -249,16 +249,16 @@ public class Server {
 								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
 									players.get(j).serverToClient.put("clientdisconnected");
 								}
-								if (players.get(i).team == true) {
+								if (playersBefore.get(i).team == true) {
 									numPlayersTeam1--;
 								}
 								else {
 									numPlayersTeam2--;
 								}
-								if (players.get(i).hasOrb) {
+								if (playersBefore.get(i).hasOrb) {
 									orbController.createNewOrb();
 								}
-								playersToRemove.add(players.get(i));
+								playersToRemove.add(playersBefore.get(i));
 								System.out.println("Player disconnected.");
 							}
 						}
