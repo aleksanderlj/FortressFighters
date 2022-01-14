@@ -12,7 +12,7 @@ public class OrbHolder extends Rectangle.Double {
 	public boolean top;
 	
 	public OrbHolder(boolean team, boolean top, boolean hasOrb) {
-		super(team ? Server.SCREEN_WIDTH-(Fortress.WIDTH/2)-(WIDTH/2) : (Fortress.WIDTH/2)-(WIDTH/2)+2, top ? (Server.SCREEN_HEIGHT/2)-(Fortress.HEIGHT/2) + 35 : (Server.SCREEN_HEIGHT/2)+(Fortress.HEIGHT/2)-HEIGHT-15, WIDTH, HEIGHT);
+		super(team ? Server.SCREEN_WIDTH-(Fortress.WIDTH/2)-(WIDTH/2) : (Fortress.WIDTH/2)-(WIDTH/2)+2, top ? (Server.SCREEN_HEIGHT/2)-(Fortress.HEIGHT/2) + 35 : (Server.SCREEN_HEIGHT/2)+(Fortress.HEIGHT/2)-HEIGHT-30, WIDTH, HEIGHT);
 		this.team = team;
 		this.top = top;
 		this.hasOrb = hasOrb;
