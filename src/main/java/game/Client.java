@@ -326,14 +326,14 @@ public class Client {
 			for (Fortress f : fortresses) {
 				if (f.getTeam()) {
 					g2D.drawImage(fortressred, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
-					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 202);
-					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 302);
-					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 402);
+					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 217);
+					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 317);
+					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 417);
 				} else {
 					g2D.drawImage(fortressblue, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
-					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 202);
-					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 302);
-					g2D.drawString("" + f.getIron(), (int) f.x + 80, (int) f.y + 402);
+					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 217);
+					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 317);
+					g2D.drawString("" + f.getIron(), (int) f.x + 80, (int) f.y + 417);
 				}
 			}
 		}
