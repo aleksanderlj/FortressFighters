@@ -257,7 +257,8 @@ public class Client {
 				paintBullets();
 				for (int i = 0; i < disconnectedClients.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
-					g2D.drawString(disconnectedClients.get(i)+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
+					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
+					g2D.drawString(stringToShow+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
 				}
 			}
 			else {
