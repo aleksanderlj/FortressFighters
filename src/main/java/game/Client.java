@@ -273,8 +273,12 @@ public class Client {
 					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				}
 				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
+				if (p.id == id) {
+					g2D.setFont(new Font(defaultFont, Font.BOLD, 12));
+				}
 				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
 				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
+				g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			}
 		}
 
