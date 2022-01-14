@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -228,7 +229,7 @@ public class Client {
 
 	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
-		private int numberOfDisconnectedClients = 0;
+		private List<String> disconnectedClients = new ArrayList<>();
 
 		public GamePanel() {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
@@ -254,9 +255,9 @@ public class Client {
 				paintWalls();
 				paintPlayers();
 				paintBullets();
-				for (int i = 0; i < numberOfDisconnectedClients; i++) {
+				for (int i = 0; i < disconnectedClients.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
-					g2D.drawString("A player has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
+					g2D.drawString(disconnectedClients.get(i)+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
 				}
 			}
 			else {
@@ -460,19 +461,23 @@ public class Client {
 			return input;
 		}
 		
-		public void clientDisconnected() {
-			new Thread(new ShowPlayerDisconnected()).start();
+		public void clientDisconnected(String playerName) {
+			new Thread(new ShowPlayerDisconnected(playerName)).start();
 		}
 		
 		private class ShowPlayerDisconnected implements Runnable {
+			private String playerName;
+			public ShowPlayerDisconnected(String playerName) {
+				this.playerName = playerName;
+			}
 			public void run() {
-				numberOfDisconnectedClients++;
+				disconnectedClients.add(playerName);
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				numberOfDisconnectedClients--;
+				disconnectedClients.remove(playerName);
 			}
 		}
 	}
@@ -502,7 +507,8 @@ public class Client {
 						System.exit(0);
 					}
 					else if (msg.equals("clientdisconnected")) {
-						panel.clientDisconnected();
+						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
+						panel.clientDisconnected(playerName);
 					}
 				}
 			} catch (InterruptedException e) {

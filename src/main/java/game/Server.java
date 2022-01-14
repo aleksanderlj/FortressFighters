@@ -248,6 +248,7 @@ public class Server {
 								//A client that is not the host has disconnected.
 								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
 									players.get(j).serverToClient.put("clientdisconnected");
+									players.get(j).serverToClient.put(playersBefore.get(i).name);
 								}
 								if (playersBefore.get(i).team == true) {
 									numPlayersTeam1--;
