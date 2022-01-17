@@ -52,7 +52,8 @@ public class Client {
 			bulletred, bulletblue,
 			wallred1, wallred2, wallred3,
 			wallblue1, wallblue2, wallblue3,
-			orbholderempty, orbholderfull;
+			orbholderempty, orbholderfull,
+			manblueorb, manredorb;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -104,6 +105,8 @@ public class Client {
 			wallblue3 = ImageIO.read(getClass().getClassLoader().getResource("wallblue3.png"));
 			orbholderempty = ImageIO.read(getClass().getClassLoader().getResource("orbholderempty.png"));
 			orbholderfull = ImageIO.read(getClass().getClassLoader().getResource("orbholderfull.png"));
+			manblueorb = ImageIO.read(getClass().getClassLoader().getResource("manblueorb.png"));
+			manredorb = ImageIO.read(getClass().getClassLoader().getResource("manredorb.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -275,9 +278,17 @@ public class Client {
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
 				if(p.team){
-					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					if(p.hasOrb){
+						g2D.drawImage(manredorb, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					} else {
+						g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					}
 				} else {
-					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					if(p.hasOrb){
+						g2D.drawImage(manblueorb, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					} else {
+						g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					}
 				}
 				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
 				if (p.id == id) {
