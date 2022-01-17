@@ -42,8 +42,6 @@ public class Server {
 	private Space buffSpace;
 	private Space mutexSpace;
 	public int numPlayers = 0; //Including disconnected players.
-	public int numPlayersTeam1 = 0; //Excluding disconnected players.
-	public int numPlayersTeam2 = 0; //Excluding disconnected players.
 	private boolean gameStarted = false;
     private boolean gameOver = false;
 	private PlayerController playerController;
@@ -250,12 +248,6 @@ public class Server {
 									players.get(j).serverToClient.put("clientdisconnected");
 									players.get(j).serverToClient.put(playersBefore.get(i).name);
 								}
-								if (playersBefore.get(i).team == true) {
-									numPlayersTeam1--;
-								}
-								else {
-									numPlayersTeam2--;
-								}
 								if (playersBefore.get(i).hasOrb) {
 									orbController.createNewOrb();
 								}
@@ -272,7 +264,9 @@ public class Server {
 		}
 	}
 
-
+	public int getNumPlayers(boolean team){
+		return (int)players.stream().filter(p -> p.team == team).count();
+	}
 
 	/*********************
 	 Getters and setters

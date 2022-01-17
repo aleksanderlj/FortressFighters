@@ -8,6 +8,7 @@ import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -20,11 +21,12 @@ public class PlayerController {
     }
 
     public void initializePlayers(){
-		s.numPlayersTeam1 = 0;
-		s.numPlayersTeam2 = 0;
         Collections.shuffle(s.getPlayers());
-        for (int i = 0; i < s.getActualNumberOfPlayers(); i++) {
-        	resetPlayer(s.getPlayers().get(i));
+        List<Player> tempPlayers = new ArrayList<>(s.getPlayers());
+        s.getPlayers().clear();
+        for (Player p : tempPlayers) {
+            resetPlayer(p);
+            s.getPlayers().add(p);
         }
     }
     
@@ -37,28 +39,16 @@ public class PlayerController {
     	double[] pos = getRandomPlayerPosition(player.team);
     	player.x = pos[0];
     	player.y = pos[1];
-    	if (player.team) {
-            s.numPlayersTeam1++;
-    	}
-    	else {
-            s.numPlayersTeam2++;
-    	}
     }
 
     public void addPlayer(int id, String name) {
     	boolean team = getNextTeam();
     	double[] pos = getRandomPlayerPosition(team);
-    	if (team) {
-            s.numPlayersTeam1++;
-    	}
-    	else {
-            s.numPlayersTeam2++;
-    	}
     	s.getPlayers().add(new Player(pos[0], pos[1], id, team, name));
     }
     
     public boolean getNextTeam() {
-        if (s.numPlayersTeam1 == s.numPlayersTeam2) {
+        if (s.getNumPlayers(true) == s.getNumPlayers(false)) {
             int team = (new Random()).nextInt(2);
             if (team == 0) {
             	return true;
@@ -67,7 +57,7 @@ public class PlayerController {
             	return false;
             }
         }
-        else if (s.numPlayersTeam1 > s.numPlayersTeam2) {
+        else if (s.getNumPlayers(true) > s.getNumPlayers(false)) {
         	return false;
         }
         else {
