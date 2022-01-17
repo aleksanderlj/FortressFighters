@@ -4,7 +4,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -57,9 +59,11 @@ public class Client {
 	private String winningTeam = "";
 	private String defaultFont;
 	private Font fortressStatusFont;
+	private String name;
 
-	public Client(String address, GameFrame frame) {
+	public Client(String address, GameFrame frame, String name) {
 		this.frame = frame;
+		this.name = name;
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {public void windowClosing(java.awt.event.WindowEvent windowEvent) {windowClosed = true;}});
 		panel = new GamePanel();
 		frame.setPanel(panel);
@@ -75,7 +79,7 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
-			centralSpace.put("joined");
+			centralSpace.put("joined", name);
 			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
 			id = (Integer) tuple[0];
 			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
@@ -145,11 +149,11 @@ public class Client {
 
 	public void updatePlayers() throws InterruptedException {
 		if (playerPositionsSpace.queryp(new ActualField("players")) != null) {
-			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(String.class));
 			players = new Player[playersTuples.size()];
 			for (int i = 0; i < playersTuples.size(); i++) {
 				Object[] tuple = playersTuples.get(i);
-				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3]);
+				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3], (String)tuple[7]);
 				players[i].wood = (int)tuple[4];
 				players[i].iron = (int)tuple[5];
 				players[i].hasOrb = (boolean)tuple[6];
@@ -226,7 +230,8 @@ public class Client {
 
 	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
-		private int numberOfDisconnectedClients = 0;
+		private List<String> disconnectedClients = new ArrayList<>();
+		private List<BuffMessage> buffMessages = new ArrayList<>();
 
 		public GamePanel() {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
@@ -252,9 +257,11 @@ public class Client {
 				paintWalls();
 				paintPlayers();
 				paintBullets();
-				for (int i = 0; i < numberOfDisconnectedClients; i++) {
+				paintBuffs();
+				for (int i = 0; i < disconnectedClients.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
-					g2D.drawString("A player has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
+					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
+					g2D.drawString(stringToShow+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
 				}
 			}
 			else {
@@ -273,8 +280,13 @@ public class Client {
 					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
 				}
 				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
+				if (p.id == id) {
+					g2D.setFont(new Font(defaultFont, Font.BOLD, 12));
+				}
+				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 50);
 				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
 				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
+				g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			}
 		}
 
@@ -326,14 +338,14 @@ public class Client {
 			for (Fortress f : fortresses) {
 				if (f.getTeam()) {
 					g2D.drawImage(fortressred, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
-					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 202);
-					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 302);
-					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 402);
+					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 217);
+					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 317);
+					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 417);
 				} else {
 					g2D.drawImage(fortressblue, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
-					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 202);
-					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 302);
-					g2D.drawString("" + f.getIron(), (int) f.x + 80, (int) f.y + 402);
+					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 217);
+					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 317);
+					g2D.drawString("" + f.getIron(), (int) f.x + 80, (int) f.y + 417);
 				}
 			}
 		}
@@ -360,6 +372,24 @@ public class Client {
 					g2D.drawImage(orbholderempty, (int) oh.x, (int) oh.y, (int) oh.width, (int) oh.height, null);
 				}
             }
+		}
+
+		private void paintBuffs(){
+			try {
+				Object[] msg = channelFromServer.getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
+				if(msg != null){
+					buffMessages.add(new BuffMessage((String) msg[1], (boolean)msg[2]));
+				}
+				for (int i = 0 ; i < buffMessages.size() ; i++){
+					buffMessages.get(i).update();
+					g2D.setFont(new Font(defaultFont, Font.PLAIN, 18));
+					String s = buffMessages.get(i).buff.toUpperCase(Locale.ROOT) + " has been activated for " + (buffMessages.get(i).getTeam() ? "red" : "blue") + " team!";
+					g2D.drawString(s, (Server.SCREEN_WIDTH/2) - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT - 20 - (30 * i));
+				}
+				buffMessages.removeIf(b -> !b.isActive());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		public void updatePanel() {
@@ -453,19 +483,52 @@ public class Client {
 			return input;
 		}
 		
-		public void clientDisconnected() {
-			new Thread(new ShowPlayerDisconnected()).start();
+		public void clientDisconnected(String playerName) {
+			new Thread(new ShowPlayerDisconnected(playerName)).start();
 		}
 		
 		private class ShowPlayerDisconnected implements Runnable {
+			private String playerName;
+			public ShowPlayerDisconnected(String playerName) {
+				this.playerName = playerName;
+			}
 			public void run() {
-				numberOfDisconnectedClients++;
+				disconnectedClients.add(playerName);
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				numberOfDisconnectedClients--;
+				disconnectedClients.remove(playerName);
+			}
+		}
+
+		private class BuffMessage {
+			private String buff;
+			private boolean team;
+			private final static double BUFF_MSG_TIMER_MAX = 3;
+			private double buffMessageTimer;
+
+			public BuffMessage(String buff, boolean team){
+				this.buff = buff;
+				this.team = team;
+				this.buffMessageTimer = BUFF_MSG_TIMER_MAX;
+			}
+
+			public void update(){
+				buffMessageTimer -= S_BETWEEN_UPDATES;
+			}
+
+			public boolean isActive(){
+				return buffMessageTimer > 0;
+			}
+
+			public String getBuff() {
+				return buff;
+			}
+
+			public boolean getTeam(){
+				return team;
 			}
 		}
 	}
@@ -495,7 +558,8 @@ public class Client {
 						System.exit(0);
 					}
 					else if (msg.equals("clientdisconnected")) {
-						panel.clientDisconnected();
+						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
+						panel.clientDisconnected(playerName);
 					}
 				}
 			} catch (InterruptedException e) {

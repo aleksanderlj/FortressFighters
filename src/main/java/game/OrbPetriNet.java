@@ -4,6 +4,9 @@ import org.jspace.ActualField;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
 
+import java.util.List;
+import java.util.Random;
+
 public class OrbPetriNet implements Runnable {
 	//Implemented using naive approach.
 	private Server server;
@@ -27,9 +30,11 @@ public class OrbPetriNet implements Runnable {
 		new Thread(new TopOrb(new Space[] {spaces[1]}, new Space[] {spaces[3]})).start();
 		new Thread(new BottomOrb(new Space[] {spaces[2]}, new Space[] {spaces[4]})).start();
 		new Thread(new ConsumeOrbs(new Space[] {spaces[3], spaces[4]}, new Space[] {spaces[5]})).start();
-		new Thread(new Heal(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
-		new Thread(new GhostBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
-		new Thread(new BulletBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})).start();
+		new Thread(new ConflictSolver(new Space[] {spaces[5]},
+				new Heal(new Space[] {spaces[5]}, new Space[] {spaces[6]}),
+				new GhostBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]}),
+				new BulletBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})
+		)).start();
 		new Thread(new SpawnOrbs(new Space[] {spaces[6]}, new Space[] {spaces[0]})).start();
 		try {
 			spaces[0].put("token");
@@ -48,13 +53,22 @@ public class OrbPetriNet implements Runnable {
 		}
 	}
 	
-	private class Activity implements Runnable {
+	private abstract class Activity implements Runnable {
 		protected Space[] inputs;
 		protected Space[] outputs;
+		private boolean loop = true;
+
 		public Activity(Space[] inputs, Space[] outputs) {
 			this.inputs = inputs;
 			this.outputs = outputs;
 		}
+
+		public Activity(Space[] inputs, Space[] outputs, boolean loop) {
+			this.inputs = inputs;
+			this.outputs = outputs;
+			this.loop = loop;
+		}
+
 		public void run() {
 			while (!server.isGameOver()) {
 				for (Space input : inputs) {
@@ -71,10 +85,38 @@ public class OrbPetriNet implements Runnable {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-				}	
+				}
+				if(!loop){
+					break;
+				}
 			}
 		}
 		public void performTask() {}
+	}
+
+	// Created to counter jSpace not being truly random when competing for tokens
+	private class ConflictSolver implements Runnable {
+		protected Activity[] activities;
+		protected Space[] inputs;
+
+		public ConflictSolver(Space[] inputs, Activity... activities){
+			this.inputs = inputs;
+			this.activities = activities;
+		}
+
+		@Override
+		public void run() {
+			while (!server.isGameOver()) {
+				for (Space input : inputs) {
+					try {
+						input.query(new ActualField("token"));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				activities[new Random().nextInt(activities.length)].run();
+			}
+		}
 	}
 	
 	private class Split extends Activity {
@@ -112,7 +154,7 @@ public class OrbPetriNet implements Runnable {
 	}
 	
 	private class Heal extends Activity {
-		public Heal(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
+		public Heal(Space[] inputs, Space[] outputs) {super(inputs, outputs, false);}
 		public void performTask() {
 			try {
 				buffSpace.put(team, "heal");
@@ -123,7 +165,7 @@ public class OrbPetriNet implements Runnable {
 	}
 	
 	private class GhostBuff extends Activity {
-		public GhostBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
+		public GhostBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs, false);}
 		public void performTask() {
 			try {
 				buffSpace.put(team, "ghost");
@@ -134,7 +176,7 @@ public class OrbPetriNet implements Runnable {
 	}
 	
 	private class BulletBuff extends Activity {
-		public BulletBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs);}
+		public BulletBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs, false);}
 		public void performTask() {
 			try {
 				buffSpace.put(team, "bullets");

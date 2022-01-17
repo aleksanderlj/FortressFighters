@@ -1,4 +1,5 @@
 package game;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -11,6 +12,12 @@ public class GameFrame extends JFrame {
 		
 		public GameFrame() {
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			setTitle("Fortress Fighters");
+			try {
+				setIconImage(ImageIO.read(getClass().getClassLoader().getResource("orb.png")));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		public void setPanel(JPanel panel) {

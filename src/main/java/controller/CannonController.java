@@ -4,6 +4,8 @@ import game.Server;
 import model.Bullet;
 import model.Cannon;
 import model.Player;
+import model.Fortress;
+import model.Wall;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
@@ -35,8 +37,12 @@ public class CannonController {
         Cannon newCannon;
         for (Object[] command : cannonCommands) {
             int id = (int) command[0];
-            Player player = s.getPlayers().get(id);
-            newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
+            Player player = s.getPlayerWithID(id);
+            if (player.team) {
+                newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
+            } else {
+                newCannon = new Cannon(player.x, player.y + player.height / 2, player.team);
+            }
 
             // Only build cannon if it's not colliding with another cannon, wall, fortress
             if(
