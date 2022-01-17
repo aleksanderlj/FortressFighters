@@ -16,6 +16,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import launcher.launcherButton;
+
 public class Main {
 	private static int windowWidth = 500;
 	private static int windowHeight = 500;
@@ -59,10 +61,10 @@ public class Main {
         nameTextField.setBounds(140, 90, 220, 25);
         
         // Buttons
-        instructionButton = createButton("Instructions");
-		mainMenuButton = createButton("Main Menu");
-        hostButton = createButton("Host Game");
-        joinButton = createButton("Join Game");
+        instructionButton = new launcherButton("Instructions", alagard);
+		mainMenuButton = new launcherButton("Main Menu", alagard);
+        hostButton = new launcherButton("Host Game", alagard);
+        joinButton = new launcherButton("Join Game", alagard);
         
         instructionButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {showInstructions();}});
         mainMenuButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {hideInstructions();}});
@@ -103,14 +105,6 @@ public class Main {
 		mainPanel.remove(mainMenuButton);
 		addComponents(mainPanel);
 		mainPanel.repaint();
-	}
-	
-	private static JButton createButton(String text) {
-		JButton button = new JButton(text);
-		button.setFont(alagard.deriveFont(Font.BOLD, 20));
-		button.setBackground(new Color(219, 180, 132));
-		button.setOpaque(true);
-		return button;
 	}
     
     private static void start(int type) {
