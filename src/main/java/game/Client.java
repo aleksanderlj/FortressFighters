@@ -53,7 +53,8 @@ public class Client {
 			wallred1, wallred2, wallred3,
 			wallblue1, wallblue2, wallblue3,
 			orbholderempty, orbholderfull,
-			manblueorb, manredorb;
+			manblueorb, manredorb,
+			ironShadow, woodShadow;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean windowClosed = false;
@@ -107,6 +108,8 @@ public class Client {
 			orbholderfull = ImageIO.read(getClass().getClassLoader().getResource("orbholderfull.png"));
 			manblueorb = ImageIO.read(getClass().getClassLoader().getResource("manblueorb.png"));
 			manredorb = ImageIO.read(getClass().getClassLoader().getResource("manredorb.png"));
+			ironShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_iron.png"));
+			woodShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wood.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -240,7 +243,7 @@ public class Client {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
 			addKeyListener(this);
 	        setFocusable(true);
-			//setBackground(new Color(52, 121, 40));
+			setBackground(new Color(241, 209, 141));
 		}
 
 		public void paint(Graphics g) {
@@ -368,9 +371,11 @@ public class Client {
 		public void paintResources(){
             for (Resource r : resources) {
                 if (r.getType() == 0) {
+					g2D.drawImage(woodShadow, (int) r.x-2, (int) r.y, 54, 54, null);
                     g2D.drawImage(wood, (int) r.x, (int) r.y, (int) r.width, (int) r.height, null);
                 }
                 else {
+					g2D.drawImage(ironShadow, (int) r.x-2, (int) r.y, 54, 54, null);
 					g2D.drawImage(iron, (int) r.x, (int) r.y, (int) r.width, (int) r.height, null);
                 }
             }
