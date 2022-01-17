@@ -114,7 +114,7 @@ public class Main {
         Server server;
 
     	if (type == 1) {
-            server = new Server();
+            server = new Server(true);
             frame.isHost = true;
             client = new Client(Server.getIP(), frame, nameTextField.getText());
 			System.out.println(Server.getIP());

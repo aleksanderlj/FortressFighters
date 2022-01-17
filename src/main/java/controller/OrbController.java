@@ -5,6 +5,7 @@ import game.Server;
 import model.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.Space;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class OrbController {
         this.s = server;
     }
 
-    public void initializeOrbPetriNets(){
+     public void initializeOrbPetriNets(){
         orbPetriNet1 = new OrbPetriNet(s, s.getBuffSpace(), false);
         orbPetriNet2 = new OrbPetriNet(s, s.getBuffSpace(), true);
         new Thread(orbPetriNet1).start();
@@ -40,6 +41,30 @@ public class OrbController {
             }
         }
     }
+
+     public void initializeOrbPetriNetsNewHost(){
+    	 Space buffSpace = s.getBuffSpace();
+		 for (OrbHolder oh : s.getOrbHolders()) {
+			 if (oh.hasOrb) {
+				 try {
+					buffSpace.put(oh.team, oh.top);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			 }
+    	 }
+         orbPetriNet1 = new OrbPetriNet(s, s.getBuffSpace(), false);
+         orbPetriNet2 = new OrbPetriNet(s, s.getBuffSpace(), true);
+         new Thread(orbPetriNet1).start();
+         new Thread(orbPetriNet2).start();
+         for (OrbHolder oh : s.getOrbHolders()) {
+             try {
+                 s.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
+         }
+     }
 
     public void initializeOrbs() throws InterruptedException {
         s.getOrbs().clear();

@@ -78,7 +78,7 @@ public class PlayerController {
 
     public void updatePlayers() throws InterruptedException {
         List<Object[]> movementTuples = s.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class));
-        int[][] movementVectors = new int[s.numPlayers][2];
+        int[][] movementVectors = new int[s.playerIDCounter][2];
         for (Object[] movementTuple : movementTuples) {
             int playerID = (Integer) movementTuple[0];
             Player player = s.getPlayerWithID(playerID);

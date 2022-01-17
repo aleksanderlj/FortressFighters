@@ -5,6 +5,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -22,6 +23,7 @@ public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private GameFrame frame;
+	private String address;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
 	private Wall[] walls = new Wall[0];
@@ -30,18 +32,18 @@ public class Client {
     private Resource[] resources = new Resource[0];
     private Orb[] orbs = new Orb[0];
     private OrbHolder[] orbHolders = new OrbHolder[0];
-	private Space centralSpace;
-	private Space playerPositionsSpace;
-	private Space playerMovementSpace;
-	private Space cannonSpace;
-	private Space bulletSpace;
-	private Space wallSpace;
-	private Space fortressSpace;
-	private Space resourceSpace;
-	private Space orbSpace;
-	private Space channelFromServer;
-	private Space channelToServer;
-	private int id;
+	private RemoteSpace centralSpace;
+	private RemoteSpace playerPositionsSpace;
+	private RemoteSpace playerMovementSpace;
+	private RemoteSpace cannonSpace;
+	private RemoteSpace bulletSpace;
+	private RemoteSpace wallSpace;
+	private RemoteSpace fortressSpace;
+	private RemoteSpace resourceSpace;
+	private RemoteSpace orbSpace;
+	private RemoteSpace channelFromServer;
+	private RemoteSpace channelToServer;
+	public static int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
@@ -57,6 +59,7 @@ public class Client {
 			ironShadow, woodShadow;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
+	private boolean gamePaused = false;
 	private boolean windowClosed = false;
 	private String winningTeam = "";
 	private String defaultFont;
@@ -73,19 +76,9 @@ public class Client {
 		defaultFont = "Comic Sans MS";
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
-			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
-			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
-			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
-			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
-			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
-			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
-			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
-			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
 			centralSpace.put("joined", name);
-			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
-			id = (Integer) tuple[0];
-			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
-			channelToServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[2])+"?keep");
+			id = (Integer)centralSpace.get(new FormalField(Integer.class))[0];
+			connectToServer(address);
 			// Load image resources
 			manblue = ImageIO.read(getClass().getClassLoader().getResource("manblue.png"));
 			manred = ImageIO.read(getClass().getClassLoader().getResource("manred.png"));
@@ -115,11 +108,17 @@ public class Client {
 			checkGameStarted();
 			new Thread(new Timer()).start();
 			new Thread(new ServerCheckReader()).start();
-		} catch (IOException | InterruptedException | FontFormatException e) {e.printStackTrace();}
+			new Thread(new NewHostReader()).start();
+		} catch (IOException | InterruptedException | FontFormatException e) {
+			//e.printStackTrace();
+		}
 	}
 
 	public void update() {
 		try {
+			if (gamePaused) {
+				return;
+			}
 			Object[] tuple = centralSpace.queryp(new ActualField("game over"), new FormalField(String.class));
 			if (tuple == null) {
 				gameOver = false;
@@ -138,11 +137,50 @@ public class Client {
 				}
 			}
 			else {
-				winningTeam = (String) tuple[1];
+				//winningTeam = (String) tuple[1];
 				gameOver = true;
 			}
-		} catch (InterruptedException e) {e.printStackTrace();}
+		} catch (InterruptedException e) {System.out.println("Interrupted");}
 		panel.updatePanel();
+	}
+	
+	private void connectToServer(String address) {
+		this.address = address;
+		try {
+			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
+			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/serverclient"+id+"?keep");
+			channelToServer = new RemoteSpace("tcp://" + address + ":9001/client"+id+"server?keep");
+			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
+			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
+			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
+			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
+			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
+			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
+			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
+			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
+		} catch (IOException e) {
+			//e.printStackTrace();
+			System.out.println("Connection reset");
+		}
+	}
+	
+	private void disconnectFromServer() {
+		try {
+			centralSpace.close();
+			channelFromServer.close();
+			channelToServer.close();
+			playerPositionsSpace.close();
+			playerMovementSpace.close();
+			cannonSpace.close();
+			bulletSpace.close();
+			wallSpace.close();
+			fortressSpace.close();
+			resourceSpace.close();
+			orbSpace.close();
+		} catch (IOException e) {
+			System.out.println("Connection reset");
+			//e.printStackTrace();
+		}
 	}
 	
 	private void checkGameStarted() {
@@ -420,6 +458,9 @@ public class Client {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
+			if (gamePaused) {
+				return;
+			}
 			String input = getInput(e.getKeyCode());
 			try {
 				switch (input){
@@ -451,6 +492,9 @@ public class Client {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
+			if (gamePaused) {
+				return;
+			}
 			String input = getInput(e.getKeyCode());
 			try {
 				switch (input){
@@ -556,9 +600,28 @@ public class Client {
 	private class Timer implements Runnable {
 		public void run() {
 			try {
-				while (true) {
+				while (!gamePaused) {
 					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
 					update();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class NewHostReader implements Runnable {
+		public void run() {
+			try {
+				while (true) {
+					String newAddress = (String)channelFromServer.get(new ActualField("newip"), new FormalField(String.class))[1];
+					gamePaused = true;
+					disconnectFromServer();
+					Thread.sleep(2000);
+					connectToServer(newAddress);
+					gamePaused = false;
+					new Thread(new Timer()).start();
+					new Thread(new ServerCheckReader()).start();
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -581,9 +644,26 @@ public class Client {
 						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
 						panel.clientDisconnected(playerName);
 					}
+					else if (msg.equals("host")) {
+						Server newServer = new Server(false);
+						if (fortresses[0].getTeam()) {
+							newServer.switchHostInitialize(address, Arrays.asList(cannons), Arrays.asList(resources), Arrays.asList(orbs), Arrays.asList(orbHolders), Arrays.asList(bullets), fortresses[1], fortresses[0]);
+						}
+						else {
+							newServer.switchHostInitialize(address, Arrays.asList(cannons), Arrays.asList(resources), Arrays.asList(orbs), Arrays.asList(orbHolders), Arrays.asList(bullets), fortresses[0], fortresses[1]);
+						}
+						channelToServer.put("done", Server.getIP());
+						Thread.sleep(1500);
+						frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+						newServer.switchHostInitializeSpaces();
+					}
+					else if (msg.equals("closethread")) {
+						return;
+					}
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Interrupted");
+				//e.printStackTrace();
 			}
 		}
 	}
