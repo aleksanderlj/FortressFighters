@@ -649,10 +649,22 @@ public class Client {
 					else if (msg.equals("host")) {
 						Server newServer = new Server(false);
 						if (fortresses[0].getTeam()) {
-							newServer.switchHostInitialize(address, Arrays.asList(cannons), Arrays.asList(resources), Arrays.asList(orbs), Arrays.asList(orbHolders), Arrays.asList(bullets), fortresses[1], fortresses[0]);
+							newServer.switchHostInitialize(address,
+									new ArrayList<>(Arrays.asList(cannons)),
+									new ArrayList<>(Arrays.asList(resources)),
+									new ArrayList<>(Arrays.asList(orbs)),
+									new ArrayList<>(Arrays.asList(orbHolders)),
+									new ArrayList<>(Arrays.asList(bullets)),
+									fortresses[1], fortresses[0]);
 						}
 						else {
-							newServer.switchHostInitialize(address, Arrays.asList(cannons), Arrays.asList(resources), Arrays.asList(orbs), Arrays.asList(orbHolders), Arrays.asList(bullets), fortresses[0], fortresses[1]);
+							newServer.switchHostInitialize(address,
+									new ArrayList<>(Arrays.asList(cannons)),
+									new ArrayList<>(Arrays.asList(resources)),
+									new ArrayList<>(Arrays.asList(orbs)),
+									new ArrayList<>(Arrays.asList(orbHolders)),
+									new ArrayList<>(Arrays.asList(bullets)),
+									fortresses[0], fortresses[1]);
 						}
 						channelToServer.put("done", Server.getIP());
 						Thread.sleep(1500);
