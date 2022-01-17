@@ -383,7 +383,7 @@ public class Client {
 				for (int i = 0 ; i < buffMessages.size() ; i++){
 					buffMessages.get(i).update();
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 18));
-					String s = buffMessages.get(i).buff.toUpperCase(Locale.ROOT) + " has been activated for " + (buffMessages.get(i).getTeam() ? "red" : "blue") + " team!";
+					String s = "Team " + (buffMessages.get(i).getTeam() ? "RED" : "BLUE") + " got " + buffMessages.get(i).buff.toUpperCase(Locale.ROOT) + "!";
 					g2D.drawString(s, (Server.SCREEN_WIDTH/2) - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT - 20 - (30 * i));
 				}
 				buffMessages.removeIf(b -> !b.isActive());
