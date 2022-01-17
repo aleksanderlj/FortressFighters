@@ -84,6 +84,10 @@ public class CannonController {
         s.getMutexSpace().put("bulletsLock");
     }
 
+    public void activateCannon(Cannon c){
+        new Thread(new CannonShooter(c)).start();
+    }
+
     public class CannonShooter implements Runnable {
         public static final int COOLDOWN = 3000;
         Cannon cannon;

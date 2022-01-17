@@ -133,6 +133,9 @@ public class Server {
 				walls.add(w);
 			}
 			//oldSwitchHostSpace.close();
+			for (Cannon c : cannons) {
+				cannonController.activateCannon(c);
+			}
 			gameStarted = true;
 			gamePaused = false;
 		} catch (InterruptedException e) {
