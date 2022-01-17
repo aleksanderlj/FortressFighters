@@ -283,9 +283,13 @@ public class Client {
 				if (p.id == id) {
 					g2D.setFont(new Font(defaultFont, Font.BOLD, 12));
 				}
-				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 50);
-				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
-				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
+				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 5);
+				int x1 = (int)p.x + 31;
+				int y1 = (int)(p.y + 38);
+				g2D.setColor(Color.WHITE);
+				g2D.drawString("" + p.wood, x1, y1);
+				g2D.drawString("" + p.iron, x1, y1 + 15);
+				g2D.setColor(Color.BLACK);
 				g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			}
 		}

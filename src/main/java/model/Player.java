@@ -5,8 +5,8 @@ import java.awt.*;
 import org.jspace.Space;
 
 public class Player extends Rectangle.Double {
-	public static final double WIDTH = 80;
-	public static final double HEIGHT = 80;
+	public static final double WIDTH = 62;
+	public static final double HEIGHT = 83;
 	public static final int SPEED = 200;
 	public int id;
 	public String name;
