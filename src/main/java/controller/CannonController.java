@@ -103,9 +103,9 @@ public class CannonController {
                     if(cannon.isActive()){
                         Bullet bullet;
                         if(cannon.getTeam()){
-                            bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
+                            bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4 + 3, cannon.getTeam());
                         } else {
-                            bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
+                            bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4 + 3, cannon.getTeam());
                         }
                         s.getMutexSpace().get(new ActualField("bulletsLock"));
                         s.getBullets().add(bullet);
