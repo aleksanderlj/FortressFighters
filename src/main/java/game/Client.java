@@ -59,7 +59,8 @@ public class Client {
 			manblueorb, manredorb,
 			ironShadow, woodShadow, orbShadow,
 			cannonblueShadow, cannonredShadow, wallShadow,
-			fortressblueShadow, fortressredShadow;
+			fortressblueShadow, fortressredShadow,
+			manShadow;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean gamePaused = false;
@@ -112,6 +113,7 @@ public class Client {
 			wallShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wall.png"));
 			fortressblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressblue.png"));
 			fortressredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressred.png"));
+			manShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_man.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -331,6 +333,7 @@ public class Client {
 			g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
+				g2D.drawImage(manShadow, (int) p.x-2, (int) p.y, (int) p.width+4, (int) p.height+4, null);
 				if(p.team){
 					if(p.hasOrb){
 						g2D.drawImage(manredorb, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
