@@ -47,6 +47,7 @@ public class Client {
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
+	private boolean dropOrbKeyDown = false;
 	private BufferedImage manblue, manred,
 			cannonblue, cannonred,
 			fortressblue, fortressred,
@@ -495,6 +496,10 @@ public class Client {
 						}
 						createWallKeyDown = true;
 						break;
+					case "dropOrb":
+						if (!dropOrbKeyDown) {
+							orbSpace.put(id, input);
+						}
 					default:
 						break;
 				}
@@ -521,6 +526,8 @@ public class Client {
 					case "createwall":
 						createWallKeyDown = false;
 						break;
+					case "dropOrb":
+						dropOrbKeyDown = false;
 					default:
 						break;
 				}
@@ -552,6 +559,8 @@ public class Client {
 				case KeyEvent.VK_E:
 					input = "createwall";
 					break;
+				case KeyEvent.VK_SPACE:
+					input = "dropOrb";
 				default:
 					break;
 			}

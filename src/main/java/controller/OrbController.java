@@ -110,6 +110,26 @@ public class OrbController {
                 newOrbs.add(o);
             }
         }
+        try {
+			List<Object[]> orbCommands = s.getOrbSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
+			for (Object[] tuple : orbCommands) {
+				int id = (int)tuple[0];
+				Player p = s.getPlayerWithID(id);
+				if (p.hasOrb) {
+					int x = (int)(p.x + Player.WIDTH/2 - Orb.WIDTH/2);
+					int y = (int)(p.y - Orb.HEIGHT - 5);
+					if (y < 0) {
+						y = (int)(p.y + Player.HEIGHT + 5);
+					}
+					p.hasOrb = false;
+					newOrbs.add(new Orb(x, y));
+					s.getOrbSpace().put(x, y);
+				}
+				
+			}
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
         s.setOrbs(newOrbs);
         for (int i = 0; i < s.getOrbHolders().size(); i++) {
             OrbHolder oh = s.getOrbHolders().get(i);
