@@ -106,6 +106,7 @@ public class Client {
 			woodShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wood.png"));
 			orbShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_orb.png"));
 			cannonblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonblue.png"));
+			cannonredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonred.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -356,6 +357,7 @@ public class Client {
 		public void paintCannons(){
 			for (Cannon c : cannons) {
 				if(c.getTeam()){
+					g2D.drawImage(cannonredShadow, (int) c.x-2, (int) c.y, (int) c.width+4, (int) c.height+4, null);
 					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				} else {
 					g2D.drawImage(cannonblueShadow, (int) c.x-2, (int) c.y, (int) c.width+4, (int) c.height+4, null);
