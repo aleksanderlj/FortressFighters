@@ -12,8 +12,8 @@ public class Player extends Rectangle.Double {
 	public String name;
 	public boolean team;
 	public boolean hasOrb = false;
-	public int wood = 10;
-	public int iron = 20;
+	public int wood = 0;
+	public int iron = 0;
 	public double stunned = 0;
 	public Space serverToClient;
 	public Space clientToServer;
