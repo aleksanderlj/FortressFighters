@@ -169,6 +169,7 @@ public class Server {
     		}
     		fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
     		fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
+    		centralSpace.put("started");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
