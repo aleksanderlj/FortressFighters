@@ -124,7 +124,11 @@ public class PlayerController {
             }
 
             // Prevent collision
-            if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team, player.name))){
+            if(isColliding(player) && !isColliding(new Player(player.x, oldY, player.id, player.team, player.name))){
+                player.y = oldY;
+            } else if(isColliding(player) && !isColliding(new Player(oldX, player.y, player.id, player.team, player.name))){
+                player.x = oldX;
+            } else if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team, player.name))) {
                 player.x = oldX;
                 player.y = oldY;
             }
