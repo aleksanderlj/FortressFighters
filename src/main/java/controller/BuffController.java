@@ -38,9 +38,9 @@ public class BuffController {
             switch ((String)buff[1]){
                 case "heal":
                     if((boolean) buff[0]){
-                        s.getFortress2().setHP(s.getFortress1().getHP() + 50);
+                        s.getFortress2().setHP(s.getFortress2().getHP() + 50);
                     } else {
-                        s.getFortress1().setHP(s.getFortress2().getHP() + 50);
+                        s.getFortress1().setHP(s.getFortress1().getHP() + 50);
                     }
                     s.getFortressController().changeFortress();
                     break;
