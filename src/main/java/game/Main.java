@@ -57,11 +57,11 @@ public class Main {
         nameTextField = new TextField();
         ipTextField.setFont(alagard.deriveFont(Font.PLAIN, 15));
         nameTextField.setFont(alagard.deriveFont(Font.PLAIN, 15));
-        ipTextField.setBounds(270, 310, 150, 25);
-        nameTextField.setBounds(140, 90, 220, 25);
+        ipTextField.setBounds(270, 320, 150, 25);
+        nameTextField.setBounds(140, 100, 220, 25);
         
         // Buttons
-        instructionButton = new launcherButton("Instructions", alagard);
+        instructionButton = new launcherButton("How To Play", alagard);
 		mainMenuButton = new launcherButton("Main Menu", alagard);
         hostButton = new launcherButton("Host Game", alagard);
         joinButton = new launcherButton("Join Game", alagard);
@@ -73,8 +73,8 @@ public class Main {
         
         instructionButton.setBounds(150, 400, 200, 50);
         mainMenuButton.setBounds(150, 400, 200, 50);
-        hostButton.setBounds(70, 240, 150, 50);
-        joinButton.setBounds(270, 240, 150, 50);
+        hostButton.setBounds(70, 250, 150, 50);
+        joinButton.setBounds(270, 250, 150, 50);
 	}
 	
 	private static void addComponents(MainPanel mainPanel) {
@@ -152,6 +152,7 @@ public class Main {
 				g2D.setFont(new Font("TimesRoman", Font.BOLD, 25));
 				drawStringWithShadow(g2D, "How to play:", 20, 40);
 				drawStringWithShadow(g2D, "Controls:", 20, 290);
+				drawStringWithShadow(g2D, "Costs:", 300, 290);
 
 				g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
 				drawStringWithShadow(g2D, "- Collect wood and iron and return them to your fortress", 20, 70);
@@ -164,15 +165,19 @@ public class Main {
 				drawStringWithShadow(g2D, "- WASD or arrow keys to move", 20, 320);
 				drawStringWithShadow(g2D, "- Q to build a cannon", 20, 350);
 				drawStringWithShadow(g2D, "- E to build a wall", 20, 380);
+				
+				drawStringWithShadow(g2D, "- Cannons cost 2 iron", 300, 320);
+				drawStringWithShadow(g2D, "- Walls cost 1 wood", 300, 350);
 			} else {
 				g2D.drawImage(background, (int)((getWidth()/2) - ((background.getWidth()*backgroundScale)/2)), -70, (int)(background.getWidth() * backgroundScale), (int)(background.getHeight()*backgroundScale), null);
 				g2D.setColor(Color.WHITE);
 				g2D.setFont(alagard.deriveFont(Font.BOLD, 26));
-				drawStringWithShadow(g2D, "Enter your name", 140, 80);
+				drawStringWithShadow(g2D, "Enter your name", 140, 90);
 				g2D.setFont(alagard.deriveFont(Font.BOLD, 35));
-				drawStringWithShadow(g2D, "Play Game", 160, 210);
+				drawStringWithShadow(g2D, "Fortress Fighters", 100, 40);
+				drawStringWithShadow(g2D, "Play Game", 160, 220);
 				g2D.setFont(alagard.deriveFont(Font.BOLD, 12));
-				drawStringWithShadow(g2D, "Enter IP Address to join:", 270, 305);
+				drawStringWithShadow(g2D, "Enter IP Address to join:", 270, 315);
 			}
 			g2D.setColor(Color.BLACK);
 		}
