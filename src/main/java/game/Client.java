@@ -138,7 +138,7 @@ public class Client {
 				}
 			}
 			else {
-				//winningTeam = (String) tuple[1];
+				winningTeam = (String) tuple[1];
 				gameOver = true;
 			}
 		} catch (InterruptedException e) {System.out.println("Interrupted");}
@@ -307,6 +307,10 @@ public class Client {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
 					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
 					g2D.drawString(stringToShow+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
+				}
+				if (gamePaused) {
+					g2D.setFont(new Font(defaultFont, Font.PLAIN, 30));
+					g2D.drawString("Switching host...", Server.SCREEN_WIDTH/2-60, Server.SCREEN_HEIGHT/2);
 				}
 			}
 			else {
@@ -616,12 +620,15 @@ public class Client {
 		public void run() {
 			try {
 				while (true) {
-					String newAddress = (String)channelFromServer.get(new ActualField("newip"), new FormalField(String.class))[1];
+					Object[] tuple = channelFromServer.get(new ActualField("newip"), new FormalField(String.class), new FormalField(String.class));
+					String newAddress = (String)tuple[1];
+					String disconnectedName = (String)tuple[2];
 					gamePaused = true;
 					disconnectFromServer();
 					Thread.sleep(2000);
 					connectToServer(newAddress);
 					gamePaused = false;
+					panel.clientDisconnected(disconnectedName);
 					new Thread(new Timer()).start();
 					new Thread(new ServerCheckReader()).start();
 				}

@@ -244,7 +244,8 @@ public class Server {
 			switchHostSpace.put("gameOver", gameOver);
 			switchHostSpace.put("playerIDCounter", playerIDCounter);
 			switchHostSpace.put("idCounter", Wall.idCounter);
-			players.remove(getPlayerWithID(Client.id));
+			Player player = getPlayerWithID(Client.id);
+			players.remove(player);
 			for (Player p : players) {
 				switchHostSpace.put(p.x, p.y, p.id, p.name, p.team, p.hasOrb, p.wood, p.iron, p.stunned);
 			}
@@ -255,7 +256,7 @@ public class Server {
 			newHost.serverToClient.put("host");
 			Object[] tuple = newHost.clientToServer.get(new ActualField("done"), new FormalField(String.class));
 			for (Player p : players) {
-				p.serverToClient.put("newip", (String)tuple[1]);
+				p.serverToClient.put("newip", (String)tuple[1], player.name);
 				p.serverToClient.put("closethread");
 			}
 			Thread.sleep(1000);
@@ -344,7 +345,7 @@ public class Server {
 		public void run() {
 			//Protocol checking if players are still in the game.
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(3000);
 				while (true) {
 					for (int i = 0; i < getActualNumberOfPlayers(); i++) {
 						players.get(i).serverToClient.put("check");
