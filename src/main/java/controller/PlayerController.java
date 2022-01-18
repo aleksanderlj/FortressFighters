@@ -32,8 +32,8 @@ public class PlayerController {
     
     public void resetPlayer(Player player) {
 		player.hasOrb = false;
-		player.wood = 10;
-		player.iron = 20;
+		player.wood = 0;
+		player.iron = 0;
 		player.stunned = 0;
 		player.team = getNextTeam();
     	double[] pos = getRandomPlayerPosition(player.team);
