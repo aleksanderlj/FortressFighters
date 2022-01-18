@@ -638,6 +638,7 @@ public class Client {
 					String newAddress = (String)tuple[1];
 					String disconnectedName = (String)tuple[2];
 					gamePaused = true;
+					panel.updatePanel();
 					disconnectFromServer();
 					Thread.sleep(2000);
 					connectToServer(newAddress);

@@ -358,6 +358,9 @@ public class Server {
 							//Client took too long to respond.
 							if (playersBefore.get(i).id == Client.id) {
 								//The host has disconnected.
+								if (playersBefore.get(i).hasOrb) {
+									orbController.createNewOrb();
+								}
 								System.out.println("Host disconnected.");
 								switchHost();
 							}
