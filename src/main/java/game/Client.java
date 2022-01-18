@@ -58,7 +58,8 @@ public class Client {
 			orbholderempty, orbholderfull,
 			manblueorb, manredorb,
 			ironShadow, woodShadow, orbShadow,
-			cannonblueShadow, cannonredShadow, wallShadow;
+			cannonblueShadow, cannonredShadow, wallShadow,
+			fortressblueShadow, fortressredShadow;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean gamePaused = false;
@@ -109,6 +110,8 @@ public class Client {
 			cannonblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonblue.png"));
 			cannonredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonred.png"));
 			wallShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wall.png"));
+			fortressblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressblue.png"));
+			fortressredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressred.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -406,11 +409,13 @@ public class Client {
 			g2D.setFont(fortressStatusFont);
 			for (Fortress f : fortresses) {
 				if (f.getTeam()) {
+					g2D.drawImage(fortressredShadow, (int) f.x-6, (int) f.y, (int) f.width+12, (int) f.height+12, null);
 					g2D.drawImage(fortressred, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
 					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 217);
 					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 317);
 					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 417);
 				} else {
+					g2D.drawImage(fortressblueShadow, (int) f.x-6, (int) f.y, (int) f.width+12, (int) f.height+12, null);
 					g2D.drawImage(fortressblue, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
 					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 217);
 					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 317);
