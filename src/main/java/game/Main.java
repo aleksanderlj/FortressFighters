@@ -16,7 +16,9 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import launcher.launcherButton;
+import launcher.LauncherButton;
+import model.Cannon;
+import model.Wall;
 
 public class Main {
 	private static int windowWidth = 500;
@@ -61,10 +63,10 @@ public class Main {
         nameTextField.setBounds(140, 100, 220, 25);
         
         // Buttons
-        instructionButton = new launcherButton("How To Play", alagard);
-		mainMenuButton = new launcherButton("Main Menu", alagard);
-        hostButton = new launcherButton("Host Game", alagard);
-        joinButton = new launcherButton("Join Game", alagard);
+        instructionButton = new LauncherButton("How To Play", alagard);
+		mainMenuButton = new LauncherButton("Main Menu", alagard);
+        hostButton = new LauncherButton("Host Game", alagard);
+        joinButton = new LauncherButton("Join Game", alagard);
         
         instructionButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {showInstructions();}});
         mainMenuButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {hideInstructions();}});
@@ -166,8 +168,8 @@ public class Main {
 				drawStringWithShadow(g2D, "- Q to build a cannon", 20, 350);
 				drawStringWithShadow(g2D, "- E to build a wall", 20, 380);
 				
-				drawStringWithShadow(g2D, "- Cannons cost 2 iron", 300, 320);
-				drawStringWithShadow(g2D, "- Walls cost 1 wood", 300, 350);
+				drawStringWithShadow(g2D, "- Cannons cost " + Cannon.IRON_COST + " iron", 300, 320);
+				drawStringWithShadow(g2D, "- Walls cost " + Wall.WOOD_COST + " wood", 300, 350);
 			} else {
 				g2D.drawImage(background, (int)((getWidth()/2) - ((background.getWidth()*backgroundScale)/2)), -70, (int)(background.getWidth() * backgroundScale), (int)(background.getHeight()*backgroundScale), null);
 				g2D.setColor(Color.WHITE);

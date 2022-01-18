@@ -11,8 +11,8 @@ import javax.swing.JButton;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
-public class launcherButton extends JButton {
-	public launcherButton(String text, Font font) {
+public class LauncherButton extends JButton {
+	public LauncherButton(String text, Font font) {
 		super(text);
 		setFont(font.deriveFont(Font.BOLD, 20));
 		setBackground(new Color(220, 180, 130));
@@ -28,30 +28,4 @@ public class launcherButton extends JButton {
 		    }
 		});
 	}
-	
-	
 }
-
-class RoundedBorder implements Border {
-	    private int r;
-	    
-	    RoundedBorder(int r) {
-	        this.r = r;
-	    }
-	    
-	    @Override
-	    public Insets getBorderInsets(Component c) {
-	        return new Insets(this.r+1, this.r+1, this.r+2, this.r);
-	    }
-	    
-	    @Override
-	    public boolean isBorderOpaque() {
-	        return true;
-	    }
-	    
-	    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-	    	for (int i = 0; i < r; i++) {
-		        g.drawRoundRect(x, y, width-1, height-1, i, i);
-	    	}
-	    }
-	}
