@@ -6,7 +6,7 @@ public class Wall extends Rectangle.Double {
     public static final double WIDTH = 10;
     public static final double HEIGHT = 60;
     public static final int MAX_HEALTH = 5;
-    public static final int WOOD_COST = 1;
+    public static final int WOOD_COST = 2;
     public static int idCounter = 0;
     private int id;
     private boolean team;
