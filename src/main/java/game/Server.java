@@ -108,7 +108,7 @@ public class Server {
 		try {
 			gamePaused = true;
 			RemoteSpace oldSwitchHostSpace = new RemoteSpace("tcp://" + oldAddress + ":9001/switchhost?keep");
-			gameOver = (Boolean)oldSwitchHostSpace.get(new ActualField("gameOver"), new FormalField(Boolean.class))[1];
+			gameOver = (boolean)oldSwitchHostSpace.get(new ActualField("gameOver"), new FormalField(Boolean.class))[1];
 			playerIDCounter = (int)oldSwitchHostSpace.get(new ActualField("playerIDCounter"), new FormalField(Integer.class))[1];
 			Wall.idCounter = (int)oldSwitchHostSpace.get(new ActualField("idCounter"), new FormalField(Integer.class))[1];
 			this.cannons = cannons;
