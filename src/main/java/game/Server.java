@@ -132,7 +132,6 @@ public class Server {
 				Wall w = new Wall((int)tuple[2], (int)tuple[4], (double)tuple[0], (double)tuple[1], (boolean)tuple[3]);
 				walls.add(w);
 			}
-			//oldSwitchHostSpace.close();
 			for (Cannon c : cannons) {
 				cannonController.activateCannon(c);
 			}
@@ -143,8 +142,7 @@ public class Server {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Connection reset");
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	
@@ -240,7 +238,7 @@ public class Server {
 	
 	public void switchHost() {
 		try {
-			//gamePaused = true;
+			gamePaused = true;
 			if (getActualNumberOfPlayers() <= 1) {
 				//Only one player is connected. Cannot switch host.
 				System.exit(0);
@@ -267,8 +265,7 @@ public class Server {
 			repository.closeGates();
 			System.exit(0);
 		} catch (InterruptedException e) {
-			System.out.println("Interrupted");
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	

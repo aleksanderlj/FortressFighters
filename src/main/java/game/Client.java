@@ -121,7 +121,7 @@ public class Client {
 			new Thread(new ServerCheckReader()).start();
 			new Thread(new NewHostReader()).start();
 		} catch (IOException | InterruptedException | FontFormatException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
@@ -170,8 +170,7 @@ public class Client {
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
 		} catch (IOException e) {
-			//e.printStackTrace();
-			System.out.println("Connection reset");
+			e.printStackTrace();
 		}
 	}
 	
@@ -189,8 +188,7 @@ public class Client {
 			resourceSpace.close();
 			orbSpace.close();
 		} catch (IOException e) {
-			System.out.println("Connection reset");
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	
@@ -708,8 +706,7 @@ public class Client {
 					}
 				}
 			} catch (InterruptedException e) {
-				System.out.println("Interrupted");
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 	}
