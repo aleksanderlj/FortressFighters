@@ -9,12 +9,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import launcher.LauncherButton;
 import model.Cannon;
@@ -153,8 +148,8 @@ public class Main {
 				g2D.setColor(Color.WHITE);
 				g2D.setFont(new Font("TimesRoman", Font.BOLD, 25));
 				drawStringWithShadow(g2D, "How to play:", 20, 40);
-				drawStringWithShadow(g2D, "Controls:", 20, 290);
-				drawStringWithShadow(g2D, "Costs:", 300, 290);
+				drawStringWithShadow(g2D, "Controls:", 20, 260);
+				drawStringWithShadow(g2D, "Costs:", 300, 260);
 
 				g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
 				drawStringWithShadow(g2D, "- Collect wood and iron and return them to your fortress", 20, 70);
@@ -164,12 +159,13 @@ public class Main {
 				drawStringWithShadow(g2D, "- Mystical things might happen if you return the orbs on the battle-", 20, 190);
 				drawStringWithShadow(g2D, "  field to your fortress' orb holders", 20, 210);
 				
-				drawStringWithShadow(g2D, "- WASD or arrow keys to move", 20, 320);
-				drawStringWithShadow(g2D, "- Q to build a cannon", 20, 350);
-				drawStringWithShadow(g2D, "- E to build a wall", 20, 380);
+				drawStringWithShadow(g2D, "- WASD or arrow keys to move", 20, 290);
+				drawStringWithShadow(g2D, "- Q to build a cannon", 20, 320);
+				drawStringWithShadow(g2D, "- E to build a wall", 20, 350);
+				drawStringWithShadow(g2D, "- SPACE to drop an orb", 20, 380);
 				
-				drawStringWithShadow(g2D, "- Cannons cost " + Cannon.IRON_COST + " iron", 300, 320);
-				drawStringWithShadow(g2D, "- Walls cost " + Wall.WOOD_COST + " wood", 300, 350);
+				drawStringWithShadow(g2D, "- Cannons cost " + Cannon.IRON_COST + " iron", 300, 290);
+				drawStringWithShadow(g2D, "- Walls cost " + Wall.WOOD_COST + " wood", 300, 320);
 			} else {
 				g2D.drawImage(background, (int)((getWidth()/2) - ((background.getWidth()*backgroundScale)/2)), -70, (int)(background.getWidth() * backgroundScale), (int)(background.getHeight()*backgroundScale), null);
 				g2D.setColor(Color.WHITE);
