@@ -96,7 +96,7 @@ public class OrbController {
             Orb o = s.getOrbs().get(i);
             for (int j = 0; j < s.getActualNumberOfPlayers(); j++) {
                 Player p = s.getPlayers().get(j);
-                if (p.intersects(o) && !p.hasOrb) {
+                if (add && p.intersects(o) && !p.hasOrb) {
                     add = false;
                     p.hasOrb = true;
                     try {
