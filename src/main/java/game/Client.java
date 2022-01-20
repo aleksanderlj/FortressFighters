@@ -60,7 +60,7 @@ public class Client {
 			cannonblueShadow, cannonredShadow, wallShadow,
 			fortressblueShadow, fortressredShadow,
 			manShadow,
-			shield;
+			shieldblue, shieldred;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean gamePaused = false;
@@ -114,7 +114,8 @@ public class Client {
 			fortressblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressblue.png"));
 			fortressredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressred.png"));
 			manShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_man.png"));
-			shield = ImageIO.read(getClass().getClassLoader().getResource("shield.png"));
+			shieldblue = ImageIO.read(getClass().getClassLoader().getResource("shieldblue.png"));
+			shieldred = ImageIO.read(getClass().getClassLoader().getResource("shieldred.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
@@ -398,7 +399,11 @@ public class Client {
 			for (Wall w : walls) {
 				// Shield
 				if(w.getHealth() > Wall.MAX_HEALTH){
-					g2D.drawImage(shield, (int) w.x, (int) w.y, (int) Wall.SHIELD_WIDTH, (int) Wall.SHIELD_HEIGHT, null);
+					if(w.getTeam()){
+						g2D.drawImage(shieldred, (int) w.x, (int) w.y, (int) Wall.SHIELD_WIDTH, (int) Wall.SHIELD_HEIGHT, null);
+					} else {
+						g2D.drawImage(shieldblue, (int) w.x, (int) w.y, (int) Wall.SHIELD_WIDTH, (int) Wall.SHIELD_HEIGHT, null);
+					}
 					continue;
 				}
 
