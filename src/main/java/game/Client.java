@@ -15,7 +15,6 @@ import javax.swing.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.RemoteSpace;
-import org.jspace.Space;
 
 import model.*;
 
@@ -288,7 +287,7 @@ public class Client {
 
 	public class GamePanel extends JPanel implements KeyListener {
 		public Graphics2D g2D;
-		private List<String> disconnectedClients = new ArrayList<>();
+		private List<ConnectionMessage> connectionMessages = new ArrayList<>();
 		private List<BuffMessage> buffMessages = new ArrayList<>();
 
 		public GamePanel() {
@@ -316,10 +315,15 @@ public class Client {
 				paintPlayers();
 				paintBullets();
 				paintBuffs();
-				for (int i = 0; i < disconnectedClients.size(); i++) {
+				for (int i = 0; i < connectionMessages.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
-					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
-					g2D.drawString(stringToShow+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
+					String stringToShow= connectionMessages.get(i).equals("") ? "A player" : connectionMessages.get(i).getPlayerName();
+					if(connectionMessages.get(i).isConnected()){
+						stringToShow += " has joined.";
+					} else {
+						stringToShow += " has disconnected.";
+					}
+					g2D.drawString(stringToShow, Server.SCREEN_WIDTH-250, 40+i*20);
 				}
 				if (gamePaused) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 30));
@@ -581,22 +585,47 @@ public class Client {
 		}
 		
 		public void clientDisconnected(String playerName) {
-			new Thread(new ShowPlayerDisconnected(playerName)).start();
+			new Thread(new ShowPlayerConnection(playerName, false)).start();
+		}
+
+		public void clientConnected(String playerName) {
+			new Thread(new ShowPlayerConnection(playerName, true)).start();
 		}
 		
-		private class ShowPlayerDisconnected implements Runnable {
+		private class ShowPlayerConnection implements Runnable {
 			private String playerName;
-			public ShowPlayerDisconnected(String playerName) {
+			private boolean connected;
+			public ShowPlayerConnection(String playerName, boolean connected) {
 				this.playerName = playerName;
+				this.connected = connected;
 			}
 			public void run() {
-				disconnectedClients.add(playerName);
+				ConnectionMessage msg = new ConnectionMessage(playerName, connected);
+				connectionMessages.add(msg);
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				disconnectedClients.remove(playerName);
+				connectionMessages.remove(msg);
+			}
+		}
+
+		private class ConnectionMessage{
+			private String playerName;
+			private boolean connected;
+
+			public ConnectionMessage(String playerName, boolean connected){
+				this.playerName = playerName;
+				this.connected = connected;
+			}
+
+			public String getPlayerName() {
+				return playerName;
+			}
+
+			public boolean isConnected() {
+				return connected;
 			}
 		}
 
@@ -680,6 +709,10 @@ public class Client {
 					else if (msg.equals("clientdisconnected")) {
 						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
 						panel.clientDisconnected(playerName);
+					}
+					else if (msg.equals("clientconnected")) {
+						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
+						panel.clientConnected(playerName);
 					}
 					else if (msg.equals("host")) {
 						Server newServer = new Server(false);
