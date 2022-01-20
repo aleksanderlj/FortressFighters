@@ -26,6 +26,7 @@ public class Server {
 	private List<Cannon> cannons = new ArrayList<>();
 	private List<Resource> resources = new ArrayList<>();
 	private List<Wall> walls = new ArrayList<>();
+	private List<FShield> fShields = new ArrayList<>();
 	private List<Orb> orbs = new ArrayList<>();
 	private List<OrbHolder> orbHolders = new ArrayList<>();
 	private Fortress fortress1;
@@ -38,6 +39,7 @@ public class Server {
 	private Space cannonSpace;
 	private Space bulletSpace;
 	private Space wallSpace;
+	private Space fShieldSpace;
 	private Space fortressSpace;
 	private Space resourceSpace;
 	private Space orbSpace;
@@ -51,6 +53,7 @@ public class Server {
 	private PlayerController playerController;
 	private CannonController cannonController;
 	private WallController wallController;
+	private FShieldController fShieldController;
 	private FortressController fortressController;
 	private ResourceController resourceController;
 	private OrbController orbController;
@@ -78,6 +81,7 @@ public class Server {
 		cannonSpace = new SequentialSpace();
 		bulletSpace = new SequentialSpace();
 		wallSpace = new SequentialSpace();
+		fShieldSpace = new SequentialSpace();
 		fortressSpace = new SequentialSpace();
 		resourceSpace = new SequentialSpace();
 		orbSpace = new SequentialSpace();
@@ -90,10 +94,19 @@ public class Server {
 		repository.add("cannon", cannonSpace);
 		repository.add("bullet", bulletSpace);
 		repository.add("wall", wallSpace);
+		repository.add("fShield", fShieldSpace);
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
 		repository.add("orb", orbSpace);
 		repository.add("switchhost", switchHostSpace);
+		playerController = new PlayerController(this);
+		cannonController = new CannonController(this);
+		wallController = new WallController(this);
+		fShieldController = new FShieldController(this);
+		fortressController = new FortressController(this);
+		resourceController = new ResourceController(this);
+		orbController = new OrbController(this);
+		buffController = new BuffController(this);
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 		new Thread(new JoinedReader()).start();
@@ -183,6 +196,7 @@ public class Server {
 			playerController.initializePlayers();
 			cannonController.initializeCannons();
 			wallController.initializeWalls();
+			fShieldController.initializeFShield(); // Recent implementation
 			cannonController.initializeBullets();
 			orbController.initializeOrbs();
 			buffController.initializeBuffs();
@@ -206,6 +220,7 @@ public class Server {
 				cannonController.updateCannons();
 				cannonController.updateBullets();
 				wallController.updateWalls();
+				fShieldController.updateFShields();
 				fortressController.updateFortresses();
 				resourceController.updateResources();
 				orbController.updateOrbs();
@@ -414,6 +429,10 @@ public class Server {
 		return walls;
 	}
 
+	public List<FShield> getfShields() { return fShields; }
+
+	public void setfShields(List<FShield> fShields) { this.fShields = fShields; }
+
 	public List<Orb> getOrbs() {
 		return orbs;
 	}
@@ -466,6 +485,10 @@ public class Server {
 		return wallSpace;
 	}
 
+	public Space getfShieldSpace() { return fShieldSpace; }
+
+	public void setfShieldSpace(Space fShieldSpace) { this.fShieldSpace = fShieldSpace; }
+
 	public Space getFortressSpace() {
 		return fortressSpace;
 	}
@@ -501,6 +524,8 @@ public class Server {
 	public WallController getWallController() {
 		return wallController;
 	}
+
+	public FShieldController getfShieldController() {return fShieldController;}
 
 	public FortressController getFortressController() {
 		return fortressController;
