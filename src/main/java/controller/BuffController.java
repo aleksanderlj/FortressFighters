@@ -56,7 +56,7 @@ public class BuffController {
         }
         List<Object[]> buffs =  s.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
         for (Object[] buff : buffs) {
-            switch ("shield"){
+            switch ((String)buff[1]){
                 case "heal":
                     if((boolean) buff[0]){
                         s.getFortress2().setHP(s.getFortress2().getHP() + 50);
