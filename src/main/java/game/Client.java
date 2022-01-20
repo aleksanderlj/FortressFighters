@@ -27,7 +27,6 @@ public class Client {
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
 	private Wall[] walls = new Wall[0];
-	private FShield[] fShields = new FShield[0]; // Recent Imp
 	private Bullet[] bullets = new Bullet[0];
 	private Fortress[] fortresses = new Fortress[0];
     private Resource[] resources = new Resource[0];
@@ -39,7 +38,6 @@ public class Client {
 	private RemoteSpace cannonSpace;
 	private RemoteSpace bulletSpace;
 	private RemoteSpace wallSpace;
-	private Space fShieldSpace; // Recent Implementation
 	private RemoteSpace fortressSpace;
 	private RemoteSpace resourceSpace;
 	private RemoteSpace orbSpace;
@@ -50,7 +48,6 @@ public class Client {
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
 	private boolean dropOrbKeyDown = false;
-	private boolean createFShieldDown = false;
 	private BufferedImage manblue, manred,
 			cannonblue, cannonred,
 			fortressblue, fortressred,
@@ -83,15 +80,6 @@ public class Client {
 		defaultFont = "Comic Sans MS";
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
-			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
-			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
-			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
-			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
-			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
-			fShieldSpace = new RemoteSpace("tcp://" + address + ":9001/fShield?keep");
-			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
-			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
-			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
 			centralSpace.put("joined", name);
 			id = (Integer)centralSpace.get(new FormalField(Integer.class))[0];
 			connectToServer(address);
@@ -151,7 +139,6 @@ public class Client {
 					updateCannons();
 					updateBullets();
 					updateWalls();
-					updateFShields(); // Recent Implementation
 					updateFortresses();
 					updateResources();
 					updateOrbs();
@@ -257,25 +244,12 @@ public class Client {
 		walls = new Wall[wallTuples.size()];
 		for (int i = 0; i < wallTuples.size(); i++) {
 			Object[] tuple = wallTuples.get(i);
-			walls[i] = new Wall((int) tuple[1], (int) tuple[2], (double)tuple[3], (double)tuple[4], (boolean)tuple[5]);
-		}
-	}
-
-	// Recent Implementation
-
-	public void updateFShields() throws InterruptedException {
-		List<Object[]> fShieldTuples = fShieldSpace.queryAll(
-				new ActualField("fShield"),
-				new FormalField(Integer.class),
-				new FormalField(Integer.class),
-				new FormalField(Double.class),
-				new FormalField(Double.class),
-				new FormalField(Boolean.class)
-		);
-		fShields = new FShield[fShieldTuples.size()];
-		for (int i = 0; i < fShieldTuples.size(); i++) {
-			Object[] tuple = fShieldTuples.get(i);
-			fShields[i] = new FShield((int) tuple[1], (int) tuple[2], (double)tuple[3], (double)tuple[4], (boolean)tuple[5]);
+			// Dirty way of checking if shield
+			if((int) tuple[2] > Wall.MAX_HEALTH){
+				walls[i] = new Wall((double)tuple[3], (double)tuple[4], Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean)tuple[5]);
+			} else {
+				walls[i] = new Wall((int) tuple[1], (int) tuple[2], (double)tuple[3], (double)tuple[4], (boolean)tuple[5]);
+			}
 		}
 	}
 
