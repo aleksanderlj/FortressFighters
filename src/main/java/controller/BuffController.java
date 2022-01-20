@@ -13,8 +13,10 @@ import java.util.List;
 
 public class BuffController {
     Server s;
+    private static final double GHOST_TIME = 5;
     private double team1GhostTimer = 0;
     private double team2GhostTimer = 0;
+    private static final double SHIELD_TIME = 8;
     private double team1ShieldTimer = 0;
     private double team2ShieldTimer = 0;
     private Wall team1Shield = null;
@@ -69,9 +71,9 @@ public class BuffController {
                     break;
                 case "ghost":
                     if((boolean) buff[0]){
-                        team2GhostTimer = 5;
+                        team2GhostTimer = GHOST_TIME;
                     } else {
-                        team1GhostTimer = 5;
+                        team1GhostTimer = GHOST_TIME;
                     }
                     break;
                 case "bullets":
@@ -94,7 +96,7 @@ public class BuffController {
                 case "shield":
                     Wall shield = null;
                     if((boolean) buff[0]) {
-                        team2ShieldTimer = 10;
+                        team2ShieldTimer = SHIELD_TIME;
                         if(team2Shield == null ){
                             shield = new Wall(s.getFortress2().x - Wall.SHIELD_WIDTH, s.getFortress2().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
                             team2Shield = shield;
@@ -102,7 +104,7 @@ public class BuffController {
                             s.getWallSpace().put("wall", shield.getId(), shield.getHealth(), shield.x, shield.y, shield.getTeam());
                         }
                     } else {
-                        team1ShieldTimer = 10;
+                        team1ShieldTimer = SHIELD_TIME;
                         if(team1Shield == null){
                             shield = new Wall(s.getFortress1().x + Fortress.WIDTH, s.getFortress1().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
                             team1Shield = shield;
