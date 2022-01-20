@@ -27,6 +27,8 @@ public class BuffController {
     public void initializeBuffs() throws InterruptedException {
         team1GhostTimer = 0;
         team2GhostTimer = 0;
+        team1ShieldTimer = 0;
+        team2ShieldTimer = 0;
         s.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
         s.setBuffSpace(new SequentialSpace());
     }
@@ -92,7 +94,7 @@ public class BuffController {
                 case "shield":
                     Wall shield = null;
                     if((boolean) buff[0]) {
-                        team2ShieldTimer = 5;
+                        team2ShieldTimer = 10;
                         if(team2Shield == null ){
                             shield = new Wall(s.getFortress2().x - Wall.SHIELD_WIDTH, s.getFortress2().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
                             team2Shield = shield;
@@ -100,7 +102,7 @@ public class BuffController {
                             s.getWallSpace().put("wall", shield.getId(), shield.getHealth(), shield.x, shield.y, shield.getTeam());
                         }
                     } else {
-                        team1ShieldTimer = 5;
+                        team1ShieldTimer = 10;
                         if(team1Shield == null){
                             shield = new Wall(s.getFortress1().x + Fortress.WIDTH, s.getFortress1().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
                             team1Shield = shield;
