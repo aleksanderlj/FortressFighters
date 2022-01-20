@@ -5,6 +5,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -22,6 +23,7 @@ public class Client {
 
 	public static final double S_BETWEEN_UPDATES = 0.01;
 	private GameFrame frame;
+	private String address;
 	private Player[] players = new Player[0];
 	private Cannon[] cannons = new Cannon[0];
 	private Wall[] walls = new Wall[0];
@@ -30,21 +32,22 @@ public class Client {
     private Resource[] resources = new Resource[0];
     private Orb[] orbs = new Orb[0];
     private OrbHolder[] orbHolders = new OrbHolder[0];
-	private Space centralSpace;
-	private Space playerPositionsSpace;
-	private Space playerMovementSpace;
-	private Space cannonSpace;
-	private Space bulletSpace;
-	private Space wallSpace;
-	private Space fortressSpace;
-	private Space resourceSpace;
-	private Space orbSpace;
-	private Space channelFromServer;
-	private Space channelToServer;
-	private int id;
+	private RemoteSpace centralSpace;
+	private RemoteSpace playerPositionsSpace;
+	private RemoteSpace playerMovementSpace;
+	private RemoteSpace cannonSpace;
+	private RemoteSpace bulletSpace;
+	private RemoteSpace wallSpace;
+	private RemoteSpace fortressSpace;
+	private RemoteSpace resourceSpace;
+	private RemoteSpace orbSpace;
+	private RemoteSpace channelFromServer;
+	private RemoteSpace channelToServer;
+	public static int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
+	private boolean dropOrbKeyDown = false;
 	private BufferedImage manblue, manred,
 			cannonblue, cannonred,
 			fortressblue, fortressred,
@@ -52,9 +55,15 @@ public class Client {
 			bulletred, bulletblue,
 			wallred1, wallred2, wallred3,
 			wallblue1, wallblue2, wallblue3,
-			orbholderempty, orbholderfull;
+			orbholderempty, orbholderfull,
+			manblueorb, manredorb,
+			ironShadow, woodShadow, orbShadow,
+			cannonblueShadow, cannonredShadow, wallShadow,
+			fortressblueShadow, fortressredShadow,
+			manShadow;
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
+	private boolean gamePaused = false;
 	private boolean windowClosed = false;
 	private String winningTeam = "";
 	private String defaultFont;
@@ -71,19 +80,9 @@ public class Client {
 		defaultFont = "Comic Sans MS";
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
-			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
-			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
-			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
-			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
-			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
-			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
-			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
-			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
 			centralSpace.put("joined", name);
-			Object[] tuple = centralSpace.get(new FormalField(Integer.class), new FormalField(String.class), new FormalField(String.class));
-			id = (Integer) tuple[0];
-			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[1])+"?keep");
-			channelToServer = new RemoteSpace("tcp://" + address + ":9001/"+((String) tuple[2])+"?keep");
+			id = (Integer)centralSpace.get(new FormalField(Integer.class))[0];
+			connectToServer(address);
 			// Load image resources
 			manblue = ImageIO.read(getClass().getClassLoader().getResource("manblue.png"));
 			manred = ImageIO.read(getClass().getClassLoader().getResource("manred.png"));
@@ -104,16 +103,33 @@ public class Client {
 			wallblue3 = ImageIO.read(getClass().getClassLoader().getResource("wallblue3.png"));
 			orbholderempty = ImageIO.read(getClass().getClassLoader().getResource("orbholderempty.png"));
 			orbholderfull = ImageIO.read(getClass().getClassLoader().getResource("orbholderfull.png"));
+			manblueorb = ImageIO.read(getClass().getClassLoader().getResource("manblueorb.png"));
+			manredorb = ImageIO.read(getClass().getClassLoader().getResource("manredorb.png"));
+			ironShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_iron.png"));
+			woodShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wood.png"));
+			orbShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_orb.png"));
+			cannonblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonblue.png"));
+			cannonredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_cannonred.png"));
+			wallShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_wall.png"));
+			fortressblueShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressblue.png"));
+			fortressredShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_fortressred.png"));
+			manShadow = ImageIO.read(getClass().getClassLoader().getResource("shadow_man.png"));
 			fortressStatusFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
 			fortressStatusFont = fortressStatusFont.deriveFont(Font.PLAIN, 36);
 			checkGameStarted();
 			new Thread(new Timer()).start();
 			new Thread(new ServerCheckReader()).start();
-		} catch (IOException | InterruptedException | FontFormatException e) {e.printStackTrace();}
+			new Thread(new NewHostReader()).start();
+		} catch (IOException | InterruptedException | FontFormatException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void update() {
 		try {
+			if (gamePaused) {
+				return;
+			}
 			Object[] tuple = centralSpace.queryp(new ActualField("game over"), new FormalField(String.class));
 			if (tuple == null) {
 				gameOver = false;
@@ -135,8 +151,45 @@ public class Client {
 				winningTeam = (String) tuple[1];
 				gameOver = true;
 			}
-		} catch (InterruptedException e) {e.printStackTrace();}
+		} catch (InterruptedException e) {System.out.println("Interrupted");}
 		panel.updatePanel();
+	}
+	
+	private void connectToServer(String address) {
+		this.address = address;
+		try {
+			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
+			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/serverclient"+id+"?keep");
+			channelToServer = new RemoteSpace("tcp://" + address + ":9001/client"+id+"server?keep");
+			playerPositionsSpace = new RemoteSpace("tcp://" + address + ":9001/playerpositions?keep");
+			playerMovementSpace = new RemoteSpace("tcp://" + address + ":9001/playermovement?keep");
+			cannonSpace = new RemoteSpace("tcp://" + address + ":9001/cannon?keep");
+			bulletSpace = new RemoteSpace("tcp://" + address + ":9001/bullet?keep");
+			wallSpace = new RemoteSpace("tcp://" + address + ":9001/wall?keep");
+			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
+			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
+			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void disconnectFromServer() {
+		try {
+			centralSpace.close();
+			channelFromServer.close();
+			channelToServer.close();
+			playerPositionsSpace.close();
+			playerMovementSpace.close();
+			cannonSpace.close();
+			bulletSpace.close();
+			wallSpace.close();
+			fortressSpace.close();
+			resourceSpace.close();
+			orbSpace.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void checkGameStarted() {
@@ -237,7 +290,7 @@ public class Client {
 			setPreferredSize(new Dimension(Server.SCREEN_WIDTH, Server.SCREEN_HEIGHT));
 			addKeyListener(this);
 	        setFocusable(true);
-			//setBackground(new Color(52, 121, 40));
+			setBackground(new Color(241, 209, 141));
 		}
 
 		public void paint(Graphics g) {
@@ -263,6 +316,10 @@ public class Client {
 					String stringToShow = disconnectedClients.get(i).equals("") ? "A player" : disconnectedClients.get(i);
 					g2D.drawString(stringToShow+" has disconnected.", Server.SCREEN_WIDTH-250, 40+i*20);
 				}
+				if (gamePaused) {
+					g2D.setFont(new Font(defaultFont, Font.PLAIN, 30));
+					g2D.drawString("Switching host...", Server.SCREEN_WIDTH/2-60, Server.SCREEN_HEIGHT/2);
+				}
 			}
 			else {
 				g2D.setFont(new Font(defaultFont, Font.PLAIN, 20));
@@ -274,18 +331,31 @@ public class Client {
 			g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			for (int i = 0; i < players.length; i++) {
 				Player p = players[i];
+				g2D.drawImage(manShadow, (int) p.x-2, (int) p.y, (int) p.width+4, (int) p.height+4, null);
 				if(p.team){
-					g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					if(p.hasOrb){
+						g2D.drawImage(manredorb, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					} else {
+						g2D.drawImage(manred, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					}
 				} else {
-					g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					if(p.hasOrb){
+						g2D.drawImage(manblueorb, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					} else {
+						g2D.drawImage(manblue, (int) p.x, (int) p.y, (int) p.width, (int) p.height, null);
+					}
 				}
 				//g2D.drawRect((int) p.x, (int) p.y, (int) p.width, (int) p.height);
 				if (p.id == id) {
 					g2D.setFont(new Font(defaultFont, Font.BOLD, 12));
 				}
-				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 50);
-				g2D.drawString("Wood: " + p.wood, (int)p.x+20, (int)p.y - 30);
-				g2D.drawString("Iron: " + p.iron, (int)p.x+20, (int)p.y - 10);
+				g2D.drawString(p.name, (int)((p.x+Player.WIDTH/2)-(g2D.getFontMetrics().stringWidth(p.name)/2)), (int)p.y - 5);
+				int x1 = (int)p.x + 31;
+				int y1 = (int)(p.y + 38);
+				g2D.setColor(Color.WHITE);
+				g2D.drawString("" + p.wood, x1, y1);
+				g2D.drawString("" + p.iron, x1, y1 + 15);
+				g2D.setColor(Color.BLACK);
 				g2D.setFont(new Font(defaultFont, Font.PLAIN, 12));
 			}
 		}
@@ -293,8 +363,10 @@ public class Client {
 		public void paintCannons(){
 			for (Cannon c : cannons) {
 				if(c.getTeam()){
+					g2D.drawImage(cannonredShadow, (int) c.x-2, (int) c.y, (int) c.width+4, (int) c.height+4, null);
 					g2D.drawImage(cannonred, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				} else {
+					g2D.drawImage(cannonblueShadow, (int) c.x-2, (int) c.y, (int) c.width+4, (int) c.height+4, null);
 					g2D.drawImage(cannonblue, (int) c.x, (int) c.y, (int) c.width, (int) c.height, null);
 				}
 				//g2D.drawRect((int) c.x, (int) c.y, (int) c.width, (int) c.height);
@@ -313,6 +385,7 @@ public class Client {
 
 		public void paintWalls(){
 			for (Wall w : walls) {
+				g2D.drawImage(wallShadow, (int) w.x-2, (int) w.y, (int) w.width+4, (int) w.height+4, null);
 				if(w.getTeam()){
 					if (w.getHealth() == Wall.MAX_HEALTH){
 						g2D.drawImage(wallred1, (int) w.x, (int) w.y, (int) w.width, (int) w.height, null);
@@ -337,11 +410,13 @@ public class Client {
 			g2D.setFont(fortressStatusFont);
 			for (Fortress f : fortresses) {
 				if (f.getTeam()) {
+					g2D.drawImage(fortressredShadow, (int) f.x-6, (int) f.y, (int) f.width+12, (int) f.height+12, null);
 					g2D.drawImage(fortressred, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
 					g2D.drawString("" + f.getHP(), (int) f.x + 30, (int) f.y + 217);
 					g2D.drawString("" + f.getWood(), (int) f.x + 30, (int) f.y + 317);
 					g2D.drawString("" + f.getIron(), (int) f.x + 30, (int) f.y + 417);
 				} else {
+					g2D.drawImage(fortressblueShadow, (int) f.x-6, (int) f.y, (int) f.width+12, (int) f.height+12, null);
 					g2D.drawImage(fortressblue, (int) f.x, (int) f.y, (int) f.width, (int) f.height, null);
 					g2D.drawString("" + f.getHP(), (int) f.x + 80, (int) f.y + 217);
 					g2D.drawString("" + f.getWood(), (int) f.x + 80, (int) f.y + 317);
@@ -353,9 +428,11 @@ public class Client {
 		public void paintResources(){
             for (Resource r : resources) {
                 if (r.getType() == 0) {
+					g2D.drawImage(woodShadow, (int) r.x-2, (int) r.y, 54, 54, null);
                     g2D.drawImage(wood, (int) r.x, (int) r.y, (int) r.width, (int) r.height, null);
                 }
                 else {
+					g2D.drawImage(ironShadow, (int) r.x-2, (int) r.y, 54, 54, null);
 					g2D.drawImage(iron, (int) r.x, (int) r.y, (int) r.width, (int) r.height, null);
                 }
             }
@@ -363,6 +440,7 @@ public class Client {
 		
 		public void paintOrbs(){
 			for (Orb o : orbs) {
+				g2D.drawImage(orbShadow, (int) o.x-2, (int) o.y, (int) o.width + 4, (int) o.height + 4, null);
 				g2D.drawImage(orb, (int) o.x, (int) o.y, (int) o.width, (int) o.height, null);
             }
 			for (OrbHolder oh : orbHolders) {
@@ -400,6 +478,9 @@ public class Client {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyPressed(KeyEvent e) {
+			if (gamePaused) {
+				return;
+			}
 			String input = getInput(e.getKeyCode());
 			try {
 				switch (input){
@@ -423,6 +504,10 @@ public class Client {
 						}
 						createWallKeyDown = true;
 						break;
+					case "dropOrb":
+						if (!dropOrbKeyDown) {
+							orbSpace.put(id, input);
+						}
 					default:
 						break;
 				}
@@ -431,6 +516,9 @@ public class Client {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
+			if (gamePaused) {
+				return;
+			}
 			String input = getInput(e.getKeyCode());
 			try {
 				switch (input){
@@ -446,6 +534,8 @@ public class Client {
 					case "createwall":
 						createWallKeyDown = false;
 						break;
+					case "dropOrb":
+						dropOrbKeyDown = false;
 					default:
 						break;
 				}
@@ -477,6 +567,8 @@ public class Client {
 				case KeyEvent.VK_E:
 					input = "createwall";
 					break;
+				case KeyEvent.VK_SPACE:
+					input = "dropOrb";
 				default:
 					break;
 			}
@@ -536,9 +628,32 @@ public class Client {
 	private class Timer implements Runnable {
 		public void run() {
 			try {
-				while (true) {
+				while (!gamePaused) {
 					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
 					update();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class NewHostReader implements Runnable {
+		public void run() {
+			try {
+				while (true) {
+					Object[] tuple = channelFromServer.get(new ActualField("newip"), new FormalField(String.class), new FormalField(String.class));
+					String newAddress = (String)tuple[1];
+					String disconnectedName = (String)tuple[2];
+					gamePaused = true;
+					panel.updatePanel();
+					disconnectFromServer();
+					Thread.sleep(2000);
+					connectToServer(newAddress);
+					gamePaused = false;
+					panel.clientDisconnected(disconnectedName);
+					new Thread(new Timer()).start();
+					new Thread(new ServerCheckReader()).start();
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -560,6 +675,34 @@ public class Client {
 					else if (msg.equals("clientdisconnected")) {
 						String playerName = (String) channelFromServer.get(new FormalField(String.class))[0];
 						panel.clientDisconnected(playerName);
+					}
+					else if (msg.equals("host")) {
+						Server newServer = new Server(false);
+						if (fortresses[0].getTeam()) {
+							newServer.switchHostInitialize(address,
+									new ArrayList<>(Arrays.asList(cannons)),
+									new ArrayList<>(Arrays.asList(resources)),
+									new ArrayList<>(Arrays.asList(orbs)),
+									new ArrayList<>(Arrays.asList(orbHolders)),
+									new ArrayList<>(Arrays.asList(bullets)),
+									fortresses[1], fortresses[0]);
+						}
+						else {
+							newServer.switchHostInitialize(address,
+									new ArrayList<>(Arrays.asList(cannons)),
+									new ArrayList<>(Arrays.asList(resources)),
+									new ArrayList<>(Arrays.asList(orbs)),
+									new ArrayList<>(Arrays.asList(orbHolders)),
+									new ArrayList<>(Arrays.asList(bullets)),
+									fortresses[0], fortresses[1]);
+						}
+						channelToServer.put("done", Server.getIP());
+						Thread.sleep(1500);
+						frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+						newServer.switchHostInitializeSpaces();
+					}
+					else if (msg.equals("closethread")) {
+						return;
 					}
 				}
 			} catch (InterruptedException e) {

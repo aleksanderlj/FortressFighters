@@ -38,10 +38,19 @@ public class CannonController {
         for (Object[] command : cannonCommands) {
             int id = (int) command[0];
             Player player = s.getPlayerWithID(id);
+            double x = player.x + Player.WIDTH/2 - Cannon.WIDTH/2;
             if (player.team) {
-                newCannon = new Cannon(player.x + player.width / 4, player.y + player.height / 2, player.team);
+                // Prevent cannon from sitting too close to enemy fortress
+                if(x < s.getFortress1().x + Fortress.WIDTH + Wall.WIDTH){
+                    x = s.getFortress1().x + Fortress.WIDTH + Wall.WIDTH + 5;
+                }
+                newCannon = new Cannon(x, player.y + player.height / 2, player.team);
             } else {
-                newCannon = new Cannon(player.x, player.y + player.height / 2, player.team);
+                // Prevent cannon from sitting too close to enemy fortress
+                if(x + Cannon.WIDTH > s.getFortress2().x - Wall.WIDTH){
+                    x = s.getFortress2().x - Wall.WIDTH - 5 - Cannon.WIDTH;
+                }
+                newCannon = new Cannon(x, player.y + player.height / 2, player.team);
             }
 
             // Only build cannon if it's not colliding with another cannon, wall, fortress
@@ -84,6 +93,10 @@ public class CannonController {
         s.getMutexSpace().put("bulletsLock");
     }
 
+    public void activateCannon(Cannon c){
+        new Thread(new CannonShooter(c)).start();
+    }
+
     public class CannonShooter implements Runnable {
         public static final int COOLDOWN = 3000;
         Cannon cannon;
@@ -99,9 +112,9 @@ public class CannonController {
                     if(cannon.isActive()){
                         Bullet bullet;
                         if(cannon.getTeam()){
-                            bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
+                            bullet = new Bullet(cannon.x + Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4 + 3, cannon.getTeam());
                         } else {
-                            bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4, cannon.getTeam());
+                            bullet = new Bullet(cannon.x + Cannon.WIDTH - Bullet.WIDTH, cannon.y + Cannon.HEIGHT / 4 + 3, cannon.getTeam());
                         }
                         s.getMutexSpace().get(new ActualField("bulletsLock"));
                         s.getBullets().add(bullet);

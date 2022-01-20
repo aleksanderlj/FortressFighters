@@ -32,8 +32,8 @@ public class PlayerController {
     
     public void resetPlayer(Player player) {
 		player.hasOrb = false;
-		player.wood = 10;
-		player.iron = 20;
+		player.wood = 0;
+		player.iron = 0;
 		player.stunned = 0;
 		player.team = getNextTeam();
     	double[] pos = getRandomPlayerPosition(player.team);
@@ -78,7 +78,7 @@ public class PlayerController {
 
     public void updatePlayers() throws InterruptedException {
         List<Object[]> movementTuples = s.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class));
-        int[][] movementVectors = new int[s.numPlayers][2];
+        int[][] movementVectors = new int[s.playerIDCounter][2];
         for (Object[] movementTuple : movementTuples) {
             int playerID = (Integer) movementTuple[0];
             Player player = s.getPlayerWithID(playerID);
@@ -124,7 +124,11 @@ public class PlayerController {
             }
 
             // Prevent collision
-            if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team, player.name))){
+            if(isColliding(player) && !isColliding(new Player(player.x, oldY, player.id, player.team, player.name))){
+                player.y = oldY;
+            } else if(isColliding(player) && !isColliding(new Player(oldX, player.y, player.id, player.team, player.name))){
+                player.x = oldX;
+            } else if(isColliding(player) && !isColliding(new Player(oldX, oldY, player.id, player.team, player.name))) {
                 player.x = oldX;
                 player.y = oldY;
             }

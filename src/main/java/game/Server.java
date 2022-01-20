@@ -1,4 +1,5 @@
 package game;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import org.jspace.FormalField;
 import org.jspace.QueueSpace;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
+import org.jspace.RemoteSpace;
 import org.jspace.SpaceRepository;
 
 import model.*;
@@ -41,9 +43,11 @@ public class Server {
 	private Space orbSpace;
 	private Space buffSpace;
 	private Space mutexSpace;
-	public int numPlayers = 0; //Including disconnected players.
+	private Space switchHostSpace;
+	public int playerIDCounter = 0;
 	private boolean gameStarted = false;
     private boolean gameOver = false;
+    private boolean gamePaused = false;
 	private PlayerController playerController;
 	private CannonController cannonController;
 	private WallController wallController;
@@ -52,7 +56,20 @@ public class Server {
 	private OrbController orbController;
 	private BuffController buffController;
 
-	public Server() {
+	public Server(boolean createSpaces) {
+		if (createSpaces) {
+			createSpaces();
+		}
+		playerController = new PlayerController(this);
+		cannonController = new CannonController(this);
+		wallController = new WallController(this);
+		fortressController = new FortressController(this);
+		resourceController = new ResourceController(this);
+		orbController = new OrbController(this);
+		buffController = new BuffController(this);
+	}
+	
+	public void createSpaces() {
 		repository = new SpaceRepository();
 		repository.addGate("tcp://" + getIP() + ":9001/?keep");
 		centralSpace = new SequentialSpace();
@@ -66,6 +83,7 @@ public class Server {
 		orbSpace = new SequentialSpace();
 		buffSpace = new SequentialSpace();
 		mutexSpace = new SequentialSpace();
+		switchHostSpace = new SequentialSpace();
 		repository.add("central", centralSpace);
 		repository.add("playerpositions", playerPositionsSpace);
 		repository.add("playermovement", playerMovementSpace);
@@ -75,13 +93,7 @@ public class Server {
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
 		repository.add("orb", orbSpace);
-		playerController = new PlayerController(this);
-		cannonController = new CannonController(this);
-		wallController = new WallController(this);
-		fortressController = new FortressController(this);
-		resourceController = new ResourceController(this);
-		orbController = new OrbController(this);
-		buffController = new BuffController(this);
+		repository.add("switchhost", switchHostSpace);
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();
 		new Thread(new JoinedReader()).start();
@@ -90,6 +102,80 @@ public class Server {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void switchHostInitialize(String oldAddress, List<Cannon> cannons, List<Resource> resources, List<Orb> orbs, List<OrbHolder> orbHolders, List<Bullet> bullets, Fortress fortress1, Fortress fortress2) {
+		try {
+			gamePaused = true;
+			RemoteSpace oldSwitchHostSpace = new RemoteSpace("tcp://" + oldAddress + ":9001/switchhost?keep");
+			gameOver = (boolean)oldSwitchHostSpace.get(new ActualField("gameOver"), new FormalField(Boolean.class))[1];
+			playerIDCounter = (int)oldSwitchHostSpace.get(new ActualField("playerIDCounter"), new FormalField(Integer.class))[1];
+			Wall.idCounter = (int)oldSwitchHostSpace.get(new ActualField("idCounter"), new FormalField(Integer.class))[1];
+			this.cannons = cannons;
+			this.resources = resources;
+			this.orbs = orbs;
+			this.orbHolders = orbHolders;
+			this.bullets = bullets;
+			this.fortress1 = fortress1;
+			this.fortress2 = fortress2;
+			List<Object[]> pTuples = oldSwitchHostSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(String.class), new FormalField(Boolean.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Double.class));
+			for (Object[] tuple : pTuples) {
+				Player p = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[4], (String)tuple[3]);
+				p.hasOrb = (boolean)tuple[5];
+				p.wood = (int)tuple[6];
+				p.iron = (int)tuple[7];
+				p.stunned = (double)tuple[8];
+				players.add(p);
+			}
+			List<Object[]> wTuples = oldSwitchHostSpace.getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class));
+			for (Object[] tuple : wTuples) {
+				Wall w = new Wall((int)tuple[2], (int)tuple[4], (double)tuple[0], (double)tuple[1], (boolean)tuple[3]);
+				walls.add(w);
+			}
+			for (Cannon c : cannons) {
+				cannonController.activateCannon(c);
+			}
+			gameStarted = true;
+			gamePaused = false;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void switchHostInitializeSpaces() {
+        try {
+        	createSpaces();
+    		orbController.initializeOrbPetriNetsNewHost();
+        	for (Player p : players) {
+				createNewChannel(p.id, true);
+        	}
+    		for (Resource r : resources) {
+    			resourceSpace.put((int)r.x, (int)r.y, r.getType());
+    		}
+    		for (Orb o : orbs) {
+                orbSpace.put((int)o.x, (int)o.y);
+    		}
+    		for (Cannon c : cannons) {
+    			cannonSpace.put("cannon", c.x, c.y, c.getTeam());
+    		}
+    		for (Wall w : walls) {
+    			wallSpace.put("wall", w.getId(), w.getHealth(), w.x, w.y, w.getTeam());
+    		}
+    		fortressSpace.put(fortress1.getWood(), fortress1.getIron(), fortress1.getHP(), false);
+    		fortressSpace.put(fortress2.getWood(), fortress2.getIron(), fortress2.getHP(), true);
+    		centralSpace.put("started");
+    		if (gameOver) {
+    			gameOver = false;
+    			startGame();
+    		}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public void startGame() {
@@ -110,6 +196,9 @@ public class Server {
 	}
 
 	public void update() {
+		if (gamePaused) {
+			return;
+		}
 		try {
 			if (gameStarted) {
 				// Handle game logic for each object
@@ -123,7 +212,7 @@ public class Server {
 				buffController.updateBuffs();
 			}
 			else {
-				if (numPlayers >= 2) {
+				if (playerIDCounter >= 2) {
 					centralSpace.put("started");
 					startGame();
 					gameStarted = true;
@@ -147,17 +236,52 @@ public class Server {
 		
 	}
 	
-	private void createNewChannel(int id) {
-		Space serverClient = new QueueSpace();
-		Space clientServer = new QueueSpace();
+	public void switchHost() {
+		try {
+			gamePaused = true;
+			if (getActualNumberOfPlayers() <= 1) {
+				//Only one player is connected. Cannot switch host.
+				System.exit(0);
+			}
+			switchHostSpace.put("gameOver", gameOver);
+			switchHostSpace.put("playerIDCounter", playerIDCounter);
+			switchHostSpace.put("idCounter", Wall.idCounter);
+			Player player = getPlayerWithID(Client.id);
+			players.remove(player);
+			for (Player p : players) {
+				switchHostSpace.put(p.x, p.y, p.id, p.name, p.team, p.hasOrb, p.wood, p.iron, p.stunned);
+			}
+			for (Wall w : walls) {
+				switchHostSpace.put(w.x, w.y, w.getId(), w.getTeam(), w.getHealth());
+			}
+			Player newHost = players.get(0);
+			newHost.serverToClient.put("host");
+			Object[] tuple = newHost.clientToServer.get(new ActualField("done"), new FormalField(String.class));
+			for (Player p : players) {
+				p.serverToClient.put("newip", (String)tuple[1], player.name);
+				p.serverToClient.put("closethread");
+			}
+			Thread.sleep(1000);
+			repository.closeGates();
+			System.exit(0);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void createNewChannel(int id, boolean newHost) {
+		Space serverClient = new SequentialSpace();
+		Space clientServer = new SequentialSpace();
 		repository.add("serverclient"+id, serverClient);
 		repository.add("client"+id+"server", clientServer);
 		getPlayerWithID(id).clientToServer = clientServer;
 		getPlayerWithID(id).serverToClient = serverClient;
-		try {
-			centralSpace.put(id, "serverclient"+id, "client"+id+"server");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		if (!newHost) {
+			try {
+				centralSpace.put(id);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -207,9 +331,9 @@ public class Server {
 			try {
 				while (true) {
 					Object[] tuple = centralSpace.get(new ActualField("joined"), new FormalField(String.class));
-					playerController.addPlayer(numPlayers, (String)tuple[1]);
-					createNewChannel(numPlayers);
-					numPlayers++;
+					playerController.addPlayer(playerIDCounter, (String)tuple[1]);
+					createNewChannel(playerIDCounter, false);
+					playerIDCounter++;
 					System.out.println("Player joined.");
 				}
 			} catch (InterruptedException e) {
@@ -222,6 +346,7 @@ public class Server {
 		public void run() {
 			//Protocol checking if players are still in the game.
 			try {
+				Thread.sleep(3000);
 				while (true) {
 					for (int i = 0; i < getActualNumberOfPlayers(); i++) {
 						players.get(i).serverToClient.put("check");
@@ -232,15 +357,13 @@ public class Server {
 					for (int i = 0; i < playersBefore.size(); i++) {
 						if (playersBefore.get(i).clientToServer.getp(new ActualField("acknowledged")) == null) {
 							//Client took too long to respond.
-							if (playersBefore.get(i).id == 0) {
+							if (playersBefore.get(i).id == Client.id) {
 								//The host has disconnected.
-								for (int j = 0; j < getActualNumberOfPlayers(); j++) {
-									players.get(j).serverToClient.put("stop");
+								if (playersBefore.get(i).hasOrb) {
+									orbController.createNewOrb();
 								}
 								System.out.println("Host disconnected.");
-								playersToRemove.add(playersBefore.get(i));
-								Thread.sleep(500);
-								System.exit(0);
+								switchHost();
 							}
 							else {
 								//A client that is not the host has disconnected.

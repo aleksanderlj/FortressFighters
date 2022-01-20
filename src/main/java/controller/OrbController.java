@@ -5,6 +5,7 @@ import game.Server;
 import model.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
+import org.jspace.Space;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class OrbController {
         this.s = server;
     }
 
-    public void initializeOrbPetriNets(){
+     public void initializeOrbPetriNets(){
         orbPetriNet1 = new OrbPetriNet(s, s.getBuffSpace(), false);
         orbPetriNet2 = new OrbPetriNet(s, s.getBuffSpace(), true);
         new Thread(orbPetriNet1).start();
@@ -40,6 +41,30 @@ public class OrbController {
             }
         }
     }
+
+     public void initializeOrbPetriNetsNewHost(){
+    	 Space buffSpace = s.getBuffSpace();
+		 for (OrbHolder oh : s.getOrbHolders()) {
+			 if (oh.hasOrb) {
+				 try {
+					buffSpace.put(oh.team, oh.top);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			 }
+    	 }
+         orbPetriNet1 = new OrbPetriNet(s, s.getBuffSpace(), false);
+         orbPetriNet2 = new OrbPetriNet(s, s.getBuffSpace(), true);
+         new Thread(orbPetriNet1).start();
+         new Thread(orbPetriNet2).start();
+         for (OrbHolder oh : s.getOrbHolders()) {
+             try {
+                 s.getOrbSpace().put(oh.team, oh.top, oh.hasOrb);
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
+         }
+     }
 
     public void initializeOrbs() throws InterruptedException {
         s.getOrbs().clear();
@@ -71,7 +96,7 @@ public class OrbController {
             Orb o = s.getOrbs().get(i);
             for (int j = 0; j < s.getActualNumberOfPlayers(); j++) {
                 Player p = s.getPlayers().get(j);
-                if (p.intersects(o) && !p.hasOrb) {
+                if (add && p.intersects(o) && !p.hasOrb) {
                     add = false;
                     p.hasOrb = true;
                     try {
@@ -85,6 +110,26 @@ public class OrbController {
                 newOrbs.add(o);
             }
         }
+        try {
+			List<Object[]> orbCommands = s.getOrbSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
+			for (Object[] tuple : orbCommands) {
+				int id = (int)tuple[0];
+				Player p = s.getPlayerWithID(id);
+				if (p.hasOrb) {
+					int x = (int)(p.x + Player.WIDTH/2 - Orb.WIDTH/2);
+					int y = (int)(p.y - Orb.HEIGHT - 5);
+					if (y < 0) {
+						y = (int)(p.y + Player.HEIGHT + 5);
+					}
+					p.hasOrb = false;
+					newOrbs.add(new Orb(x, y));
+					s.getOrbSpace().put(x, y);
+				}
+				
+			}
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
         s.setOrbs(newOrbs);
         for (int i = 0; i < s.getOrbHolders().size(); i++) {
             OrbHolder oh = s.getOrbHolders().get(i);
