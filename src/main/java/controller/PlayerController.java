@@ -82,6 +82,9 @@ public class PlayerController {
         for (Object[] movementTuple : movementTuples) {
             int playerID = (Integer) movementTuple[0];
             Player player = s.getPlayerWithID(playerID);
+            if (player == null) {
+            	continue;
+            }
             String direction = (String) movementTuple[1];
             if (player.stunned <= 0) {
                 switch (direction) {
