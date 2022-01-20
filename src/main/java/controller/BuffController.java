@@ -88,6 +88,7 @@ public class BuffController {
                         bulletHeight -= 40;
                         Thread.sleep(50);
                     }
+                    break;
                 case "shield":
                     Wall shield = null;
                     if((boolean) buff[0]) {
