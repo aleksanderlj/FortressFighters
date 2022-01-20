@@ -33,7 +33,8 @@ public class OrbPetriNet implements Runnable {
 		new Thread(new ConflictSolver(new Space[] {spaces[5]},
 				new Heal(new Space[] {spaces[5]}, new Space[] {spaces[6]}),
 				new GhostBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]}),
-				new BulletBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})
+				new BulletBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]}),
+				new ShieldBuff(new Space[] {spaces[5]}, new Space[] {spaces[6]})
 		)).start();
 		new Thread(new SpawnOrbs(new Space[] {spaces[6]}, new Space[] {spaces[0]})).start();
 		try {
@@ -180,6 +181,17 @@ public class OrbPetriNet implements Runnable {
 		public void performTask() {
 			try {
 				buffSpace.put(team, "bullets");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private class ShieldBuff extends Activity {
+		public ShieldBuff(Space[] inputs, Space[] outputs) {super(inputs, outputs, false);}
+		public void performTask() {
+			try {
+				buffSpace.put(team, "shield");
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

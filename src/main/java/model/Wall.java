@@ -5,6 +5,8 @@ import java.awt.*;
 public class Wall extends Rectangle.Double {
     public static final double WIDTH = 10;
     public static final double HEIGHT = 60;
+    public static final double SHIELD_WIDTH = 20;
+    public static final double SHIELD_HEIGHT = Fortress.HEIGHT;
     public static final int MAX_HEALTH = 5;
     public static final int WOOD_COST = 2;
     public static int idCounter = 0;
@@ -17,6 +19,14 @@ public class Wall extends Rectangle.Double {
         id = idCounter++;
         this.team = team;
         this.health = MAX_HEALTH;
+    }
+
+    // Shield constructor
+    public Wall(double x, double y, double width, double height, boolean team){
+        super(x, y, width, height);
+        id = idCounter++;
+        this.team = team;
+        this.health = 999;
     }
 
     public Wall(int id, int health, double x, double y, boolean team){

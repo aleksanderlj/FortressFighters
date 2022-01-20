@@ -4,6 +4,7 @@ import game.Server;
 import model.Bullet;
 import model.Fortress;
 import model.Player;
+import model.Wall;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.SequentialSpace;
@@ -14,6 +15,10 @@ public class BuffController {
     Server s;
     private double team1GhostTimer = 0;
     private double team2GhostTimer = 0;
+    private double team1ShieldTimer = 0;
+    private double team2ShieldTimer = 0;
+    private Wall team1Shield = null;
+    private Wall team2Shield = null;
 
     public BuffController(Server server){
         this.s = server;
@@ -30,12 +35,28 @@ public class BuffController {
         if (team1GhostTimer > 0) {
             team1GhostTimer -= Server.S_BETWEEN_UPDATES;
         }
-        else if (team2GhostTimer > 0) {
+        if (team2GhostTimer > 0) {
             team2GhostTimer -= Server.S_BETWEEN_UPDATES;
+        }
+
+        // Decrement shield timer, remove shield if it ran out
+        if (team1ShieldTimer > 0) {
+            team1ShieldTimer -= Server.S_BETWEEN_UPDATES;
+        } else if(team1Shield != null) {
+            s.getWalls().remove(team1Shield);
+            s.getWallSpace().getp(new ActualField("wall"), new ActualField(team1Shield.getId()), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+            team1Shield = null;
+        }
+        if (team2ShieldTimer > 0) {
+            team2ShieldTimer -= Server.S_BETWEEN_UPDATES;
+        } else if(team2Shield != null) {
+            s.getWalls().remove(team2Shield);
+            s.getWallSpace().getp(new ActualField("wall"), new ActualField(team2Shield.getId()), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+            team2Shield = null;
         }
         List<Object[]> buffs =  s.getBuffSpace().getAll(new FormalField(Boolean.class), new FormalField(String.class));
         for (Object[] buff : buffs) {
-            switch ((String)buff[1]){
+            switch ("shield"){
                 case "heal":
                     if((boolean) buff[0]){
                         s.getFortress2().setHP(s.getFortress2().getHP() + 50);
@@ -66,6 +87,25 @@ public class BuffController {
                         s.getBulletSpace().put(bullet.x, bullet.y, bullet.getTeam());
                         bulletHeight -= 40;
                         Thread.sleep(50);
+                    }
+                case "shield":
+                    Wall shield = null;
+                    if((boolean) buff[0]) {
+                        team2ShieldTimer = 5;
+                        if(team2Shield == null ){
+                            shield = new Wall(s.getFortress2().x - Wall.SHIELD_WIDTH, s.getFortress2().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
+                            team2Shield = shield;
+                            s.getWalls().add(shield);
+                            s.getWallSpace().put("wall", shield.getId(), shield.getHealth(), shield.x, shield.y, shield.getTeam());
+                        }
+                    } else {
+                        team1ShieldTimer = 5;
+                        if(team1Shield == null){
+                            shield = new Wall(s.getFortress1().x + Fortress.WIDTH, s.getFortress1().y, Wall.SHIELD_WIDTH, Wall.SHIELD_HEIGHT, (boolean) buff[0]);
+                            team1Shield = shield;
+                            s.getWalls().add(shield);
+                            s.getWallSpace().put("wall", shield.getId(), shield.getHealth(), shield.x, shield.y, shield.getTeam());
+                        }
                     }
                     break;
             }
