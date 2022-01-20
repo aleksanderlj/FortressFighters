@@ -317,7 +317,7 @@ public class Client {
 				paintBuffs();
 				for (int i = 0; i < connectionMessages.size(); i++) {
 					g2D.setFont(new Font(defaultFont, Font.PLAIN, 15));
-					String stringToShow= connectionMessages.get(i).equals("") ? "A player" : connectionMessages.get(i).getPlayerName();
+					String stringToShow= connectionMessages.get(i).getPlayerName().trim().isEmpty() ? "A player" : connectionMessages.get(i).getPlayerName();
 					if(connectionMessages.get(i).isConnected()){
 						stringToShow += " has joined.";
 					} else {
