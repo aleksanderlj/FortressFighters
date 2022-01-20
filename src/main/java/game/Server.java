@@ -339,6 +339,10 @@ public class Server {
 					createNewChannel(playerIDCounter, false);
 					playerIDCounter++;
 					System.out.println("Player joined.");
+					for (Player p : players) {
+						p.serverToClient.put("clientconnected");
+						p.serverToClient.put((String)tuple[1]);
+					}
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
