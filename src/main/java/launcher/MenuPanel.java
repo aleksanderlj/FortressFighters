@@ -4,26 +4,27 @@ import client.Client;
 import game.GameFrame;
 import game.Main;
 import game.Server;
+import game.Settings;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class MenuPanel extends JPanel implements KeyListener {
+public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
     GameFrame gameFrame;
     public Graphics2D g2D;
     private BufferedImage background;
     public static final double BACKGROUND_SCALE = 1.3;
     public static final int WIDTH = 500;
     public static final int HEIGHT = 500;
-    private TextField ipTextField;
-    private TextField nameTextField;
+    private JTextField ipTextField;
+    private JTextField nameTextField;
     private JButton instructionButton;
     private JButton hostButton;
     private JButton joinButton;
@@ -46,12 +47,13 @@ public class MenuPanel extends JPanel implements KeyListener {
 
         // Create Components
         // Textfields
-        ipTextField = new TextField(Server.getIP());
-        nameTextField = new TextField();
-        ipTextField.setFont(alagard.deriveFont(Font.PLAIN, 15));
-        nameTextField.setFont(alagard.deriveFont(Font.PLAIN, 15));
+        ipTextField = new JTextField(Server.getIP());
+        nameTextField = new JTextField(Settings.name);
+        ipTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        nameTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
         ipTextField.setBounds(270, 320, 150, 25);
         nameTextField.setBounds(140, 100, 220, 25);
+        nameTextField.getDocument().addDocumentListener(this);
 
         // Buttons
         instructionButton = new LauncherButton("How To Play", alagard);
@@ -126,4 +128,21 @@ public class MenuPanel extends JPanel implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+
+    // TODO Find a less lazy way of saving the name on panel switch
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        Settings.name = nameTextField.getText();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        Settings.name = nameTextField.getText();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        Settings.name = nameTextField.getText();
+    }
 }
