@@ -1,4 +1,4 @@
-package menu;
+package launcher;
 
 import java.awt.*;
 

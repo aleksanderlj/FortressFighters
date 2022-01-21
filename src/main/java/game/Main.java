@@ -1,6 +1,6 @@
 package game;
 
-import menu.MenuPanel;
+import launcher.MenuPanel;
 
 public class Main {
 	public static void main(String[] args) {

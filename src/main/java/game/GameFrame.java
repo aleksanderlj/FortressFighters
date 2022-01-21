@@ -1,14 +1,13 @@
 package game;
+import client.GamePanel;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import game.Client.GamePanel;
-
 public class GameFrame extends JFrame {
 		public JPanel panel;
 		public boolean isHost = false;
-		private int numberOfDisconnectedClients = 0;
 		
 		public GameFrame() {
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

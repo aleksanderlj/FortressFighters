@@ -3,13 +3,12 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import client.Client;
 import controller.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
-import org.jspace.QueueSpace;
 import org.jspace.SequentialSpace;
 import org.jspace.Space;
 import org.jspace.RemoteSpace;

@@ -1,8 +1,7 @@
-package menu;
+package launcher;
 
 import game.GameFrame;
 import game.Main;
-import launcher.LauncherButton;
 import model.Cannon;
 import model.Wall;
 

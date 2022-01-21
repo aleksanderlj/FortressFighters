@@ -1,10 +1,9 @@
-package menu;
+package launcher;
 
-import game.Client;
+import client.Client;
 import game.GameFrame;
 import game.Main;
 import game.Server;
-import launcher.LauncherButton;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
