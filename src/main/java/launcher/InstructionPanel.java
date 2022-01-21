@@ -16,8 +16,8 @@ import java.io.IOException;
 public class InstructionPanel extends JPanel {
     GameFrame gameFrame;
     private BufferedImage background;
-    private static Font alagard;
-    private static JButton mainMenuButton;
+    private Font alagard;
+    private JButton mainMenuButton;
 
     public InstructionPanel(GameFrame gameFrame) {
         this.gameFrame = gameFrame;
@@ -46,12 +46,14 @@ public class InstructionPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
+        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
         g2D.drawImage(background,
                 (int)((getWidth()/2) - ((background.getWidth() * MenuPanel.BACKGROUND_SCALE)/2)),
                 -70,
                 (int)(background.getWidth() * MenuPanel.BACKGROUND_SCALE),
                 (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
                 null);
+        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
         g2D.setColor(Color.WHITE);
         g2D.setFont(new Font("TimesRoman", Font.BOLD, 25));

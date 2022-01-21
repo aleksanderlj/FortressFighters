@@ -22,12 +22,13 @@ public class MenuPanel extends JPanel implements KeyListener {
     public static final double BACKGROUND_SCALE = 1.3;
     public static final int WIDTH = 500;
     public static final int HEIGHT = 500;
-    private static TextField ipTextField;
-    private static TextField nameTextField;
-    private static JButton instructionButton;
-    private static JButton hostButton;
-    private static JButton joinButton;
-    private static Font alagard;
+    private TextField ipTextField;
+    private TextField nameTextField;
+    private JButton instructionButton;
+    private JButton hostButton;
+    private JButton joinButton;
+    private JButton settingsButton;
+    private Font alagard;
 
 
     public MenuPanel(GameFrame gameFrame) {
@@ -56,14 +57,17 @@ public class MenuPanel extends JPanel implements KeyListener {
         instructionButton = new LauncherButton("How To Play", alagard);
         hostButton = new LauncherButton("Host Game", alagard);
         joinButton = new LauncherButton("Join Game", alagard);
+        settingsButton = new LauncherButton("Settings", alagard);
 
-        instructionButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {gameFrame.setPanel(new InstructionPanel(gameFrame));}});
-        hostButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(1);}});
-        joinButton.addActionListener(new ActionListener() {public void actionPerformed (ActionEvent e) {start(2);}});
+        instructionButton.addActionListener(e -> gameFrame.setPanel(new InstructionPanel(gameFrame)));
+        hostButton.addActionListener(e -> start(1));
+        joinButton.addActionListener(e -> start(2));
+        settingsButton.addActionListener(e -> gameFrame.setPanel(new SettingsPanel(gameFrame)));
 
         instructionButton.setBounds(150, 400, 200, 50);
         hostButton.setBounds(70, 250, 150, 50);
         joinButton.setBounds(270, 250, 150, 50);
+        settingsButton.setBounds(150, 450, 200, 50);
 
         // Add components
         add(ipTextField);
@@ -71,6 +75,7 @@ public class MenuPanel extends JPanel implements KeyListener {
         add(instructionButton);
         add(hostButton);
         add(joinButton);
+        add(settingsButton);
 
         repaint();
     }
