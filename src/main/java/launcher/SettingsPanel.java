@@ -12,12 +12,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class SettingsPanel extends JPanel {
     private BufferedImage background;
     private Font alagard;
     private JButton mainMenuButton;
     private JCheckBox fixedTeamsCheck;
+    private JComboBox<String> preferredTeamBox;
 
     public SettingsPanel(GameFrame gameFrame){
         setPreferredSize(new Dimension(MenuPanel.WIDTH, MenuPanel.HEIGHT));
@@ -43,6 +45,13 @@ public class SettingsPanel extends JPanel {
         fixedTeamsCheck.setSelected(Settings.fixedTeams);
         fixedTeamsCheck.addItemListener(e -> Settings.fixedTeams = e.getStateChange() == ItemEvent.SELECTED);
         add(fixedTeamsCheck);
+
+        String[] teamOptions = new String[]{"None", "Blue", "Red"};
+        preferredTeamBox = new JComboBox<>(teamOptions);
+        preferredTeamBox.setBounds(50, 100, 75, 25);
+        preferredTeamBox.setSelectedIndex(Arrays.asList(teamOptions).indexOf(Settings.preferredTeam));
+        preferredTeamBox.addActionListener(e -> Settings.preferredTeam = ((JComboBox<String>)e.getSource()).getSelectedItem().toString());
+        add(preferredTeamBox);
 
         repaint();
     }
