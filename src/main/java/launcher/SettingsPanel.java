@@ -68,13 +68,16 @@ public class SettingsPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+        //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
         g2D.drawImage(background,
                 (int)((getWidth()/2) - ((background.getWidth() * MenuPanel.BACKGROUND_SCALE)/2)),
                 -70,
                 (int)(background.getWidth() * MenuPanel.BACKGROUND_SCALE),
                 (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
                 null);
+
+        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+        g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
         g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));

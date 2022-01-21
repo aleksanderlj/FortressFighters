@@ -46,13 +46,16 @@ public class InstructionPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+        //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
         g2D.drawImage(background,
                 (int)((getWidth()/2) - ((background.getWidth() * MenuPanel.BACKGROUND_SCALE)/2)),
                 -70,
                 (int)(background.getWidth() * MenuPanel.BACKGROUND_SCALE),
                 (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
                 null);
+
+        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+        g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
         g2D.setColor(Color.WHITE);
@@ -63,7 +66,7 @@ public class InstructionPanel extends JPanel {
 
         g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
         DrawUtility.drawStringWithShadow(g2D, "- Collect wood and iron and return them to your fortress", 20, 70);
-        DrawUtility.drawStringWithShadow(g2D, "- Use iron to build cannons that shoot projectiles towards the enemy", 20, 100);
+        DrawUtility.drawStringWithShadow(g2D, "- Use iron to build cannons that shoot towards the enemy", 20, 100);
         DrawUtility.drawStringWithShadow(g2D, "- Use wood to build walls that stop hostile projectiles", 20, 130);
         DrawUtility.drawStringWithShadow(g2D, "- Destroy the enemy fortress with your cannons", 20, 160);
         DrawUtility.drawStringWithShadow(g2D, "- Mystical things might happen if you return the orbs on the battle-", 20, 190);
