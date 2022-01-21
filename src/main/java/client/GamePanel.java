@@ -1,5 +1,6 @@
 package client;
 
+import client.message.MessageBox;
 import game.Server;
 import model.*;
 import org.jspace.ActualField;
@@ -20,7 +21,7 @@ public class GamePanel extends JPanel implements KeyListener {
     private Client c;
     public Graphics2D g2D;
     private java.util.List<ConnectionMessage> connectionMessages = new ArrayList<>();
-    private List<BuffMessage> buffMessages = new ArrayList<>();
+    private MessageBox buffMessageBox;
     private BufferedImage manblue, manred,
             cannonblue, cannonred,
             fortressblue, fortressred,
@@ -84,6 +85,15 @@ public class GamePanel extends JPanel implements KeyListener {
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
+
+        buffMessageBox = new MessageBox(
+                Server.SCREEN_WIDTH/2,
+                Server.SCREEN_HEIGHT - 20,
+                3,
+                new Font(DEFAULT_FONT, Font.PLAIN, 18),
+                false,
+                true
+                );
     }
 
     @Override
@@ -265,16 +275,11 @@ public class GamePanel extends JPanel implements KeyListener {
     private void paintBuffs(){
         try {
             Object[] msg = c.getChannelFromServer().getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
+            buffMessageBox.update();
             if(msg != null){
-                buffMessages.add(new BuffMessage((String) msg[1], (boolean)msg[2]));
+                buffMessageBox.addMessage("Team " + ((boolean)msg[2] ? "RED" : "BLUE") + " got " + ((String) msg[1]).toUpperCase(Locale.ROOT) + "!");
             }
-            for (int i = 0 ; i < buffMessages.size() ; i++){
-                buffMessages.get(i).update();
-                g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 18));
-                String s = "Team " + (buffMessages.get(i).getTeam() ? "RED" : "BLUE") + " got " + buffMessages.get(i).buff.toUpperCase(Locale.ROOT) + "!";
-                g2D.drawString(s, (Server.SCREEN_WIDTH/2) - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT - 20 - (30 * i));
-            }
-            buffMessages.removeIf(b -> !b.isActive());
+            buffMessageBox.paint(g2D);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -417,35 +422,6 @@ public class GamePanel extends JPanel implements KeyListener {
 
         public boolean isConnected() {
             return connected;
-        }
-    }
-
-    private class BuffMessage {
-        private String buff;
-        private boolean team;
-        private final static double BUFF_MSG_TIMER_MAX = 3;
-        private double buffMessageTimer;
-
-        public BuffMessage(String buff, boolean team){
-            this.buff = buff;
-            this.team = team;
-            this.buffMessageTimer = BUFF_MSG_TIMER_MAX;
-        }
-
-        public void update(){
-            buffMessageTimer -= Client.S_BETWEEN_UPDATES;
-        }
-
-        public boolean isActive(){
-            return buffMessageTimer > 0;
-        }
-
-        public String getBuff() {
-            return buff;
-        }
-
-        public boolean getTeam(){
-            return team;
         }
     }
 }
