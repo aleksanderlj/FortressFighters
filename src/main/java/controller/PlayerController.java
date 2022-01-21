@@ -37,25 +37,24 @@ public class PlayerController {
 		player.iron = 0;
 		player.stunned = 0;
         if(!Settings.fixedTeams) {
-            player.team = getNextTeam();
+            player.team = getNextTeam(player.preferredTeam);
         }
     	double[] pos = getRandomPlayerPosition(player.team);
     	player.x = pos[0];
     	player.y = pos[1];
     }
 
-    public void addPlayer(int id, String name) {
-    	boolean team = getNextTeam();
+    public void addPlayer(int id, String name, String preferred) {
+    	boolean team = getNextTeam(preferred);
     	double[] pos = getRandomPlayerPosition(team);
-    	s.getPlayers().add(new Player(pos[0], pos[1], id, team, name));
+    	s.getPlayers().add(new Player(pos[0], pos[1], id, team, name, preferred));
     }
     
-    public boolean getNextTeam() {
+    public boolean getNextTeam(String preferred) {
         if(!Settings.unevenTeams && s.getNumPlayers(true) != s.getNumPlayers(false)){
             return s.getNumPlayers(true) < s.getNumPlayers(false);
         } else {
-            System.out.println(Settings.preferredTeam);
-            switch (Settings.preferredTeam) {
+            switch (preferred) {
                 case "None":
                     return (new Random()).nextInt(2) == 0;
                 case "Blue":

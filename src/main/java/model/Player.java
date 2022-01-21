@@ -17,6 +17,7 @@ public class Player extends Rectangle.Double {
 	public double stunned = 0;
 	public Space serverToClient;
 	public Space clientToServer;
+	public String preferredTeam; // TODO: Isn't current sent at host switch
 	
 	public Player() {}
 	public Player(double x, double y, int id, boolean team, String name) {
@@ -26,4 +27,11 @@ public class Player extends Rectangle.Double {
 		this.name = name;
 	}
 
+	public Player(double x, double y, int id, boolean team, String name, String preferredTeam) {
+		super(x, y, WIDTH, HEIGHT);
+		this.id = id;
+		this.team = team;
+		this.name = name;
+		this.preferredTeam = preferredTeam;
+	}
 }

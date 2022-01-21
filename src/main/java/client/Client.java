@@ -8,6 +8,7 @@ import javax.swing.*;
 
 import game.GameFrame;
 import game.Server;
+import game.Settings;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.RemoteSpace;
@@ -60,7 +61,7 @@ public class Client {
 		frame.setVisible(true);
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
-			centralSpace.put("joined", name);
+			centralSpace.put("joined", name, Settings.preferredTeam);
 			id = (Integer)centralSpace.get(new FormalField(Integer.class))[0];
 			connectToServer(address);
 			checkGameStarted();

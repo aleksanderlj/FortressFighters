@@ -333,8 +333,8 @@ public class Server {
 		public void run() {
 			try {
 				while (true) {
-					Object[] tuple = centralSpace.get(new ActualField("joined"), new FormalField(String.class));
-					playerController.addPlayer(playerIDCounter, (String)tuple[1]);
+					Object[] tuple = centralSpace.get(new ActualField("joined"), new FormalField(String.class), new FormalField(String.class));
+					playerController.addPlayer(playerIDCounter, (String)tuple[1], (String)tuple[2]);
 					createNewChannel(playerIDCounter, false);
 					playerIDCounter++;
 					System.out.println("Player joined.");
