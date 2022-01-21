@@ -34,7 +34,7 @@ public class GamePanel extends JPanel implements KeyListener {
             fortressblueShadow, fortressredShadow,
             manShadow,
             shieldblue, shieldred;
-    private Font alagard;
+    private Font alagard, alagard_small;
     private static final String DEFAULT_FONT = "Comic Sans MS";
 
     public GamePanel(Client client) {
@@ -80,6 +80,7 @@ public class GamePanel extends JPanel implements KeyListener {
             shieldred = ImageIO.read(getClass().getClassLoader().getResource("shieldred.png"));
             alagard = Font.createFont(Font.TRUETYPE_FONT, getClass().getClassLoader().getResourceAsStream("alagard.ttf"));
             alagard = alagard.deriveFont(Font.PLAIN, 36);
+            alagard_small = alagard.deriveFont(Font.PLAIN, 24);
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
@@ -88,7 +89,7 @@ public class GamePanel extends JPanel implements KeyListener {
                 Server.SCREEN_WIDTH/2,
                 Server.SCREEN_HEIGHT - 20,
                 3,
-                new Font(DEFAULT_FONT, Font.PLAIN, 18),
+                alagard_small,
                 false,
                 true
                 );
@@ -97,7 +98,7 @@ public class GamePanel extends JPanel implements KeyListener {
                 Server.SCREEN_WIDTH - 250,
                 40,
                 2,
-                new Font(DEFAULT_FONT, Font.PLAIN, 15),
+                new Font(DEFAULT_FONT, Font.BOLD, 15),
                 true,
                 false
         );
@@ -108,9 +109,11 @@ public class GamePanel extends JPanel implements KeyListener {
         super.paint(g);
         g2D = (Graphics2D) g;
         if (c.isGameOver()) {
-            g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 20));
-            g2D.drawString("Team "+ c.getWinningTeam()+" has won!", 500, 250);
-            g2D.drawString("Restarting...", 500, 300);
+            g2D.setFont(alagard);
+            String s = c.getWinningTeam().toUpperCase(Locale.ROOT) + " team has won!";
+            g2D.drawString(s, Server.SCREEN_WIDTH/2 - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT/2 - 100);
+            s = "Restarting...";
+            g2D.drawString(s, Server.SCREEN_WIDTH/2 - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT/2);
         }
         else if (c.isGameStarted()) {
             // Render each object on the screen
@@ -125,13 +128,15 @@ public class GamePanel extends JPanel implements KeyListener {
             paintConnectionMessages();
             paintScores();
             if (c.isGamePaused()) {
-                g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 30));
-                g2D.drawString("Switching host...", Server.SCREEN_WIDTH/2-60, Server.SCREEN_HEIGHT/2);
+                g2D.setFont(alagard);
+                String s = "Switching host...";
+                g2D.drawString(s, Server.SCREEN_WIDTH/2 - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT/2);
             }
         }
         else {
-            g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 20));
-            g2D.drawString("Waiting for one more player to join...", 500, 300);
+            g2D.setFont(alagard);
+            String s = "Waiting for one more player to join...";
+            g2D.drawString(s, Server.SCREEN_WIDTH/2 - (g2D.getFontMetrics().stringWidth(s)/2), Server.SCREEN_HEIGHT/2);
         }
     }
 
@@ -276,7 +281,7 @@ public class GamePanel extends JPanel implements KeyListener {
             Object[] msg = c.getChannelFromServer().getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
             buffMessageBox.update();
             if(msg != null){
-                buffMessageBox.addMessage("Team " + ((boolean)msg[2] ? "RED" : "BLUE") + " got " + ((String) msg[1]).toUpperCase(Locale.ROOT) + "!");
+                buffMessageBox.addMessage(((boolean)msg[2] ? "RED" : "BLUE") + " team got " + ((String) msg[1]).toUpperCase(Locale.ROOT) + "!");
             }
             buffMessageBox.paint(g2D);
         } catch (InterruptedException e) {
