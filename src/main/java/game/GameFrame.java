@@ -22,7 +22,7 @@ public class GameFrame extends JFrame {
 		
 		public void setPanel(JPanel panel) {
 			if (this.panel != null) {
-				remove(panel);
+				remove(this.panel);
 			}
 			this.panel = panel;
 			if (panel instanceof GamePanel && isHost) {
