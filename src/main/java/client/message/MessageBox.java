@@ -38,7 +38,7 @@ public class MessageBox {
             m = messages.get(i);
             g2D.drawString(m.getText(),
                     center ? x - (g2D.getFontMetrics().stringWidth(m.getText())/2) : x,
-                    stackDown ? y + g2D.getFontMetrics(font).getHeight() + 5 : y - g2D.getFontMetrics(font).getHeight() - 5);
+                    stackDown ? y + ( i * (g2D.getFontMetrics(font).getHeight() + 5) ) : y - ( i * (g2D.getFontMetrics(font).getHeight() - 5) ));
         }
     }
 

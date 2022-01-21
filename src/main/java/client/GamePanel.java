@@ -13,15 +13,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 public class GamePanel extends JPanel implements KeyListener {
     private Client c;
     public Graphics2D g2D;
-    private java.util.List<ConnectionMessage> connectionMessages = new ArrayList<>();
     private MessageBox buffMessageBox;
+    private MessageBox connectionMessageBox;
     private BufferedImage manblue, manred,
             cannonblue, cannonred,
             fortressblue, fortressred,
@@ -94,6 +92,15 @@ public class GamePanel extends JPanel implements KeyListener {
                 false,
                 true
                 );
+
+        connectionMessageBox = new MessageBox(
+                Server.SCREEN_WIDTH - 250,
+                40,
+                2,
+                new Font(DEFAULT_FONT, Font.PLAIN, 15),
+                true,
+                false
+        );
     }
 
     @Override
@@ -115,16 +122,7 @@ public class GamePanel extends JPanel implements KeyListener {
             paintPlayers();
             paintBullets();
             paintBuffs();
-            for (int i = 0; i < connectionMessages.size(); i++) {
-                g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 15));
-                String stringToShow= connectionMessages.get(i).getPlayerName().trim().isEmpty() ? "A player" : connectionMessages.get(i).getPlayerName();
-                if(connectionMessages.get(i).isConnected()){
-                    stringToShow += " has joined.";
-                } else {
-                    stringToShow += " has disconnected.";
-                }
-                g2D.drawString(stringToShow, Server.SCREEN_WIDTH-250, 40+i*20);
-            }
+            paintConnectionMessages();
             if (c.isGamePaused()) {
                 g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 30));
                 g2D.drawString("Switching host...", Server.SCREEN_WIDTH/2-60, Server.SCREEN_HEIGHT/2);
@@ -285,6 +283,11 @@ public class GamePanel extends JPanel implements KeyListener {
         }
     }
 
+    private void paintConnectionMessages(){
+        connectionMessageBox.update();
+        connectionMessageBox.paint(g2D);
+    }
+
     public void updatePanel() {
         repaint();
     }
@@ -381,47 +384,10 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     public void clientDisconnected(String playerName) {
-        new Thread(new ShowPlayerConnection(playerName, false)).start();
+        connectionMessageBox.addMessage((playerName.trim().isEmpty() ? "A player" : playerName) + " has disconnected.");
     }
 
     public void clientConnected(String playerName) {
-        new Thread(new ShowPlayerConnection(playerName, true)).start();
-    }
-
-    private class ShowPlayerConnection implements Runnable {
-        private String playerName;
-        private boolean connected;
-        public ShowPlayerConnection(String playerName, boolean connected) {
-            this.playerName = playerName;
-            this.connected = connected;
-        }
-        public void run() {
-            ConnectionMessage msg = new ConnectionMessage(playerName, connected);
-            connectionMessages.add(msg);
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            connectionMessages.remove(msg);
-        }
-    }
-
-    private class ConnectionMessage{
-        private String playerName;
-        private boolean connected;
-
-        public ConnectionMessage(String playerName, boolean connected){
-            this.playerName = playerName;
-            this.connected = connected;
-        }
-
-        public String getPlayerName() {
-            return playerName;
-        }
-
-        public boolean isConnected() {
-            return connected;
-        }
+        connectionMessageBox.addMessage((playerName.trim().isEmpty() ? "A player" : playerName) + " has joined!");
     }
 }
