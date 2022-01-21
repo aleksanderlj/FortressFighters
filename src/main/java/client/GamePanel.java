@@ -123,6 +123,7 @@ public class GamePanel extends JPanel implements KeyListener {
             paintBullets();
             paintBuffs();
             paintConnectionMessages();
+            paintScores();
             if (c.isGamePaused()) {
                 g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 30));
                 g2D.drawString("Switching host...", Server.SCREEN_WIDTH/2-60, Server.SCREEN_HEIGHT/2);
@@ -286,6 +287,12 @@ public class GamePanel extends JPanel implements KeyListener {
     private void paintConnectionMessages(){
         connectionMessageBox.update();
         connectionMessageBox.paint(g2D);
+    }
+
+    private void paintScores(){
+        g2D.setFont(alagard);
+        String s = c.getTeam1Score() + " | " + c.getTeam2Score();
+        g2D.drawString(s, Server.SCREEN_WIDTH/2 - g2D.getFontMetrics().stringWidth(s)/2, 40);
     }
 
     public void updatePanel() {

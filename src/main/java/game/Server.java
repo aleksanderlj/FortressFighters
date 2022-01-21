@@ -54,6 +54,8 @@ public class Server {
 	private ResourceController resourceController;
 	private OrbController orbController;
 	private BuffController buffController;
+	private int team1Score = 0;
+	private int team2Score = 0;
 
 	public Server(boolean createSpaces) {
 		if (createSpaces) {
@@ -226,7 +228,14 @@ public class Server {
 	
 	public void gameOver(boolean winningTeam) {
 		try {
-			centralSpace.put("game over", winningTeam ? "blue" : "red");
+			centralSpace.put("game over", winningTeam ? "red" : "blue");
+			centralSpace.getp(new ActualField("scores"), new FormalField(Integer.class), new FormalField(Integer.class));
+			if(winningTeam){
+				team2Score++;
+			} else {
+				team1Score++;
+			}
+			centralSpace.put("scores", team1Score, team2Score);
 			gameOver = true;
         	orbController.resetPetriNet();
 			Thread.sleep(5000);

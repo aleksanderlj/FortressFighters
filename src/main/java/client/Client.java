@@ -44,13 +44,14 @@ public class Client {
 	private boolean createCannonKeyDown = false;
 	private boolean createWallKeyDown = false;
 	private boolean dropOrbKeyDown = false;
-
 	private boolean gameStarted = false;
 	private boolean gameOver = false;
 	private boolean gamePaused = false;
 	private boolean windowClosed = false;
 	private String winningTeam = "";
 	private String name;
+	private int team1Score = 0;
+	private int team2Score = 0;
 
 	public Client(String address, GameFrame frame, String name) {
 		this.frame = frame;
@@ -90,6 +91,7 @@ public class Client {
 					updateFortresses();
 					updateResources();
 					updateOrbs();
+					updateScores();
 				}
 				else {
 					checkGameStarted();
@@ -232,6 +234,14 @@ public class Client {
             Object[] tuple = orbHolderTuples.get(i);
             orbHolders[i] = new OrbHolder((boolean) tuple[0], (boolean) tuple[1], (boolean) tuple[2]);
         }
+	}
+
+	public void updateScores() throws InterruptedException {
+		Object[] tuple = centralSpace.queryp(new ActualField("scores"), new FormalField(Integer.class), new FormalField(Integer.class));
+		if(tuple != null) {
+			team1Score = (int) tuple[1];
+			team2Score = (int) tuple[2];
+		}
 	}
 
 	private class Timer implements Runnable {
@@ -428,5 +438,13 @@ public class Client {
 
 	public RemoteSpace getChannelFromServer() {
 		return channelFromServer;
+	}
+
+	public int getTeam1Score() {
+		return team1Score;
+	}
+
+	public int getTeam2Score() {
+		return team2Score;
 	}
 }

@@ -70,9 +70,9 @@ public class FortressController {
 
         // Look for a winner
         if (s.getFortress1().getHP() <= 0) {
-            s.gameOver(false);
-        } else if (s.getFortress2().getHP() <= 0) {
             s.gameOver(true);
+        } else if (s.getFortress2().getHP() <= 0) {
+            s.gameOver(false);
         }
 
         if (changed) { changeFortress(); }
