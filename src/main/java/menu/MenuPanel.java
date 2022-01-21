@@ -5,8 +5,6 @@ import game.GameFrame;
 import game.Main;
 import game.Server;
 import launcher.LauncherButton;
-import model.Cannon;
-import model.Wall;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
