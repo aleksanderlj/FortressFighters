@@ -28,7 +28,6 @@ public class MenuPanel extends JPanel implements KeyListener {
     private static JButton hostButton;
     private static JButton joinButton;
     private static Font alagard;
-    private static boolean instructions = false;
 
 
     public MenuPanel(GameFrame gameFrame) {
