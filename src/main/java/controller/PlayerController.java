@@ -1,6 +1,7 @@
 package controller;
 
 import game.Server;
+import game.Settings;
 import model.Bullet;
 import model.Fortress;
 import model.Player;
@@ -35,7 +36,9 @@ public class PlayerController {
 		player.wood = 0;
 		player.iron = 0;
 		player.stunned = 0;
-		player.team = getNextTeam();
+        if(!Settings.fixedTeams) {
+            player.team = getNextTeam();
+        }
     	double[] pos = getRandomPlayerPosition(player.team);
     	player.x = pos[0];
     	player.y = pos[1];
@@ -48,20 +51,20 @@ public class PlayerController {
     }
     
     public boolean getNextTeam() {
-        if (s.getNumPlayers(true) == s.getNumPlayers(false)) {
-            int team = (new Random()).nextInt(2);
-            if (team == 0) {
-            	return true;
+        if(!Settings.unevenTeams && s.getNumPlayers(true) != s.getNumPlayers(false)){
+            return s.getNumPlayers(true) < s.getNumPlayers(false);
+        } else {
+            System.out.println(Settings.preferredTeam);
+            switch (Settings.preferredTeam) {
+                case "None":
+                    return (new Random()).nextInt(2) == 0;
+                case "Blue":
+                    return false;
+                case "Red":
+                    return true;
+                default:
+                    return (new Random()).nextInt(2) == 0;
             }
-            else {
-            	return false;
-            }
-        }
-        else if (s.getNumPlayers(true) > s.getNumPlayers(false)) {
-        	return false;
-        }
-        else {
-        	return true;
         }
     }
     

@@ -46,9 +46,17 @@ public class SettingsPanel extends JPanel {
         fixedTeamsCheck.addItemListener(e -> Settings.fixedTeams = e.getStateChange() == ItemEvent.SELECTED);
         add(fixedTeamsCheck);
 
+        fixedTeamsCheck = new JCheckBox("Allow uneven teams", false);
+        fixedTeamsCheck.setBounds(50, 70, 150, 25);
+        fixedTeamsCheck.setOpaque(false);
+        fixedTeamsCheck.setForeground(Color.BLACK);
+        fixedTeamsCheck.setSelected(Settings.unevenTeams);
+        fixedTeamsCheck.addItemListener(e -> Settings.unevenTeams = e.getStateChange() == ItemEvent.SELECTED);
+        add(fixedTeamsCheck);
+
         String[] teamOptions = new String[]{"None", "Blue", "Red"};
         preferredTeamBox = new JComboBox<>(teamOptions);
-        preferredTeamBox.setBounds(50, 100, 75, 25);
+        preferredTeamBox.setBounds(50, 170, 75, 25);
         preferredTeamBox.setSelectedIndex(Arrays.asList(teamOptions).indexOf(Settings.preferredTeam));
         preferredTeamBox.addActionListener(e -> Settings.preferredTeam = ((JComboBox<String>)e.getSource()).getSelectedItem().toString());
         add(preferredTeamBox);
@@ -68,5 +76,13 @@ public class SettingsPanel extends JPanel {
                 (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
                 null);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
+        g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        g2D.drawString("Server settings:", 50, 40);
+
+        g2D.drawString("Personal:", 50, 140);
+
+        g2D.setFont(new Font("TimesRoman", Font.BOLD, 12));
+        g2D.drawString("Preferred team", 50, 165);
     }
 }
