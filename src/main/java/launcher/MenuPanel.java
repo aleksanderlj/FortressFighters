@@ -47,13 +47,14 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
 
         // Create Components
         // Textfields
-        ipTextField = new JTextField(Server.getIP());
+        ipTextField = new JTextField(Settings.ip);
         nameTextField = new JTextField(Settings.name);
         ipTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
         nameTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
         ipTextField.setBounds(270, 320, 150, 25);
         nameTextField.setBounds(140, 100, 220, 25);
         nameTextField.getDocument().addDocumentListener(this);
+        ipTextField.getDocument().addDocumentListener(this);
 
         // Buttons
         instructionButton = new LauncherButton("How To Play", alagard);
@@ -100,6 +101,7 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
 
     private void start(int type) {
         gameFrame.setVisible(false);
+        Settings.save();
         gameFrame.remove(this);
 
         if (type == 1) {
@@ -130,19 +132,22 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
     public void keyReleased(KeyEvent e) {}
 
 
-    // TODO Find a less lazy way of saving the name on panel switch
+    // TODO Find a less lazy way of saving the name and ip on panel switch
     @Override
     public void insertUpdate(DocumentEvent e) {
         Settings.name = nameTextField.getText();
+        Settings.ip = ipTextField.getText();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         Settings.name = nameTextField.getText();
+        Settings.ip = ipTextField.getText();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
         Settings.name = nameTextField.getText();
+        Settings.ip = ipTextField.getText();
     }
 }

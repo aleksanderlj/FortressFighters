@@ -12,6 +12,7 @@ public class GameFrame extends JFrame {
 		public GameFrame() {
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setTitle("Fortress Fighters");
+			Settings.load();
 			try {
 				setIconImage(ImageIO.read(getClass().getClassLoader().getResource("orb.png")));
 			} catch (Exception e) {

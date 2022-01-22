@@ -34,7 +34,10 @@ public class SettingsPanel extends JPanel {
 
         // Create Components
         mainMenuButton = new LauncherButton("Main Menu", alagard);
-        mainMenuButton.addActionListener(e -> gameFrame.setPanel(new MenuPanel(gameFrame)));
+        mainMenuButton.addActionListener(e -> {
+            Settings.save();
+            gameFrame.setPanel(new MenuPanel(gameFrame));
+        });
         mainMenuButton.setBounds(150, 400, 200, 50);
         add(mainMenuButton);
 
