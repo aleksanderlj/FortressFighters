@@ -31,9 +31,9 @@ public class GameFrame extends JFrame {
 			add(panel);
 			pack();
 			setVisible(true);
-			
-			if(this.panel == null){
-				setLocationRelativeTo(null); // put in center of screen when opened for the first time
+
+			if(this.panel == null || this.panel.getWidth() != panel.getWidth()){
+				setLocationRelativeTo(null); // put in center of screen when opened for the first time or changes size
 			}
 			this.panel = panel;
 		}
