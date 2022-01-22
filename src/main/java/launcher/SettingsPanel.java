@@ -83,13 +83,13 @@ public class SettingsPanel extends JPanel {
         g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
-        g2D.setFont(new Font("TimesRoman", Font.BOLD, 18));
+        g2D.setFont(new Font("Arial", Font.BOLD, 18));
         g2D.setColor(Color.WHITE);
         g2D.drawString("Server settings:", 50, 40);
 
         g2D.drawString("Personal:", 50, 140);
 
-        g2D.setFont(new Font("TimesRoman", Font.BOLD, 14));
+        g2D.setFont(new Font("Arial", Font.BOLD, 14));
         g2D.drawString("Preferred team", 50, 165);
     }
 }
