@@ -94,8 +94,8 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
         g2D.setFont(alagard.deriveFont(Font.BOLD, 35));
         DrawUtility.drawStringWithShadow(g2D, "Fortress Fighters", 100, 40);
         DrawUtility.drawStringWithShadow(g2D, "Play Game", 160, 220);
-        g2D.setFont(alagard.deriveFont(Font.BOLD, 12));
-        DrawUtility.drawStringWithShadow(g2D, "Enter IP Address to join:", 270, 315);
+        g2D.setFont(alagard.deriveFont(Font.BOLD, 14));
+        DrawUtility.drawStringWithShadow(g2D, "IP Address to join:", 270, 315);
         g2D.setColor(Color.BLACK);
     }
 
