@@ -107,6 +107,7 @@ public class Client {
 	
 	private void connectToServer(String address) {
 		this.address = address;
+		frame.setTitle("Fortress Fighters (" + address + ")");
 		try {
 			centralSpace = new RemoteSpace("tcp://" + address + ":9001/central?keep");
 			channelFromServer = new RemoteSpace("tcp://" + address + ":9001/serverclient"+id+"?keep");
