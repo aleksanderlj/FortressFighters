@@ -268,6 +268,7 @@ public class Server {
 			}
 			Player newHost = players.get(0);
 			newHost.serverToClient.put("host");
+			new Thread(new ForceStop(5000)).start();
 			Object[] tuple = newHost.clientToServer.get(new ActualField("done"), new FormalField(String.class));
 			for (Player p : players) {
 				p.serverToClient.put("newip", (String)tuple[1], player.name);
@@ -400,6 +401,28 @@ public class Server {
 					}
 				}
 			} catch (InterruptedException e) {e.printStackTrace();}
+		}
+	}
+
+	private class ForceStop implements Runnable{
+		int delay;
+		public ForceStop(int delay){
+			this.delay = delay;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(delay);
+				for (Player p : players) {
+					p.serverToClient.put("stop");
+				}
+				Thread.sleep(1000);
+				repository.closeGates();
+				System.exit(0);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
