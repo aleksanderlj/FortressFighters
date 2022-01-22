@@ -18,7 +18,7 @@ public class SettingsPanel extends JPanel {
     private BufferedImage background;
     private Font alagard;
     private JButton mainMenuButton;
-    private JCheckBox fixedTeamsCheck;
+    private JCheckBox fixedTeamsCheck, unevenTeamsCheck;
     private JComboBox<String> preferredTeamBox;
 
     public SettingsPanel(GameFrame gameFrame){
@@ -42,23 +42,28 @@ public class SettingsPanel extends JPanel {
         add(mainMenuButton);
 
         fixedTeamsCheck = new JCheckBox("Fixed teams", false);
-        fixedTeamsCheck.setBounds(50, 50, 100, 25);
+        fixedTeamsCheck.setToolTipText("Make teams not shuffle after a game ends.");
+        fixedTeamsCheck.setBounds(50, 50, 200, 25);
         fixedTeamsCheck.setOpaque(false);
         fixedTeamsCheck.setForeground(Color.WHITE);
+        fixedTeamsCheck.setFont(new Font("Arial", Font.BOLD, 15));
         fixedTeamsCheck.setSelected(Settings.fixedTeams);
         fixedTeamsCheck.addItemListener(e -> Settings.fixedTeams = e.getStateChange() == ItemEvent.SELECTED);
         add(fixedTeamsCheck);
 
-        fixedTeamsCheck = new JCheckBox("Allow uneven teams", false);
-        fixedTeamsCheck.setBounds(50, 70, 150, 25);
-        fixedTeamsCheck.setOpaque(false);
-        fixedTeamsCheck.setForeground(Color.WHITE);
-        fixedTeamsCheck.setSelected(Settings.unevenTeams);
-        fixedTeamsCheck.addItemListener(e -> Settings.unevenTeams = e.getStateChange() == ItemEvent.SELECTED);
-        add(fixedTeamsCheck);
+        unevenTeamsCheck = new JCheckBox("Allow uneven teams", false);
+        unevenTeamsCheck.setToolTipText("The game won't try to fill teams fairly, and players will always end up on their preferred team.");
+        unevenTeamsCheck.setBounds(50, 70, 200, 25);
+        unevenTeamsCheck.setOpaque(false);
+        unevenTeamsCheck.setForeground(Color.WHITE);
+        unevenTeamsCheck.setFont(new Font("Arial", Font.BOLD, 15));
+        unevenTeamsCheck.setSelected(Settings.unevenTeams);
+        unevenTeamsCheck.addItemListener(e -> Settings.unevenTeams = e.getStateChange() == ItemEvent.SELECTED);
+        add(unevenTeamsCheck);
 
         String[] teamOptions = new String[]{"None", "Blue", "Red"};
         preferredTeamBox = new JComboBox<>(teamOptions);
+        preferredTeamBox.setToolTipText("The game will try to put you on your preferred team if the server settings allow it. Otherwise it is randomized.");
         preferredTeamBox.setBounds(50, 170, 75, 25);
         preferredTeamBox.setSelectedIndex(Arrays.asList(teamOptions).indexOf(Settings.preferredTeam));
         preferredTeamBox.addActionListener(e -> Settings.preferredTeam = ((JComboBox<String>)e.getSource()).getSelectedItem().toString());
@@ -78,13 +83,13 @@ public class SettingsPanel extends JPanel {
         g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
-        g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        g2D.setFont(new Font("TimesRoman", Font.BOLD, 18));
         g2D.setColor(Color.WHITE);
         g2D.drawString("Server settings:", 50, 40);
 
         g2D.drawString("Personal:", 50, 140);
 
-        g2D.setFont(new Font("TimesRoman", Font.BOLD, 12));
+        g2D.setFont(new Font("TimesRoman", Font.BOLD, 14));
         g2D.drawString("Preferred team", 50, 165);
     }
 }

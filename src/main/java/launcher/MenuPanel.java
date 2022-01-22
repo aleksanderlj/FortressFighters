@@ -49,8 +49,8 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
         // Textfields
         ipTextField = new JTextField(Settings.ip);
         nameTextField = new JTextField(Settings.name);
-        ipTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
-        nameTextField.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        ipTextField.setFont(new Font("Arial", Font.BOLD, 16));
+        nameTextField.setFont(new Font("Arial", Font.BOLD, 16));
         ipTextField.setBounds(270, 320, 150, 25);
         nameTextField.setBounds(140, 100, 220, 25);
         nameTextField.getDocument().addDocumentListener(this);
