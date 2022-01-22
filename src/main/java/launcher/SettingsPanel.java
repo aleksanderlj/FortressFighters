@@ -44,7 +44,7 @@ public class SettingsPanel extends JPanel {
         fixedTeamsCheck = new JCheckBox("Fixed teams", false);
         fixedTeamsCheck.setBounds(50, 50, 100, 25);
         fixedTeamsCheck.setOpaque(false);
-        fixedTeamsCheck.setForeground(Color.BLACK);
+        fixedTeamsCheck.setForeground(Color.WHITE);
         fixedTeamsCheck.setSelected(Settings.fixedTeams);
         fixedTeamsCheck.addItemListener(e -> Settings.fixedTeams = e.getStateChange() == ItemEvent.SELECTED);
         add(fixedTeamsCheck);
@@ -52,7 +52,7 @@ public class SettingsPanel extends JPanel {
         fixedTeamsCheck = new JCheckBox("Allow uneven teams", false);
         fixedTeamsCheck.setBounds(50, 70, 150, 25);
         fixedTeamsCheck.setOpaque(false);
-        fixedTeamsCheck.setForeground(Color.BLACK);
+        fixedTeamsCheck.setForeground(Color.WHITE);
         fixedTeamsCheck.setSelected(Settings.unevenTeams);
         fixedTeamsCheck.addItemListener(e -> Settings.unevenTeams = e.getStateChange() == ItemEvent.SELECTED);
         add(fixedTeamsCheck);
@@ -72,18 +72,14 @@ public class SettingsPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
         //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        g2D.drawImage(background,
-                (int)((getWidth()/2) - ((background.getWidth() * MenuPanel.BACKGROUND_SCALE)/2)),
-                -70,
-                (int)(background.getWidth() * MenuPanel.BACKGROUND_SCALE),
-                (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
-                null);
+        DrawUtility.paintBackground(g2D, background);
 
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
         g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
 
         g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        g2D.setColor(Color.WHITE);
         g2D.drawString("Server settings:", 50, 40);
 
         g2D.drawString("Personal:", 50, 140);

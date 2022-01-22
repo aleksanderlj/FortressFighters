@@ -18,20 +18,24 @@ public class GameFrame extends JFrame {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			setLocationRelativeTo(null);
 		}
 		
 		public void setPanel(JPanel panel) {
 			if (this.panel != null) {
 				remove(this.panel);
 			}
-			this.panel = panel;
 			if (panel instanceof GamePanel && isHost) {
 				setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			}
 			add(panel);
 			pack();
-			setLocationRelativeTo(null);
 			setVisible(true);
+			
+			if(this.panel == null){
+				setLocationRelativeTo(null); // put in center of screen when opened for the first time
+			}
+			this.panel = panel;
 		}
 		
 	}

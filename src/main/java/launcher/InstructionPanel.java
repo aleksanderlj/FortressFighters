@@ -47,12 +47,7 @@ public class InstructionPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
         //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        g2D.drawImage(background,
-                (int)((getWidth()/2) - ((background.getWidth() * MenuPanel.BACKGROUND_SCALE)/2)),
-                -70,
-                (int)(background.getWidth() * MenuPanel.BACKGROUND_SCALE),
-                (int)(background.getHeight() * MenuPanel.BACKGROUND_SCALE),
-                null);
+        DrawUtility.paintBackground(g2D, background);
 
         g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
         g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
