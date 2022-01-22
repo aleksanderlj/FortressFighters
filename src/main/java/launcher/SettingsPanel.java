@@ -77,11 +77,7 @@ public class SettingsPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
         //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        DrawUtility.paintBackground(g2D, background);
-
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        DrawUtility.paintBackground(g2D, background, true);
 
         g2D.setFont(new Font("Arial", Font.BOLD, 18));
         g2D.setColor(Color.WHITE);

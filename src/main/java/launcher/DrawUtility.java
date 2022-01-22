@@ -14,7 +14,7 @@ public class DrawUtility {
         g2D.drawString(text, x, y);
     }
 
-    public static void paintBackground(Graphics2D g2D, BufferedImage background){
+    public static void paintBackground(Graphics2D g2D, BufferedImage background, boolean fade){
         if(backgroundScale < 0){ // Make sure not to calculate on each update
             backgroundScale = MenuPanel.WIDTH/(double)background.getWidth();
         }
@@ -26,5 +26,11 @@ public class DrawUtility {
                 width,
                 (int)(background.getHeight() * backgroundScale),
                 null);
+
+        if(fade){
+            g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+            g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
+            g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        }
     }
 }

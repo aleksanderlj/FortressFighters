@@ -47,11 +47,7 @@ public class InstructionPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2D = (Graphics2D) g;
         //g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-        DrawUtility.paintBackground(g2D, background);
-
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        g2D.fillRect(0, 0, MenuPanel.WIDTH, MenuPanel.HEIGHT);
-        g2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        DrawUtility.paintBackground(g2D, background, true);
 
         g2D.setColor(Color.WHITE);
         g2D.setFont(new Font("TimesRoman", Font.BOLD, 25));
@@ -59,13 +55,13 @@ public class InstructionPanel extends JPanel {
         DrawUtility.drawStringWithShadow(g2D, "Controls:", 20, 260);
         DrawUtility.drawStringWithShadow(g2D, "Costs:", 300, 260);
 
-        g2D.setFont(new Font("TimesRoman", Font.BOLD, 15));
+        g2D.setFont(new Font("TimesRoman", Font.BOLD, 17));
         DrawUtility.drawStringWithShadow(g2D, "- Collect wood and iron and return them to your fortress", 20, 70);
         DrawUtility.drawStringWithShadow(g2D, "- Use iron to build cannons that shoot towards the enemy", 20, 100);
         DrawUtility.drawStringWithShadow(g2D, "- Use wood to build walls that stop hostile projectiles", 20, 130);
         DrawUtility.drawStringWithShadow(g2D, "- Destroy the enemy fortress with your cannons", 20, 160);
-        DrawUtility.drawStringWithShadow(g2D, "- Mystical things might happen if you return the orbs on the battle-", 20, 190);
-        DrawUtility.drawStringWithShadow(g2D, "  field to your fortress' orb holders", 20, 210);
+        DrawUtility.drawStringWithShadow(g2D, "- Mystical things might happen if you return the orbs on the", 20, 190);
+        DrawUtility.drawStringWithShadow(g2D, "   battlefield to your fortress' orb holders", 20, 210);
 
         DrawUtility.drawStringWithShadow(g2D, "- WASD or arrow keys to move", 20, 290);
         DrawUtility.drawStringWithShadow(g2D, "- Q to build a cannon", 20, 320);

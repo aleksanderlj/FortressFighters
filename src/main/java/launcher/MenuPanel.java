@@ -87,7 +87,7 @@ public class MenuPanel extends JPanel implements KeyListener, DocumentListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         g2D = (Graphics2D) g;
-        DrawUtility.paintBackground(g2D, background);
+        DrawUtility.paintBackground(g2D, background, false);
         g2D.setColor(Color.WHITE);
         g2D.setFont(alagard.deriveFont(Font.BOLD, 26));
         DrawUtility.drawStringWithShadow(g2D, "Enter your name", 140, 90);
