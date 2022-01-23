@@ -17,7 +17,7 @@ import model.*;
 
 public class Client {
 
-	public static final double S_BETWEEN_UPDATES = 0.01;
+	public static final double S_BETWEEN_UPDATES = 0.001;
 	private GameFrame frame;
 	private String address;
 	private Player[] players = new Player[0];
