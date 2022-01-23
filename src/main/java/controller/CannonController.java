@@ -83,14 +83,20 @@ public class CannonController {
         s.getMutexSpace().get(new ActualField("bulletsLock"));
         s.getBullets().removeIf(b -> b.x < 0 || b.x > s.SCREEN_WIDTH); // Remove bullets that are out of bounds
         for (Bullet b : s.getBullets()) {
-            if(b.getTeam()){
-                b.x -= Bullet.SPEED * ((double)deltaTime)/1000;
-            } else {
-                b.x += Bullet.SPEED * ((double)deltaTime)/1000;
-            }
+            moveBullet(b, deltaTime);
             s.getBulletSpace().put(b.x, b.y, b.getTeam());
         }
         s.getMutexSpace().put("bulletsLock");
+        s.getBulletSpace().getp(new ActualField("updated"), new FormalField(Long.class));
+        s.getBulletSpace().put("updated", System.currentTimeMillis());
+    }
+
+    public static void moveBullet(Bullet b, long deltaTime){
+        if(b.getTeam()){
+            b.x -= Bullet.SPEED * ((double)deltaTime)/1000;
+        } else {
+            b.x += Bullet.SPEED * ((double)deltaTime)/1000;
+        }
     }
 
     public void activateCannon(Cannon c){

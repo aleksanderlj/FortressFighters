@@ -15,6 +15,7 @@ import org.jspace.FormalField;
 import org.jspace.RemoteSpace;
 
 import model.*;
+import org.jspace.SequentialSpace;
 
 public class Client {
 
@@ -42,6 +43,7 @@ public class Client {
 	private RemoteSpace orbSpace;
 	private RemoteSpace channelFromServer;
 	private RemoteSpace channelToServer;
+	private SequentialSpace mutexSpace;
 	public static int id;
 	private GamePanel panel;
 	private boolean createCannonKeyDown = false;
@@ -70,6 +72,7 @@ public class Client {
 			connectToServer(address);
 			checkGameStarted();
 			new Thread(new Timer()).start();
+			new Thread(new PanelUpdater()).start();
 			new Thread(new ServerCheckReader()).start();
 			new Thread(new NewHostReader()).start();
 		} catch (IOException | InterruptedException e) {
@@ -82,6 +85,7 @@ public class Client {
 			long currentTime = System.currentTimeMillis();
 			deltaTime = currentTime - lastUpdate;
 			lastUpdate = currentTime;
+			Thread.sleep(1);
 			if (gamePaused) {
 				return;
 			}
@@ -108,7 +112,6 @@ public class Client {
 				gameOver = true;
 			}
 		} catch (InterruptedException e) {System.out.println("Interrupted");}
-		panel.updatePanel();
 	}
 	
 	private void connectToServer(String address) {
@@ -126,7 +129,9 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
-		} catch (IOException e) {
+			mutexSpace = new SequentialSpace();
+			mutexSpace.put("bullets_lock");
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -198,11 +203,13 @@ public class Client {
 
 	public void updateBullets() throws InterruptedException {
 		List<Object[]> bulletTuples = bulletSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
+		mutexSpace.get(new ActualField("bullets_lock"));
 		bullets = new Bullet[bulletTuples.size()];
 		for (int i = 0; i < bulletTuples.size(); i++) {
 			Object[] tuple = bulletTuples.get(i);
 			bullets[i] = new Bullet((double)tuple[0], (double)tuple[1], (boolean)tuple[2]);
 		}
+		mutexSpace.put("bullets_lock");
 	}
 
 	public void updateWalls() throws InterruptedException {
@@ -271,6 +278,19 @@ public class Client {
 		public void run() {
 			while (!gamePaused) {
 				update();
+			}
+		}
+	}
+
+	private class PanelUpdater implements Runnable {
+		public void run() {
+			while (!gamePaused) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				panel.updatePanel();
 			}
 		}
 	}
@@ -468,5 +488,13 @@ public class Client {
 
 	public long getDeltaTime() {
 		return deltaTime;
+	}
+
+	public SequentialSpace getMutexSpace() {
+		return mutexSpace;
+	}
+
+	public long getLastUpdate() {
+		return lastUpdate;
 	}
 }

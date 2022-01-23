@@ -1,6 +1,7 @@
 package client;
 
 import client.message.MessageBox;
+import controller.CannonController;
 import game.Server;
 import model.*;
 import org.jspace.ActualField;
@@ -13,11 +14,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 public class GamePanel extends JPanel implements KeyListener {
     private Client c;
     public Graphics2D g2D;
+    private long deltaTime;
+    private long lastUpdate;
     private MessageBox buffMessageBox;
     private MessageBox connectionMessageBox;
     private BufferedImage manblue, manred,
@@ -36,6 +40,7 @@ public class GamePanel extends JPanel implements KeyListener {
             shieldblue, shieldred;
     private Font alagard, alagard_small;
     private static final String DEFAULT_FONT = "Comic Sans MS";
+    private long lastBulletUpdate = 0;
 
     public GamePanel(Client client) {
         this.c = client;
@@ -107,6 +112,9 @@ public class GamePanel extends JPanel implements KeyListener {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        long currentTime = System.currentTimeMillis();
+        deltaTime = currentTime - lastUpdate;
+        lastUpdate = currentTime;
         g2D = (Graphics2D) g;
         if (c.isGameOver()) {
             g2D.setFont(alagard);
@@ -187,12 +195,25 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     public void paintBullets(){
-        for (Bullet b : c.getBullets()) {
-            if(b.getTeam()){
-                g2D.drawImage(bulletred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
-            } else {
-                g2D.drawImage(bulletblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+        try {
+            c.getMutexSpace().get(new ActualField("bullets_lock"));
+            if(c.getLastUpdate() == lastBulletUpdate){
+                for (Bullet b : c.getBullets()) {
+                    CannonController.moveBullet(b, deltaTime);
+                }
             }
+
+            for (Bullet b : c.getBullets()) {
+                if(b.getTeam()){
+                    g2D.drawImage(bulletred, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+                } else {
+                    g2D.drawImage(bulletblue, (int) b.x, (int) b.y, (int) b.width, (int) b.height, null);
+                }
+            }
+            c.getMutexSpace().put("bullets_lock");
+            lastBulletUpdate = c.getLastUpdate();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -279,7 +300,7 @@ public class GamePanel extends JPanel implements KeyListener {
     private void paintBuffs(){
         try {
             Object[] msg = c.getChannelFromServer().getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
-            buffMessageBox.update(c.getDeltaTime());
+            buffMessageBox.update(deltaTime);
             if(msg != null){
                 buffMessageBox.addMessage(((boolean)msg[2] ? "RED" : "BLUE") + " team got " + ((String) msg[1]).toUpperCase(Locale.ROOT) + "!");
             }
@@ -290,7 +311,7 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     private void paintConnectionMessages(){
-        connectionMessageBox.update(c.getDeltaTime());
+        connectionMessageBox.update(deltaTime);
         connectionMessageBox.paint(g2D);
     }
 
