@@ -279,7 +279,7 @@ public class GamePanel extends JPanel implements KeyListener {
     private void paintBuffs(){
         try {
             Object[] msg = c.getChannelFromServer().getp(new ActualField("buff_activated"), new FormalField(String.class), new FormalField(Boolean.class));
-            buffMessageBox.update();
+            buffMessageBox.update(c.getDeltaTime());
             if(msg != null){
                 buffMessageBox.addMessage(((boolean)msg[2] ? "RED" : "BLUE") + " team got " + ((String) msg[1]).toUpperCase(Locale.ROOT) + "!");
             }
@@ -290,7 +290,7 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     private void paintConnectionMessages(){
-        connectionMessageBox.update();
+        connectionMessageBox.update(c.getDeltaTime());
         connectionMessageBox.paint(g2D);
     }
 

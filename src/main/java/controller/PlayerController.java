@@ -78,7 +78,7 @@ public class PlayerController {
     	}
     }
 
-    public void updatePlayers() throws InterruptedException {
+    public void updatePlayers(long deltaTime) throws InterruptedException {
         List<Object[]> movementTuples = s.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class));
         int[][] movementVectors = new int[s.playerIDCounter][2];
         for (Object[] movementTuple : movementTuples) {
@@ -117,7 +117,7 @@ public class PlayerController {
             double oldY = player.y;
             double mvLength = Math.sqrt(movementVectors[i][0]*movementVectors[i][0] + movementVectors[i][1]*movementVectors[i][1]);
             if (mvLength != 0) {
-                double speed = Player.SPEED * s.S_BETWEEN_UPDATES;
+                double speed = Player.SPEED * ((double)deltaTime)/1000;
                 if (s.getBuffController().isGhost(player)) {
                     speed *= 2;
                 }
@@ -168,7 +168,7 @@ public class PlayerController {
             s.getMutexSpace().put("bulletsLock");
             s.getPlayerPositionsSpace().put(p.x, p.y, p.id, p.team, p.wood, p.iron, p.hasOrb, p.name);
             if (p.stunned > 0) {
-                p.stunned -= Server.S_BETWEEN_UPDATES;
+                p.stunned -= ((double)deltaTime)/1000;
             }
         }
         s.getPlayerPositionsSpace().put("players");

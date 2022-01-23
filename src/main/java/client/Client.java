@@ -17,7 +17,9 @@ import model.*;
 
 public class Client {
 
-	public static final double S_BETWEEN_UPDATES = 0.001;
+	//public static final double S_BETWEEN_UPDATES = 0.001;
+	private long deltaTime;
+	private long lastUpdate;
 	private GameFrame frame;
 	private String address;
 	private Player[] players = new Player[0];
@@ -76,6 +78,9 @@ public class Client {
 
 	public void update() {
 		try {
+			long currentTime = System.currentTimeMillis();
+			deltaTime = currentTime - lastUpdate;
+			lastUpdate = currentTime;
 			if (gamePaused) {
 				return;
 			}
@@ -247,13 +252,8 @@ public class Client {
 
 	private class Timer implements Runnable {
 		public void run() {
-			try {
-				while (!gamePaused) {
-					Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
-					update();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			while (!gamePaused) {
+				update();
 			}
 		}
 	}
@@ -447,5 +447,9 @@ public class Client {
 
 	public int getTeam2Score() {
 		return team2Score;
+	}
+
+	public long getDeltaTime() {
+		return deltaTime;
 	}
 }

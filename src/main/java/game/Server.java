@@ -18,9 +18,11 @@ import model.*;
 
 public class Server {
 
-	public static final double S_BETWEEN_UPDATES = 0.01;
+	//public static final double S_BETWEEN_UPDATES = 0.01;
 	public static final int SCREEN_WIDTH = 1280;
 	public static final int SCREEN_HEIGHT = 720;
+	private long deltaTime;
+	private long lastUpdate;
 	private List<Player> players = new ArrayList<>();
 	private List<Cannon> cannons = new ArrayList<>();
 	private List<Resource> resources = new ArrayList<>();
@@ -58,6 +60,7 @@ public class Server {
 	private int team2Score = 0;
 
 	public Server(boolean createSpaces) {
+		lastUpdate = System.currentTimeMillis();
 		if (createSpaces) {
 			createSpaces();
 		}
@@ -201,20 +204,24 @@ public class Server {
 	}
 
 	public void update() {
+		long currentTime = System.currentTimeMillis();
+		deltaTime = currentTime - lastUpdate;
+		lastUpdate = currentTime;
+
 		if (gamePaused) {
 			return;
 		}
 		try {
 			if (gameStarted) {
 				// Handle game logic for each object
-				playerController.updatePlayers();
-				cannonController.updateCannons();
-				cannonController.updateBullets();
-				wallController.updateWalls();
-				fortressController.updateFortresses();
-				resourceController.updateResources();
-				orbController.updateOrbs();
-				buffController.updateBuffs();
+				playerController.updatePlayers(deltaTime);
+				cannonController.updateCannons(deltaTime);
+				cannonController.updateBullets(deltaTime);
+				wallController.updateWalls(deltaTime);
+				fortressController.updateFortresses(deltaTime);
+				resourceController.updateResources(deltaTime);
+				orbController.updateOrbs(deltaTime);
+				buffController.updateBuffs(deltaTime);
 			}
 			else {
 				if (playerIDCounter >= 2) {
@@ -325,15 +332,11 @@ public class Server {
 	
 	private class Timer implements Runnable {
 		public void run() {
-			try {
-				while (true) {
-					if (!gameOver) {
-						Thread.sleep((long)(S_BETWEEN_UPDATES*1000));
-						update();	
-					}
+			while (true) {
+				if (!gameOver) {
+					update();
+					System.out.println("update");
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 	}

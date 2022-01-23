@@ -89,7 +89,7 @@ public class OrbController {
         }
     }
 
-    public void updateOrbs() {
+    public void updateOrbs(long deltaTime) {
         List<Orb> newOrbs = new ArrayList<>();
         for (int i = 0; i < s.getOrbs().size(); i++) {
             boolean add = true;

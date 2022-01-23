@@ -35,24 +35,24 @@ public class BuffController {
         s.setBuffSpace(new SequentialSpace());
     }
 
-    public void updateBuffs() throws InterruptedException {
+    public void updateBuffs(long deltaTime) throws InterruptedException {
         if (team1GhostTimer > 0) {
-            team1GhostTimer -= Server.S_BETWEEN_UPDATES;
+            team1GhostTimer -= ((double)deltaTime)/1000;
         }
         if (team2GhostTimer > 0) {
-            team2GhostTimer -= Server.S_BETWEEN_UPDATES;
+            team2GhostTimer -= ((double)deltaTime)/1000;
         }
 
         // Decrement shield timer, remove shield if it ran out
         if (team1ShieldTimer > 0) {
-            team1ShieldTimer -= Server.S_BETWEEN_UPDATES;
+            team1ShieldTimer -= ((double)deltaTime)/1000;
         } else if(team1Shield != null) {
             s.getWalls().remove(team1Shield);
             s.getWallSpace().getp(new ActualField("wall"), new ActualField(team1Shield.getId()), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
             team1Shield = null;
         }
         if (team2ShieldTimer > 0) {
-            team2ShieldTimer -= Server.S_BETWEEN_UPDATES;
+            team2ShieldTimer -= ((double)deltaTime)/1000;
         } else if(team2Shield != null) {
             s.getWalls().remove(team2Shield);
             s.getWallSpace().getp(new ActualField("wall"), new ActualField(team2Shield.getId()), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));

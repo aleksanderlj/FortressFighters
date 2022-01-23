@@ -27,7 +27,7 @@ public class ResourceController {
         resourcesChanged();
     }
 
-    public void updateResources() {
+    public void updateResources(long deltaTime) {
         List<Resource> newResources = new ArrayList<>();
         for (int i = 0; i < s.getResources().size(); i++) {
             boolean add = true;

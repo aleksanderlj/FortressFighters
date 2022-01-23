@@ -11,8 +11,8 @@ public class Message {
         this.displayTime = displayTime;
     }
 
-    public void update(){
-        displayTime -= Client.S_BETWEEN_UPDATES;
+    public void update(long deltaTime){
+        displayTime -= ((double)deltaTime)/1000;
     }
 
     public double getDisplayTime() {

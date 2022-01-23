@@ -32,7 +32,7 @@ public class CannonController {
         s.getMutexSpace().put("bulletsLock");
     }
 
-    public void updateCannons() throws InterruptedException {
+    public void updateCannons(long deltaTime) throws InterruptedException {
         List<Object[]> cannonCommands = s.getCannonSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Cannon newCannon;
         for (Object[] command : cannonCommands) {
@@ -78,15 +78,15 @@ public class CannonController {
         }
     }
 
-    public void updateBullets() throws InterruptedException{
+    public void updateBullets(long deltaTime) throws InterruptedException{
         s.getBulletSpace().getAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
         s.getMutexSpace().get(new ActualField("bulletsLock"));
         s.getBullets().removeIf(b -> b.x < 0 || b.x > s.SCREEN_WIDTH); // Remove bullets that are out of bounds
         for (Bullet b : s.getBullets()) {
             if(b.getTeam()){
-                b.x -= Bullet.SPEED * s.S_BETWEEN_UPDATES;
+                b.x -= Bullet.SPEED * ((double)deltaTime)/1000;
             } else {
-                b.x += Bullet.SPEED * s.S_BETWEEN_UPDATES;
+                b.x += Bullet.SPEED * ((double)deltaTime)/1000;
             }
             s.getBulletSpace().put(b.x, b.y, b.getTeam());
         }

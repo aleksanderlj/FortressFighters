@@ -24,9 +24,9 @@ public class MessageBox {
         this.center = center;
     }
 
-    public void update(){
+    public void update(long deltaTime){
         for (Message m : messages) {
-            m.update();
+            m.update(deltaTime);
         }
         messages.removeIf(m -> m.getDisplayTime() < 0);
     }

@@ -22,7 +22,7 @@ public class WallController {
         s.getWallSpace().getAll(new ActualField("wall"), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Double.class), new FormalField(Double.class), new FormalField(Boolean.class));
     }
 
-    public void updateWalls() throws InterruptedException{
+    public void updateWalls(long deltaTime) throws InterruptedException{
         List<Object[]> wallCommands = s.getWallSpace().getAll(new FormalField(Integer.class), new FormalField(String.class));
         Wall newWall;
         for (Object[] command : wallCommands) {

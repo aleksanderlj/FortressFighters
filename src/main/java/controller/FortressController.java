@@ -20,7 +20,7 @@ public class FortressController {
         changeFortress();
     }
 
-    public void updateFortresses() throws InterruptedException {
+    public void updateFortresses(long deltaTime) throws InterruptedException {
         if (s.getFortress1() == null) { return; }
 
         boolean changed = false;
