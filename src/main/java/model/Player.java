@@ -7,7 +7,7 @@ import org.jspace.Space;
 public class Player extends Rectangle.Double {
 	public static final double WIDTH = 62;
 	public static final double HEIGHT = 83;
-	public static final int SPEED = 200;
+	public static final int SPEED = 130;
 	public int id;
 	public String name;
 	public boolean team;
