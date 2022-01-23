@@ -207,6 +207,11 @@ public class Server {
 		long currentTime = System.currentTimeMillis();
 		deltaTime = currentTime - lastUpdate;
 		lastUpdate = currentTime;
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		if (gamePaused) {
 			return;
@@ -335,7 +340,6 @@ public class Server {
 			while (true) {
 				if (!gameOver) {
 					update();
-					System.out.println("update");
 				}
 			}
 		}

@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.*;
 
@@ -159,14 +160,30 @@ public class Client {
 	public void updatePlayers() throws InterruptedException {
 		if (playerPositionsSpace.queryp(new ActualField("players")) != null) {
 			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(String.class));
-			players = new Player[playersTuples.size()];
-			for (int i = 0; i < playersTuples.size(); i++) {
-				Object[] tuple = playersTuples.get(i);
-				players[i] = new Player((double)tuple[0], (double)tuple[1], (int)tuple[2], (boolean)tuple[3], (String)tuple[7]);
-				players[i].wood = (int)tuple[4];
-				players[i].iron = (int)tuple[5];
-				players[i].hasOrb = (boolean)tuple[6];
-			}	
+
+			Player p;
+			for (Object[] tuple : playersTuples) {
+				Optional<Player> optional = Arrays.stream(players).filter(player -> player.id == (int)tuple[2]).findFirst();
+				if(optional.isPresent()){
+					p = optional.get();
+					p.x = (double)tuple[0];
+					p.y = (double)tuple[1];
+					p.team = (boolean)tuple[3];
+					p.name = (String)tuple[7];
+					p.wood = (int)tuple[4];
+					p.iron = (int)tuple[5];
+					p.hasOrb = (boolean)tuple[6];
+				} else {
+					players = new Player[playersTuples.size()];
+					for (int i = 0; i < playersTuples.size(); i++) {
+						Object[] tuple2 = playersTuples.get(i);
+						players[i] = new Player((double)tuple2[0], (double)tuple2[1], (int)tuple2[2], (boolean)tuple2[3], (String)tuple2[7]);
+						players[i].wood = (int)tuple2[4];
+						players[i].iron = (int)tuple2[5];
+						players[i].hasOrb = (boolean)tuple2[6];
+					}
+				}
+			}
 		}
 	}
 
