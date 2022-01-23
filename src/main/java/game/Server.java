@@ -97,6 +97,7 @@ public class Server {
 		repository.add("fortress", fortressSpace);
 		repository.add("resource", resourceSpace);
 		repository.add("orb", orbSpace);
+		repository.add("buff", buffSpace);
 		repository.add("switchhost", switchHostSpace);
 		new Thread(new Timer()).start();
 		new Thread(new DisconnectChecker()).start();

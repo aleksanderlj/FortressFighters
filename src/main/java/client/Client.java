@@ -41,6 +41,7 @@ public class Client {
 	private RemoteSpace fortressSpace;
 	private RemoteSpace resourceSpace;
 	private RemoteSpace orbSpace;
+	private RemoteSpace buffSpace;
 	private RemoteSpace channelFromServer;
 	private RemoteSpace channelToServer;
 	private SequentialSpace mutexSpace;
@@ -57,6 +58,8 @@ public class Client {
 	private String name;
 	private int team1Score = 0;
 	private int team2Score = 0;
+	private double team1GhostTimer = 0;
+	private double team2GhostTimer = 0;
 
 	public Client(String address, GameFrame frame, String name) {
 		this.frame = frame;
@@ -102,6 +105,7 @@ public class Client {
 					updateResources();
 					updateOrbs();
 					updateScores();
+					updateBuffs();
 				}
 				else {
 					checkGameStarted();
@@ -129,8 +133,12 @@ public class Client {
 			fortressSpace = new RemoteSpace("tcp://" + address + ":9001/fortress?keep");
 			resourceSpace = new RemoteSpace("tcp://" + address + ":9001/resource?keep");
 			orbSpace = new RemoteSpace("tcp://" + address + ":9001/orb?keep");
+			buffSpace = new RemoteSpace("tcp://" + address + ":9001/buff?keep");
 			mutexSpace = new SequentialSpace();
 			mutexSpace.put("bullets_lock");
+			mutexSpace.put("players_lock");
+			mutexSpace.put("fortress_lock");
+			mutexSpace.put("walls_lock");
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -149,6 +157,7 @@ public class Client {
 			fortressSpace.close();
 			resourceSpace.close();
 			orbSpace.close();
+			buffSpace.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -164,6 +173,7 @@ public class Client {
 
 	public void updatePlayers() throws InterruptedException {
 		if (playerPositionsSpace.queryp(new ActualField("players")) != null) {
+			mutexSpace.get(new ActualField("players_lock"));
 			List<Object[]> playersTuples = playerPositionsSpace.queryAll(new FormalField(Double.class), new FormalField(Double.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class), new FormalField(String.class));
 
 			Player p;
@@ -189,6 +199,7 @@ public class Client {
 					}
 				}
 			}
+			getMutexSpace().put("players_lock");
 		}
 	}
 
@@ -221,6 +232,7 @@ public class Client {
 				new FormalField(Double.class),
 				new FormalField(Boolean.class)
 		);
+		mutexSpace.get(new ActualField("walls_lock"));
 		walls = new Wall[wallTuples.size()];
 		for (int i = 0; i < wallTuples.size(); i++) {
 			Object[] tuple = wallTuples.get(i);
@@ -231,15 +243,18 @@ public class Client {
 				walls[i] = new Wall((int) tuple[1], (int) tuple[2], (double)tuple[3], (double)tuple[4], (boolean)tuple[5]);
 			}
 		}
+		mutexSpace.put("walls_lock");
 	}
 
 	public void updateFortresses() throws InterruptedException {
 		List<Object[]> fortressTuples = fortressSpace.queryAll(new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Integer.class), new FormalField(Boolean.class));
+		mutexSpace.get(new ActualField("fortress_lock"));
 		fortresses = new Fortress[fortressTuples.size()];
 		for (int i = 0; i < fortressTuples.size(); i++) {
 			Object[] tuple = fortressTuples.get(i);
 			fortresses[i] = new Fortress((int) tuple[0], (int) tuple[1], (int) tuple[2], (boolean) tuple[3]);
 		}
+		mutexSpace.put("fortress_lock");
 	}
 
 	public void updateResources() throws InterruptedException {
@@ -264,6 +279,14 @@ public class Client {
             Object[] tuple = orbHolderTuples.get(i);
             orbHolders[i] = new OrbHolder((boolean) tuple[0], (boolean) tuple[1], (boolean) tuple[2]);
         }
+	}
+
+	public void updateBuffs() throws InterruptedException {
+		Object[] tuple = buffSpace.getp(new ActualField("ghoststatus"), new FormalField(Double.class), new FormalField(Double.class));
+		if(tuple != null){
+			team1GhostTimer = (double)tuple[1];
+			team2GhostTimer = (double)tuple[2];
+		}
 	}
 
 	public void updateScores() throws InterruptedException {
@@ -494,7 +517,19 @@ public class Client {
 		return mutexSpace;
 	}
 
+	public RemoteSpace getPlayerMovementSpace() {
+		return playerMovementSpace;
+	}
+
 	public long getLastUpdate() {
 		return lastUpdate;
+	}
+
+	public double getTeam1GhostTimer() {
+		return team1GhostTimer;
+	}
+
+	public double getTeam2GhostTimer() {
+		return team2GhostTimer;
 	}
 }

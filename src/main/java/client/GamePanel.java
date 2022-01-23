@@ -2,6 +2,7 @@ package client;
 
 import client.message.MessageBox;
 import controller.CannonController;
+import controller.PlayerController;
 import game.Server;
 import model.*;
 import org.jspace.ActualField;
@@ -14,6 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -149,6 +152,28 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     public void paintPlayers(){
+        try {
+            if(c.getFortresses().length > 1 && c.getFortresses()[0] != null && c.getFortresses()[1] != null) {
+                c.getMutexSpace().get(new ActualField("players_lock"));
+                c.getMutexSpace().get(new ActualField("fortress_lock"));
+                c.getMutexSpace().get(new ActualField("walls_lock"));
+                PlayerController.movePlayers(
+                        deltaTime,
+                        c.getPlayerMovementSpace().queryAll(new FormalField(Integer.class), new FormalField(String.class)),
+                        new ArrayList<>(Arrays.asList(c.getPlayers())),
+                        new ArrayList<>(Arrays.asList(c.getWalls())),
+                        c.getFortresses()[0],
+                        c.getFortresses()[1],
+                        c.getTeam1GhostTimer(),
+                        c.getTeam2GhostTimer()
+                );
+                c.getMutexSpace().put("players_lock");
+                c.getMutexSpace().put("fortress_lock");
+                c.getMutexSpace().put("walls_lock");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         g2D.setFont(new Font(DEFAULT_FONT, Font.PLAIN, 12));
         for (int i = 0; i < c.getPlayers().length; i++) {
             Player p = c.getPlayers()[i];

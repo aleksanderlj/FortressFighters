@@ -42,6 +42,8 @@ public class BuffController {
         if (team2GhostTimer > 0) {
             team2GhostTimer -= ((double)deltaTime)/1000;
         }
+        s.getBuffSpace().getp(new ActualField("ghoststatus"), new FormalField(Double.class), new FormalField(Double.class));
+        s.getBuffSpace().put("ghoststatus", team1GhostTimer, team2GhostTimer);
 
         // Decrement shield timer, remove shield if it ran out
         if (team1ShieldTimer > 0) {
@@ -122,6 +124,18 @@ public class BuffController {
     }
 
     public boolean isGhost(Player p) {
+        return isGhost(p, team1GhostTimer, team2GhostTimer);
+    }
+
+    public static boolean isGhost(Player p, double team1GhostTimer, double team2GhostTimer) {
         return (team1GhostTimer > 0 && !p.team) || (team2GhostTimer > 0 && p.team);
+    }
+
+    public double getTeam1GhostTimer() {
+        return team1GhostTimer;
+    }
+
+    public double getTeam2GhostTimer() {
+        return team2GhostTimer;
     }
 }
